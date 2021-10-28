@@ -25,6 +25,7 @@ linters:
     - forcetypeassert
     - gci
     - gochecknoglobals
+    - golint
     - gomnd
     - ifshort
     - interfacer
