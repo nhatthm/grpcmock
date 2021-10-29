@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+package grpctest;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "internal/grpctest/;grpctest";
+
+service ItemService {
+    rpc GetItem(GetItemRequest) returns (Item);
+    rpc ListItems(ListItemsRequest) returns (stream Item);
+    rpc CreateItems(stream Item) returns (CreateItemsResponse);
+    rpc TransformItems(stream Item) returns (stream Item);
+}
+
+message GetItemRequest {
+    int32 id = 1;
+}
+
+message ListItemsRequest {
+}
+
+message CreateItemsResponse {
+}
+
+message Item {
+    int32 id = 1;
+    string locale = 2;
+    string name = 3;
+    google.protobuf.Timestamp create_time = 4;
+}

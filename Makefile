@@ -23,3 +23,7 @@ test-unit:
 #test-integration:
 #	@echo ">> integration test"
 #	@$(GO) test ./features/... -gcflags=-l -coverprofile=features.coverprofile -coverpkg ./... -race --godog
+
+gen:
+	@rm -rf internal/grpctest
+	@protoc --go_out=. --go-grpc_out=. resources/protobuf/service.proto
