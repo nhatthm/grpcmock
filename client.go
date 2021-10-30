@@ -243,8 +243,8 @@ func WithDialOptions(opts ...grpc.DialOption) InvokeOption {
 	}
 }
 
-// WithCallOption sets call options.
-func WithCallOption(opts ...grpc.CallOption) InvokeOption {
+// WithCallOptions sets call options.
+func WithCallOptions(opts ...grpc.CallOption) InvokeOption {
 	return func(c *invokeConfig) {
 		c.callOpts = append(c.callOpts, opts...)
 	}
