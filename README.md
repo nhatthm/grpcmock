@@ -11,7 +11,7 @@ Test gRPC service and client like a pro.
 
 ## Prerequisites
 
-- `Go >= 1.16`
+- `Go >= 1.17`
 
 ## Install
 
