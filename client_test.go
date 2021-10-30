@@ -8,14 +8,17 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 	"google.golang.org/grpc/test/bufconn"
+	"google.golang.org/protobuf/proto"
 
 	"github.com/nhatthm/grpcmock"
 	"github.com/nhatthm/grpcmock/internal/grpctest"
+	grpcMocker "github.com/nhatthm/grpcmock/internal/mock/grpc"
 	testSrv "github.com/nhatthm/grpcmock/internal/test/grpctest"
 )
 
@@ -40,6 +43,15 @@ func TestInvokeUnary_DialError(t *testing.T) {
 		grpcmock.WithInsecure(),
 	)
 	expected := `rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing dial error"`
+
+	assert.EqualError(t, err, expected)
+}
+
+func TestInvokeUnary_WithoutInsecure(t *testing.T) {
+	t.Parallel()
+
+	err := grpcmock.InvokeUnary(context.Background(), "NotFound", nil, nil)
+	expected := "grpc: no transport security set (use grpc.WithInsecure() explicitly or set credentials)"
 
 	assert.EqualError(t, err, expected)
 }
@@ -122,6 +134,15 @@ func TestInvokeServerStream_DialError(t *testing.T) {
 		grpcmock.WithInsecure(),
 	)
 	expected := `rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing dial error"`
+
+	assert.EqualError(t, err, expected)
+}
+
+func TestInvokeServerStream_WithoutInsecure(t *testing.T) {
+	t.Parallel()
+
+	err := grpcmock.InvokeServerStream(context.Background(), "NotFound", nil, nil)
+	expected := "grpc: no transport security set (use grpc.WithInsecure() explicitly or set credentials)"
 
 	assert.EqualError(t, err, expected)
 }
@@ -231,5 +252,129 @@ func TestInvokeServerStream_Success(t *testing.T) {
 
 	for i := 0; i < len(expected); i++ {
 		grpcmock.MessageEqual(t, expected[i], result[i])
+	}
+}
+
+func TestRecvAll(t *testing.T) {
+	t.Parallel()
+
+	items := []*grpctest.Item{
+		{
+			Id:     41,
+			Locale: "en-US",
+			Name:   "Item #41",
+		},
+		{
+			Id:     42,
+			Locale: "en-US",
+			Name:   "Item #42",
+		},
+	}
+
+	sendItems := func(s *grpcMocker.ClientStream) {
+		for _, i := range items {
+			i := i
+
+			s.On("RecvMsg", &grpctest.Item{}).Once().
+				Run(func(args mock.Arguments) {
+					out := args.Get(0).(*grpctest.Item) // nolint: errcheck
+
+					proto.Merge(out, i)
+				}).
+				Return(nil)
+		}
+
+		s.On("RecvMsg", &grpctest.Item{}).
+			Return(io.EOF)
+	}
+
+	testCases := []struct {
+		scenario       string
+		mockStream     grpcMocker.ClientStreamMocker
+		output         interface{}
+		expectedOutput interface{}
+		expectedError  string
+	}{
+		{
+			scenario:      "output is nil",
+			mockStream:    grpcMocker.NoMockClientStream,
+			expectedError: `<nil> is not a pointer`,
+		},
+		{
+			scenario:       "output is not a pointer",
+			mockStream:     grpcMocker.NoMockClientStream,
+			output:         grpctest.Item{},
+			expectedError:  `grpctest.Item is not a pointer`,
+			expectedOutput: grpctest.Item{},
+		},
+		{
+			scenario:       "output is not a slice",
+			mockStream:     grpcMocker.NoMockClientStream,
+			output:         &grpctest.Item{},
+			expectedError:  `*grpctest.Item is not a slice`,
+			expectedOutput: &grpctest.Item{},
+		},
+		{
+			scenario: "recv error",
+			mockStream: grpcMocker.MockClientStream(func(s *grpcMocker.ClientStream) {
+				s.On("RecvMsg", mock.Anything).
+					Return(errors.New("recv error"))
+			}),
+			output:         &[]grpctest.Item{},
+			expectedError:  `could not recv msg: recv error`,
+			expectedOutput: &[]grpctest.Item{},
+		},
+		{
+			scenario:   "success with a slice of struct",
+			mockStream: grpcMocker.MockClientStream(sendItems),
+			output:     &[]grpctest.Item{},
+			expectedOutput: &[]grpctest.Item{
+				{
+					Id:     41,
+					Locale: "en-US",
+					Name:   "Item #41",
+				},
+				{
+					Id:     42,
+					Locale: "en-US",
+					Name:   "Item #42",
+				},
+			},
+		},
+		{
+			scenario:   "success with a slice of pointer",
+			mockStream: grpcMocker.MockClientStream(sendItems),
+			output:     &[]*grpctest.Item{},
+			expectedOutput: &[]*grpctest.Item{
+				{
+					Id:     41,
+					Locale: "en-US",
+					Name:   "Item #41",
+				},
+				{
+					Id:     42,
+					Locale: "en-US",
+					Name:   "Item #42",
+				},
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		tc := tc
+		t.Run(tc.scenario, func(t *testing.T) {
+			t.Parallel()
+
+			result := tc.output
+			err := grpcmock.RecvAll(result)(tc.mockStream(t))
+
+			grpcmock.JSONEq(t, tc.expectedOutput, result)
+
+			if tc.expectedError == "" {
+				assert.NoError(t, err)
+			} else {
+				assert.EqualError(t, err, tc.expectedError)
+			}
+		})
 	}
 }

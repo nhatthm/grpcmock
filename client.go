@@ -13,6 +13,8 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/test/bufconn"
+
+	grpcReflect "github.com/nhatthm/grpcmock/reflect"
 )
 
 // ContextDialer is to set up the dialer.
@@ -203,8 +205,8 @@ func RecvAll(out interface{}) func(stream grpc.ClientStream) error {
 		newValueOf := reflect.MakeSlice(typeOfSlice, 0, 0)
 
 		for {
-			msg := newMessageValue(typeOfMsg)
-			err := stream.RecvMsg(msg.Interface())
+			msg := grpcReflect.New(typeOfMsg)
+			err := stream.RecvMsg(msg)
 
 			if errors.Is(err, io.EOF) {
 				break
@@ -214,21 +216,13 @@ func RecvAll(out interface{}) func(stream grpc.ClientStream) error {
 				return fmt.Errorf("could not recv msg: %w", err)
 			}
 
-			newValueOf = appendMessage(newValueOf, msg.Elem())
+			newValueOf = appendMessage(newValueOf, msg)
 		}
 
 		reflect.ValueOf(out).Elem().Set(newValueOf)
 
 		return nil
 	}
-}
-
-func newMessageValue(t reflect.Type) reflect.Value {
-	if t.Kind() == reflect.Ptr {
-		return newMessageValue(t.Elem())
-	}
-
-	return reflect.New(t)
 }
 
 func newSliceMessageValue(t reflect.Type, v reflect.Value) reflect.Value {
@@ -243,6 +237,6 @@ func newSliceMessageValue(t reflect.Type, v reflect.Value) reflect.Value {
 	return result
 }
 
-func appendMessage(s reflect.Value, v reflect.Value) reflect.Value {
-	return reflect.Append(s, newSliceMessageValue(s.Type().Elem(), v))
+func appendMessage(s reflect.Value, v interface{}) reflect.Value {
+	return reflect.Append(s, newSliceMessageValue(s.Type().Elem(), grpcReflect.UnwrapValue(v)))
 }
