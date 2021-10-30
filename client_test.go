@@ -18,6 +18,7 @@ import (
 	"google.golang.org/protobuf/proto"
 
 	"github.com/nhatthm/grpcmock"
+	grpcAssert "github.com/nhatthm/grpcmock/assert"
 	"github.com/nhatthm/grpcmock/internal/grpctest"
 	grpcMocker "github.com/nhatthm/grpcmock/internal/mock/grpc"
 	testSrv "github.com/nhatthm/grpcmock/internal/test/grpctest"
@@ -118,8 +119,8 @@ func TestInvokeUnary_Success(t *testing.T) {
 		Name:   "Foobar",
 	}
 
-	grpcmock.MessageEqual(t, expectedRequest, actualRequest)
-	grpcmock.MessageEqual(t, expectedResponse, actualResponse)
+	grpcAssert.EqualMessage(t, expectedRequest, actualRequest)
+	grpcAssert.EqualMessage(t, expectedResponse, actualResponse)
 	assert.NoError(t, err)
 }
 
@@ -177,7 +178,7 @@ func TestInvokeServerStream_UnaryMethod(t *testing.T) {
 			msg := &grpctest.Item{}
 			err := stream.RecvMsg(msg)
 
-			grpcmock.MessageEqual(t, item, msg)
+			grpcAssert.EqualMessage(t, item, msg)
 			assert.NoError(t, err)
 
 			// Stream is closed.
@@ -245,7 +246,7 @@ func TestInvokeServerStream_Success(t *testing.T) {
 	assert.Equal(t, len(expected), len(result))
 
 	for i := 0; i < len(expected); i++ {
-		grpcmock.MessageEqual(t, expected[i], result[i])
+		grpcAssert.EqualMessage(t, expected[i], result[i])
 	}
 }
 
@@ -348,12 +349,12 @@ func TestInvokeClientStream_Success(t *testing.T) {
 
 	expectedResult := &grpctest.CreateItemsResponse{NumItems: int64(len(items))}
 
-	grpcmock.MessageEqual(t, expectedResult, result)
+	grpcAssert.EqualMessage(t, expectedResult, result)
 	assert.NoError(t, err)
 	assert.Equal(t, len(received), len(items))
 
 	for i := 0; i < len(received); i++ {
-		grpcmock.MessageEqual(t, received[i], items[i])
+		grpcAssert.EqualMessage(t, received[i], items[i])
 	}
 }
 
@@ -469,7 +470,7 @@ func TestInvokeBidirectionalStream_Success(t *testing.T) {
 	assert.Equal(t, len(expected), len(result))
 
 	for i := 0; i < len(expected); i++ {
-		grpcmock.MessageEqual(t, expected[i], result[i])
+		grpcAssert.EqualMessage(t, expected[i], result[i])
 	}
 }
 
@@ -630,7 +631,7 @@ func TestRecvAll(t *testing.T) {
 			result := tc.output
 			err := grpcmock.RecvAll(result)(tc.mockStream(t))
 
-			grpcmock.JSONEq(t, tc.expectedOutput, result)
+			grpcAssert.JSONEq(t, tc.expectedOutput, result)
 
 			if tc.expectedError == "" {
 				assert.NoError(t, err)
@@ -766,7 +767,7 @@ func TestSendAndRecvAll_Success(t *testing.T) {
 			assert.Equal(t, len(tc.expectedResult), len(result))
 
 			for i := 0; i < len(tc.expectedResult); i++ {
-				grpcmock.MessageEqual(t, tc.expectedResult[i], result[i])
+				grpcAssert.EqualMessage(t, tc.expectedResult[i], result[i])
 			}
 		})
 	}
