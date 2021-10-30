@@ -147,6 +147,19 @@ func TestInvokeServerStream_WithoutInsecure(t *testing.T) {
 	assert.EqualError(t, err, expected)
 }
 
+func TestInvokeServerStream_NoHandlerShouldBeFine(t *testing.T) {
+	t.Parallel()
+
+	dialer := testSrv.StartServer(t)
+
+	err := grpcmock.InvokeServerStream(context.Background(), "NotFound", nil, nil,
+		grpcmock.WithContextDialer(dialer),
+		grpcmock.WithInsecure(),
+	)
+
+	assert.NoError(t, err)
+}
+
 func TestInvokeServerStream_UnaryMethod(t *testing.T) {
 	t.Parallel()
 
@@ -253,6 +266,46 @@ func TestInvokeServerStream_Success(t *testing.T) {
 	for i := 0; i < len(expected); i++ {
 		grpcmock.MessageEqual(t, expected[i], result[i])
 	}
+}
+
+func TestInvokeClientStream_DialError(t *testing.T) {
+	t.Parallel()
+
+	dialer := func(context.Context, string) (net.Conn, error) {
+		return nil, errors.New("dial error")
+	}
+
+	err := grpcmock.InvokeClientStream(context.Background(), "NotFound", nil, nil,
+		grpcmock.WithContextDialer(dialer),
+		grpcmock.WithInsecure(),
+	)
+	expected := `rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing dial error"`
+
+	assert.EqualError(t, err, expected)
+}
+
+func TestInvokeClientStream_WithoutInsecure(t *testing.T) {
+	t.Parallel()
+
+	err := grpcmock.InvokeClientStream(context.Background(), "NotFound", nil, nil)
+	expected := "grpc: no transport security set (use grpc.WithInsecure() explicitly or set credentials)"
+
+	assert.EqualError(t, err, expected)
+}
+
+func TestInvokeClientStream_NoHandlerShouldBeFine(t *testing.T) {
+	t.Parallel()
+
+	dialer := testSrv.StartServer(t, testSrv.CreateItems(func(srv grpctest.ItemService_CreateItemsServer) error {
+		return srv.SendAndClose(&grpctest.CreateItemsResponse{})
+	}))
+
+	err := grpcmock.InvokeClientStream(context.Background(), "grpctest.ItemService/CreateItems", nil, &grpctest.CreateItemsResponse{},
+		grpcmock.WithContextDialer(dialer),
+		grpcmock.WithInsecure(),
+	)
+
+	assert.NoError(t, err)
 }
 
 func TestRecvAll(t *testing.T) {

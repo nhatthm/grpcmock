@@ -20,6 +20,18 @@ import (
 // ContextDialer is to set up the dialer.
 type ContextDialer = func(context.Context, string) (net.Conn, error)
 
+// ClientStreamHandler handles a client stream.
+type ClientStreamHandler func(stream grpc.ClientStream) error
+
+// Handle handles a client stream.
+func (h ClientStreamHandler) Handle(stream grpc.ClientStream) error {
+	if h == nil {
+		return nil
+	}
+
+	return h(stream)
+}
+
 type invokeConfig struct {
 	header   map[string]string
 	dialOpts []grpc.DialOption
@@ -50,7 +62,7 @@ func InvokeServerStream(
 	ctx context.Context,
 	method string,
 	in interface{},
-	handle func(stream grpc.ClientStream) error,
+	handle ClientStreamHandler,
 	opts ...InvokeOption,
 ) error {
 	ctx, conn, method, callOpts, err := prepInvoke(ctx, method, opts...)
@@ -73,11 +85,38 @@ func InvokeServerStream(
 		return err
 	}
 
-	if handle == nil {
-		return nil
+	return handle.Handle(stream)
+}
+
+// InvokeClientStream invokes a client-stream method.
+func InvokeClientStream(
+	ctx context.Context,
+	method string,
+	handle ClientStreamHandler,
+	out interface{},
+	opts ...InvokeOption,
+) error {
+	ctx, conn, method, callOpts, err := prepInvoke(ctx, method, opts...)
+	if err != nil {
+		return err
 	}
 
-	return handle(stream)
+	desc := &grpc.StreamDesc{ClientStreams: true}
+
+	stream, err := conn.NewStream(ctx, desc, method, callOpts...)
+	if err != nil {
+		return err
+	}
+
+	if err := handle.Handle(stream); err != nil {
+		return err
+	}
+
+	if err := stream.CloseSend(); err != nil {
+		return err
+	}
+
+	return stream.RecvMsg(out)
 }
 
 func prepInvoke(ctx context.Context, method string, opts ...InvokeOption) (context.Context, *grpc.ClientConn, string, []grpc.CallOption, error) {
@@ -186,8 +225,32 @@ func WithCallOption(opts ...grpc.CallOption) InvokeOption {
 	}
 }
 
+// SendAll sends everything to the stream.
+func SendAll(in interface{}) ClientStreamHandler {
+	return func(stream grpc.ClientStream) error {
+		typeOf := reflect.TypeOf(in)
+
+		if typeOf == nil || typeOf.Kind() != reflect.Slice {
+			return fmt.Errorf("%T is not a slice", in) // nolint: goerr113
+		}
+
+		valueOf := reflect.ValueOf(in)
+
+		for i := 0; i < valueOf.Len(); i++ {
+			elOf := valueOf.Index(i)
+			msg := grpcReflect.NewValue(elOf.Type(), elOf)
+
+			if err := stream.SendMsg(msg); err != nil {
+				return err
+			}
+		}
+
+		return nil
+	}
+}
+
 // RecvAll reads everything from the stream and put into the output.
-func RecvAll(out interface{}) func(stream grpc.ClientStream) error {
+func RecvAll(out interface{}) ClientStreamHandler {
 	return func(stream grpc.ClientStream) error {
 		typeOfPtr := reflect.TypeOf(out)
 
