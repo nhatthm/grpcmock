@@ -36,7 +36,7 @@ import (
 	"google.golang.org/grpc/test/bufconn"
 )
 
-func getItem(l *bufconn.Listener, id int32) (interface{}, error) {
+func getItem(l *bufconn.Listener, id int32) (Item, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*50)
 	defer cancel()
 
@@ -49,6 +49,126 @@ func getItem(l *bufconn.Listener, id int32) (interface{}, error) {
 	)
 
 	return out, err
+}
+```
+
+### Client-Stream Method
+
+```go
+package main
+
+import (
+	"context"
+	"time"
+
+	"github.com/nhatthm/grpcmock"
+	"google.golang.org/grpc/test/bufconn"
+)
+
+func createItems(l *bufconn.Listener, items []*Item) (CreateItemsResponse, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*50)
+	defer cancel()
+
+	out := &CreateItemsResponse{}
+	err := grpcmock.InvokeClientStream(ctx, "myservice/CreateItems",
+		grpcmock.SendAll(items), out,
+		grpcmock.WithBufConnDialer(l),
+		grpcmock.WithInsecure(),
+	)
+
+	return out, err
+}
+```
+
+Or with a custom handler
+
+```go
+package main
+
+import (
+	"context"
+	"time"
+
+	"github.com/nhatthm/grpcmock"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/test/bufconn"
+)
+
+func createItems(l *bufconn.Listener, items []*Item) (CreateItemsResponse, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*50)
+	defer cancel()
+
+	out := &CreateItemsResponse{}
+	err := grpcmock.InvokeClientStream(ctx, "myservice/CreateItems",
+		func(stream grpc.ClientStream) error {
+			// Handle the stream here.
+		},
+		out,
+		grpcmock.WithBufConnDialer(l),
+		grpcmock.WithInsecure(),
+	)
+
+	// return
+}
+```
+
+### Server-Stream Method
+
+```go
+package main
+
+import (
+	"context"
+	"time"
+
+	"github.com/nhatthm/grpcmock"
+	"google.golang.org/grpc/test/bufconn"
+)
+
+func listItems(l *bufconn.Listener) ([]Item, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*50)
+	defer cancel()
+
+	out := make([]Item, 0)
+	err := grpcmock.InvokeServerStream(ctx, "myservice/ListItems",
+		&ListItemsRequest{},
+		grpcmock.RecvAll(&out),
+		grpcmock.WithBufConnDialer(l),
+		grpcmock.WithInsecure(),
+	)
+
+	return out, err
+}
+```
+
+Or with a custom handler
+
+```go
+package main
+
+import (
+	"context"
+	"time"
+
+	"github.com/nhatthm/grpcmock"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/test/bufconn"
+)
+
+func listItems(l *bufconn.Listener) ([]Item, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*50)
+	defer cancel()
+
+	err := grpcmock.InvokeServerStream(ctx, "myservice/ListItems",
+		&ListItemsRequest{},
+		func(stream grpc.ClientStream) error {
+			// Handle the stream here.
+		},
+		grpcmock.WithBufConnDialer(l),
+		grpcmock.WithInsecure(),
+	)
+
+	// return
 }
 ```
 
