@@ -251,16 +251,9 @@ func SendAll(in interface{}) ClientStreamHandler {
 // RecvAll reads everything from the stream and put into the output.
 func RecvAll(out interface{}) ClientStreamHandler {
 	return func(stream grpc.ClientStream) error {
-		typeOfPtr := reflect.TypeOf(out)
-
-		if typeOfPtr == nil || typeOfPtr.Kind() != reflect.Ptr {
-			return fmt.Errorf("%T is not a pointer", out) // nolint: goerr113
-		}
-
-		typeOfSlice := typeOfPtr.Elem()
-
-		if typeOfSlice.Kind() != reflect.Slice {
-			return fmt.Errorf("%T is not a slice", out) // nolint: goerr113
+		typeOfSlice, err := isPtrOfSlice(out)
+		if err != nil {
+			return err
 		}
 
 		typeOfMsg := typeOfSlice.Elem()
@@ -301,4 +294,20 @@ func newSliceMessageValue(t reflect.Type, v reflect.Value) reflect.Value {
 
 func appendMessage(s reflect.Value, v interface{}) reflect.Value {
 	return reflect.Append(s, newSliceMessageValue(s.Type().Elem(), grpcReflect.UnwrapValue(v)))
+}
+
+func isPtrOfSlice(v interface{}) (reflect.Type, error) {
+	typeOfPtr := reflect.TypeOf(v)
+
+	if typeOfPtr == nil || typeOfPtr.Kind() != reflect.Ptr {
+		return nil, fmt.Errorf("%T is not a pointer", v) // nolint: goerr113
+	}
+
+	typeOfSlice := typeOfPtr.Elem()
+
+	if typeOfSlice.Kind() != reflect.Slice {
+		return nil, fmt.Errorf("%T is not a slice", v) // nolint: goerr113
+	}
+
+	return typeOfSlice, nil
 }
