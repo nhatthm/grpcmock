@@ -46,15 +46,14 @@ func New(v interface{}) interface{} {
 
 // NewZero creates a pointer to a nil object of a given type.
 func NewZero(v interface{}) interface{} {
-	typeOf := UnwrapType(v)
-	valueOf := reflect.New(typeOf)
+	valueOf := reflect.New(UnwrapType(v))
 
 	return reflect.Zero(valueOf.Type()).Interface()
 }
 
-// NewValue creates a pointer to a new object of a given type with the given value.
-func NewValue(t reflect.Type, v interface{}) interface{} {
-	valueOf := reflect.New(UnwrapType(t))
+// PtrValue creates a pointer to the unwrapped value.
+func PtrValue(v interface{}) interface{} {
+	valueOf := reflect.New(UnwrapType(v))
 
 	valueOf.Elem().Set(UnwrapValue(v))
 

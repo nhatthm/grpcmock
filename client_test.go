@@ -196,21 +196,6 @@ func TestInvokeServerStream_UnaryMethod(t *testing.T) {
 func TestInvokeServerStream_Success(t *testing.T) {
 	t.Parallel()
 
-	items := []*grpctest.Item{
-		{
-			Id:   41,
-			Name: "Item #41",
-		},
-		{
-			Id:   42,
-			Name: "Item #42",
-		},
-		{
-			Id:   43,
-			Name: "Item #43",
-		},
-	}
-
 	dialer := testSrv.StartServer(t, testSrv.ListItems(func(_ *grpctest.ListItemsRequest, server grpctest.ItemService_ListItemsServer) error {
 		var locale string
 
@@ -220,7 +205,7 @@ func TestInvokeServerStream_Success(t *testing.T) {
 			}
 		}
 
-		for _, i := range items {
+		for _, i := range defaultItems() {
 			i.Locale = locale
 
 			if err := server.Send(i); err != nil {
@@ -252,11 +237,6 @@ func TestInvokeServerStream_Success(t *testing.T) {
 			Id:     42,
 			Locale: "en-US",
 			Name:   "Item #42",
-		},
-		{
-			Id:     43,
-			Locale: "en-US",
-			Name:   "Item #43",
 		},
 	}
 
@@ -308,24 +288,68 @@ func TestInvokeClientStream_NoHandlerShouldBeFine(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestRecvAll(t *testing.T) {
+func TestSendAll(t *testing.T) {
 	t.Parallel()
 
-	items := []*grpctest.Item{
+	testCases := []struct {
+		scenario      string
+		mockStream    grpcMocker.ClientStreamMocker
+		input         interface{}
+		expectedError string
+	}{
 		{
-			Id:     41,
-			Locale: "en-US",
-			Name:   "Item #41",
+			scenario:      "input is nil",
+			mockStream:    grpcMocker.NoMockClientStream,
+			expectedError: `<nil> is not a slice`,
 		},
 		{
-			Id:     42,
-			Locale: "en-US",
-			Name:   "Item #42",
+			scenario:      "input is not a slice",
+			mockStream:    grpcMocker.NoMockClientStream,
+			input:         &grpctest.Item{},
+			expectedError: `*grpctest.Item is not a slice`,
+		},
+		{
+			scenario: "send error",
+			mockStream: grpcMocker.MockClientStream(func(s *grpcMocker.ClientStream) {
+				s.On("SendMsg", mock.Anything).
+					Return(errors.New("send error"))
+			}),
+			input:         defaultItems(),
+			expectedError: `could not send msg: send error`,
+		},
+		{
+			scenario: "success with a slice of struct",
+			mockStream: grpcMocker.MockClientStream(func(s *grpcMocker.ClientStream) {
+				for _, i := range defaultItems() {
+					s.On("SendMsg", i).Once().
+						Return(nil)
+				}
+			}),
+			input: defaultItems(),
 		},
 	}
 
+	for _, tc := range testCases {
+		tc := tc
+		t.Run(tc.scenario, func(t *testing.T) {
+			t.Parallel()
+
+			err := grpcmock.SendAll(tc.input)(tc.mockStream(t))
+
+			if tc.expectedError == "" {
+				assert.NoError(t, err)
+			} else {
+				assert.EqualError(t, err, tc.expectedError)
+			}
+		})
+	}
+}
+
+func TestRecvAll(t *testing.T) {
+	t.Parallel()
+
 	sendItems := func(s *grpcMocker.ClientStream) {
-		for _, i := range items {
+		for _, i := range defaultItems() {
 			i := i
 
 			s.On("RecvMsg", &grpctest.Item{}).Once().
@@ -429,5 +453,20 @@ func TestRecvAll(t *testing.T) {
 				assert.EqualError(t, err, tc.expectedError)
 			}
 		})
+	}
+}
+
+func defaultItems() []*grpctest.Item {
+	return []*grpctest.Item{
+		{
+			Id:     41,
+			Locale: "en-US",
+			Name:   "Item #41",
+		},
+		{
+			Id:     42,
+			Locale: "en-US",
+			Name:   "Item #42",
+		},
 	}
 }

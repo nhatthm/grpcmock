@@ -106,12 +106,12 @@ func TestNewZero(t *testing.T) {
 	assert.Equal(t, expected, actual)
 }
 
-func TestNewValue(t *testing.T) {
+func TestPtrValue(t *testing.T) {
 	t.Parallel()
 
 	item := &grpctest.Item{Id: 42}
 
-	actual := grpcReflect.NewValue(grpcReflect.UnwrapType(grpctest.Item{}), item)
+	actual := grpcReflect.PtrValue(item)
 	expected := &grpctest.Item{Id: 42}
 
 	assert.Equal(t, expected, actual)
