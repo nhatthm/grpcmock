@@ -9,32 +9,32 @@ import (
 )
 
 const (
-	unaryNumInput               = 2
-	unaryNumOutput              = 2
-	clientStreamNumInput        = 1
-	clientStreamNumOutput       = 1
-	serverStreamNumInput        = 2
-	serverStreamNumOutput       = 1
-	clientServerStreamNumInput  = 1
-	clientServerStreamNumOutput = 1
-	recvNumInput                = 0
-	recvNumOutput               = 2
-	sendNumInput                = 1
-	sendNumOutput               = 1
-	sendCloseNumInput           = 1
-	sendCloseNumOutput          = 1
+	unaryNumInput                = 2
+	unaryNumOutput               = 2
+	clientStreamNumInput         = 1
+	clientStreamNumOutput        = 1
+	serverStreamNumInput         = 2
+	serverStreamNumOutput        = 1
+	bidirectionalStreamNumInput  = 1
+	bidirectionalStreamNumOutput = 1
+	recvNumInput                 = 0
+	recvNumOutput                = 2
+	sendNumInput                 = 1
+	sendNumOutput                = 1
+	sendCloseNumInput            = 1
+	sendCloseNumOutput           = 1
 
-	unaryInputPosition               = 1
-	unaryOutputPosition              = 0
-	clientStreamPosition             = 0
-	clientStreamInputPosition        = 0
-	clientStreamOutputPosition       = 0
-	serverStreamPosition             = 1
-	serverStreamInputPosition        = 0
-	serverStreamOutputPosition       = 0
-	clientServerStreamPosition       = 0
-	clientServerStreamInputPosition  = 0
-	clientServerStreamOutputPosition = 0
+	unaryInputPosition                = 1
+	unaryOutputPosition               = 0
+	clientStreamPosition              = 0
+	clientStreamInputPosition         = 0
+	clientStreamOutputPosition        = 0
+	serverStreamPosition              = 1
+	serverStreamInputPosition         = 0
+	serverStreamOutputPosition        = 0
+	bidirectionalStreamPosition       = 0
+	bidirectionalStreamInputPosition  = 0
+	bidirectionalStreamOutputPosition = 0
 
 	methodNameSendAndClose = "SendAndClose"
 	methodNameRecv         = "Recv"
@@ -107,14 +107,14 @@ func getMethodInfo(method reflect.Method) *ServiceMethod {
 		}
 	}
 
-	if isClientServerStream(method) {
-		send, _ := method.Type.In(clientServerStreamPosition).MethodByName(methodNameSend)
-		recv, _ := method.Type.In(clientServerStreamPosition).MethodByName(methodNameRecv)
+	if isBidirectionalStream(method) {
+		send, _ := method.Type.In(bidirectionalStreamPosition).MethodByName(methodNameSend)
+		recv, _ := method.Type.In(bidirectionalStreamPosition).MethodByName(methodNameRecv)
 
 		return &ServiceMethod{
 			Name:           method.Name,
-			Input:          methodOutput(recv, clientServerStreamInputPosition),
-			Output:         methodInput(send, clientServerStreamOutputPosition),
+			Input:          methodOutput(recv, bidirectionalStreamInputPosition),
+			Output:         methodInput(send, bidirectionalStreamOutputPosition),
 			IsClientStream: true,
 			IsServerStream: true,
 		}
@@ -150,11 +150,11 @@ func isServerStream(method reflect.Method) bool {
 		implementsError(method.Type.Out(0))
 }
 
-func isClientServerStream(method reflect.Method) bool {
+func isBidirectionalStream(method reflect.Method) bool {
 	return method.IsExported() &&
-		method.Type.NumIn() == clientServerStreamNumInput &&
-		implementsClientServerStream(method.Type.In(clientServerStreamPosition)) &&
-		method.Type.NumOut() == clientServerStreamNumOutput &&
+		method.Type.NumIn() == bidirectionalStreamNumInput &&
+		implementsBidirectionalStream(method.Type.In(bidirectionalStreamPosition)) &&
+		method.Type.NumOut() == bidirectionalStreamNumOutput &&
 		implementsError(method.Type.Out(0))
 }
 
@@ -222,7 +222,7 @@ func implementsServerStream(t reflect.Type) bool {
 	return true
 }
 
-func implementsClientServerStream(t reflect.Type) bool {
+func implementsBidirectionalStream(t reflect.Type) bool {
 	if !implementsGRPCServerStream(t) {
 		return false
 	}
