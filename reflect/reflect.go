@@ -62,11 +62,11 @@ func NewZero(v interface{}) interface{} {
 	return reflect.Zero(valueOf.Type()).Interface()
 }
 
-// PtrValue creates a pointer to the unwrapped value.
-func PtrValue(v interface{}) interface{} {
-	valueOf := reflect.New(UnwrapType(v))
+// NewValue creates a pointer to the unwrapped value.
+func NewValue(value interface{}) interface{} {
+	valueOf := reflect.New(UnwrapType(value))
 
-	valueOf.Elem().Set(UnwrapValue(v))
+	valueOf.Elem().Set(UnwrapValue(value))
 
 	return valueOf.Interface()
 }

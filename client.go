@@ -235,7 +235,7 @@ func SendAll(in interface{}) ClientStreamHandler {
 		valueOf := reflect.ValueOf(in)
 
 		for i := 0; i < valueOf.Len(); i++ {
-			msg := grpcReflect.PtrValue(valueOf.Index(i).Interface())
+			msg := grpcReflect.NewValue(valueOf.Index(i).Interface())
 
 			if err := stream.SendMsg(msg); err != nil {
 				return fmt.Errorf("could not send msg: %w", err)
