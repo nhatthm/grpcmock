@@ -347,13 +347,13 @@ func TestSendAll(t *testing.T) {
 		{
 			scenario:      "input is nil",
 			mockStream:    grpcMocker.NoMockClientStream,
-			expectedError: `<nil> is not a slice`,
+			expectedError: `not a slice: <nil>`,
 		},
 		{
 			scenario:      "input is not a slice",
 			mockStream:    grpcMocker.NoMockClientStream,
 			input:         &grpctest.Item{},
-			expectedError: `*grpctest.Item is not a slice`,
+			expectedError: `not a slice: *grpctest.Item`,
 		},
 		{
 			scenario: "send error",

@@ -228,10 +228,8 @@ func WithCallOption(opts ...grpc.CallOption) InvokeOption {
 // SendAll sends everything to the stream.
 func SendAll(in interface{}) ClientStreamHandler {
 	return func(stream grpc.ClientStream) error {
-		typeOf := reflect.TypeOf(in)
-
-		if typeOf == nil || typeOf.Kind() != reflect.Slice {
-			return fmt.Errorf("%T is not a slice", in) // nolint: goerr113
+		if err := grpcReflect.IsSlice(in); err != nil {
+			return err
 		}
 
 		valueOf := reflect.ValueOf(in)
@@ -251,30 +249,19 @@ func SendAll(in interface{}) ClientStreamHandler {
 // RecvAll reads everything from the stream and put into the output.
 func RecvAll(out interface{}) ClientStreamHandler {
 	return func(stream grpc.ClientStream) error {
-		typeOfSlice, err := isPtrOfSlice(out)
+		outType, err := isPtrOfSlice(out)
 		if err != nil {
 			return err
 		}
 
-		typeOfMsg := typeOfSlice.Elem()
-		newValueOf := reflect.MakeSlice(typeOfSlice, 0, 0)
+		newOut := reflect.MakeSlice(outType, 0, 0)
 
-		for {
-			msg := grpcReflect.New(typeOfMsg)
-			err := stream.RecvMsg(msg)
-
-			if errors.Is(err, io.EOF) {
-				break
-			}
-
-			if err != nil {
-				return fmt.Errorf("could not recv msg: %w", err)
-			}
-
-			newValueOf = appendMessage(newValueOf, msg)
+		newOut, err = receiveMsg(stream, newOut, outType.Elem())
+		if err != nil {
+			return err
 		}
 
-		reflect.ValueOf(out).Elem().Set(newValueOf)
+		reflect.ValueOf(out).Elem().Set(newOut)
 
 		return nil
 	}
@@ -294,6 +281,25 @@ func newSliceMessageValue(t reflect.Type, v reflect.Value) reflect.Value {
 
 func appendMessage(s reflect.Value, v interface{}) reflect.Value {
 	return reflect.Append(s, newSliceMessageValue(s.Type().Elem(), grpcReflect.UnwrapValue(v)))
+}
+
+func receiveMsg(stream grpc.ClientStream, out reflect.Value, msgType reflect.Type) (reflect.Value, error) {
+	for {
+		msg := grpcReflect.New(msgType)
+		err := stream.RecvMsg(msg)
+
+		if errors.Is(err, io.EOF) {
+			break
+		}
+
+		if err != nil {
+			return reflect.Value{}, fmt.Errorf("could not recv msg: %w", err)
+		}
+
+		out = appendMessage(out, msg)
+	}
+
+	return out, nil
 }
 
 func isPtrOfSlice(v interface{}) (reflect.Type, error) {

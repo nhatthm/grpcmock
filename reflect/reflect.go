@@ -5,6 +5,17 @@ import (
 	"reflect"
 )
 
+// IsSlice checks whether the input is a slice.
+func IsSlice(v interface{}) error {
+	typeOf := reflect.TypeOf(v)
+
+	if typeOf == nil || typeOf.Kind() != reflect.Slice {
+		return fmt.Errorf("%w: %T", ErrIsNotSlice, v)
+	}
+
+	return nil
+}
+
 // UnwrapType returns a reflect.Type of the given input. If the type is a pointer, UnwrapType will return the underlay
 // type.
 func UnwrapType(v interface{}) reflect.Type {

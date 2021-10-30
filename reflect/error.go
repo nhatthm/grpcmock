@@ -7,6 +7,8 @@ const (
 	ErrPtrIsNil err = "ptr is nil"
 	// ErrIsNotPtr indicates that the given value is not a pointer.
 	ErrIsNotPtr err = "not a pointer"
+	// ErrIsNotSlice indicates that the given value is not a slice.
+	ErrIsNotSlice err = "not a slice"
 	// ErrIsNotSameType indicates that the type of the given values are not the same.
 	ErrIsNotSameType err = "not same type"
 )
