@@ -3,6 +3,7 @@ package grpcmock_test
 import (
 	"context"
 	"errors"
+	"fmt"
 	"io"
 	"net"
 	"testing"
@@ -356,14 +357,14 @@ func TestInvokeClientStream_Success(t *testing.T) {
 	}
 }
 
-func TestInvokeClientServerStream_DialError(t *testing.T) {
+func TestInvokeBidirectionalStream_DialError(t *testing.T) {
 	t.Parallel()
 
 	dialer := func(context.Context, string) (net.Conn, error) {
 		return nil, errors.New("dial error")
 	}
 
-	err := grpcmock.InvokeClientServerStream(context.Background(), "NotFound", nil,
+	err := grpcmock.InvokeBidirectionalStream(context.Background(), "NotFound", nil,
 		grpcmock.WithContextDialer(dialer),
 		grpcmock.WithInsecure(),
 	)
@@ -372,23 +373,23 @@ func TestInvokeClientServerStream_DialError(t *testing.T) {
 	assert.EqualError(t, err, expected)
 }
 
-func TestInvokeClientServerStream_WithoutInsecure(t *testing.T) {
+func TestInvokeBidirectionalStream_WithoutInsecure(t *testing.T) {
 	t.Parallel()
 
-	err := grpcmock.InvokeClientServerStream(context.Background(), "NotFound", nil)
+	err := grpcmock.InvokeBidirectionalStream(context.Background(), "NotFound", nil)
 	expected := "grpc: no transport security set (use grpc.WithInsecure() explicitly or set credentials)"
 
 	assert.EqualError(t, err, expected)
 }
 
-func TestInvokeClientServerStream_NoHandlerShouldBeFine(t *testing.T) {
+func TestInvokeBidirectionalStream_NoHandlerShouldBeFine(t *testing.T) {
 	t.Parallel()
 
 	dialer := testSrv.StartServer(t, testSrv.CreateItems(func(srv grpctest.ItemService_CreateItemsServer) error {
 		return srv.SendAndClose(&grpctest.CreateItemsResponse{})
 	}))
 
-	err := grpcmock.InvokeClientServerStream(context.Background(), "grpctest.ItemService/CreateItems", nil,
+	err := grpcmock.InvokeBidirectionalStream(context.Background(), "grpctest.ItemService/CreateItems", nil,
 		grpcmock.WithContextDialer(dialer),
 		grpcmock.WithInsecure(),
 	)
@@ -396,14 +397,14 @@ func TestInvokeClientServerStream_NoHandlerShouldBeFine(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestInvokeClientServerStream_FailToHandle(t *testing.T) {
+func TestInvokeBidirectionalStream_FailToHandle(t *testing.T) {
 	t.Parallel()
 
 	dialer := testSrv.StartServer(t, testSrv.CreateItems(func(srv grpctest.ItemService_CreateItemsServer) error {
 		return srv.SendAndClose(&grpctest.CreateItemsResponse{})
 	}))
 
-	err := grpcmock.InvokeClientServerStream(context.Background(), "grpctest.ItemService/CreateItems",
+	err := grpcmock.InvokeBidirectionalStream(context.Background(), "grpctest.ItemService/CreateItems",
 		func(grpc.ClientStream) error {
 			return errors.New("handle error")
 		},
@@ -414,6 +415,62 @@ func TestInvokeClientServerStream_FailToHandle(t *testing.T) {
 	expected := errors.New("handle error")
 
 	assert.Equal(t, expected, err)
+}
+
+func TestInvokeBidirectionalStream_Success(t *testing.T) {
+	t.Parallel()
+
+	dialer := testSrv.StartServer(t, testSrv.TransformItems(func(srv grpctest.ItemService_TransformItemsServer) error {
+		for {
+			msg, err := srv.Recv()
+
+			if errors.Is(err, io.EOF) {
+				break
+			}
+
+			if err != nil {
+				return err
+			}
+
+			msg.Name = fmt.Sprintf("Modified %s", msg.Name)
+
+			if err := srv.SendMsg(msg); err != nil {
+				return err
+			}
+		}
+
+		return nil
+	}))
+
+	items := defaultItems()
+	result := make([]*grpctest.Item, 0)
+
+	err := grpcmock.InvokeBidirectionalStream(context.Background(),
+		"grpctest.ItemService/TransformItems",
+		grpcmock.SendAndRecvAll(items, &result),
+		grpcmock.WithContextDialer(dialer),
+		grpcmock.WithInsecure(),
+	)
+
+	expected := []*grpctest.Item{
+		{
+			Id:     41,
+			Locale: "en-US",
+			Name:   "Modified Item #41",
+		},
+		{
+			Id:     42,
+			Locale: "en-US",
+			Name:   "Modified Item #42",
+		},
+	}
+
+	assert.NoError(t, err)
+	assert.Equal(t, len(expected), len(result))
+
+	for i := 0; i < len(expected); i++ {
+		grpcmock.MessageEqual(t, expected[i], result[i])
+	}
 }
 
 func TestSendAll(t *testing.T) {
@@ -579,6 +636,137 @@ func TestRecvAll(t *testing.T) {
 				assert.NoError(t, err)
 			} else {
 				assert.EqualError(t, err, tc.expectedError)
+			}
+		})
+	}
+}
+
+func TestSendAndRecvAll_SendError(t *testing.T) {
+	t.Parallel()
+
+	stream := grpcMocker.MockClientStream(func(s *grpcMocker.ClientStream) {
+		s.On("RecvMsg", mock.Anything).Maybe().
+			Return(io.EOF)
+
+		s.On("SendMsg", mock.Anything).
+			Return(errors.New("send error"))
+	})(t)
+
+	result := make([]*grpctest.Item, 0)
+	err := grpcmock.SendAndRecvAll([]*grpctest.Item{{Id: 42}}, &result)(stream)
+
+	expected := "could not send msg: send error"
+
+	assert.EqualError(t, err, expected)
+}
+
+func TestSendAndRecvAll_RecvError(t *testing.T) {
+	t.Parallel()
+
+	stream := grpcMocker.MockClientStream(func(s *grpcMocker.ClientStream) {
+		s.On("RecvMsg", mock.Anything).
+			Return(errors.New("recv error"))
+
+		s.On("CloseSend").
+			Return(nil)
+	})(t)
+
+	result := make([]*grpctest.Item, 0)
+	err := grpcmock.SendAndRecvAll([]*grpctest.Item{}, &result)(stream)
+
+	expected := "could not recv msg: recv error"
+
+	assert.EqualError(t, err, expected)
+}
+
+func TestSendAndRecvAll_CloseSendError(t *testing.T) {
+	t.Parallel()
+
+	stream := grpcMocker.MockClientStream(func(s *grpcMocker.ClientStream) {
+		s.On("RecvMsg", mock.Anything).Maybe().
+			Return(io.EOF)
+
+		s.On("CloseSend").
+			Return(errors.New("close send error"))
+	})(t)
+
+	result := make([]*grpctest.Item, 0)
+	err := grpcmock.SendAndRecvAll([]*grpctest.Item{}, &result)(stream)
+
+	expected := "close send error"
+
+	assert.EqualError(t, err, expected)
+}
+
+func TestSendAndRecvAll_Success(t *testing.T) {
+	t.Parallel()
+
+	testCases := []struct {
+		scenario       string
+		mockStream     grpcMocker.ClientStreamMocker
+		input          []*grpctest.Item
+		expectedResult []*grpctest.Item
+	}{
+		{
+			scenario: "send zero and receive zero",
+			mockStream: grpcMocker.MockClientStream(func(s *grpcMocker.ClientStream) {
+				s.On("RecvMsg", mock.Anything).
+					Return(io.EOF)
+
+				s.On("CloseSend").
+					Return(nil)
+			}),
+			expectedResult: []*grpctest.Item{},
+		},
+		{
+			scenario: "send one and receive zero",
+			mockStream: grpcMocker.MockClientStream(func(s *grpcMocker.ClientStream) {
+				s.On("RecvMsg", mock.Anything).
+					Return(io.EOF)
+
+				s.On("SendMsg", &grpctest.Item{Id: 42}).
+					Return(nil)
+
+				s.On("CloseSend").
+					Return(nil)
+			}),
+			input:          []*grpctest.Item{{Id: 42}},
+			expectedResult: []*grpctest.Item{},
+		},
+		{
+			scenario: "send zero and receive one",
+			mockStream: grpcMocker.MockClientStream(func(s *grpcMocker.ClientStream) {
+				s.On("RecvMsg", mock.Anything).Once().
+					Run(func(args mock.Arguments) {
+						out := args.Get(0).(*grpctest.Item) // nolint: errcheck
+
+						*out = grpctest.Item{Id: 42, Name: "Modified"}
+					}).
+					Return(nil)
+
+				s.On("RecvMsg", mock.Anything).
+					Return(io.EOF)
+
+				s.On("CloseSend").
+					Return(nil)
+			}),
+			expectedResult: []*grpctest.Item{{Id: 42, Name: "Modified"}},
+		},
+	}
+
+	for _, tc := range testCases {
+		tc := tc
+		t.Run(tc.scenario, func(t *testing.T) {
+			t.Parallel()
+
+			result := make([]*grpctest.Item, 0)
+			err := grpcmock.SendAndRecvAll(tc.input, &result)(tc.mockStream(t))
+
+			assert.NoError(t, err)
+			assert.Equal(t, len(tc.expectedResult), len(result))
+
+			for i := 0; i < len(tc.expectedResult); i++ {
+				grpcmock.MessageEqual(t, tc.expectedResult[i], result[i])
 			}
 		})
 	}

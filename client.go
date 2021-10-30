@@ -119,8 +119,8 @@ func InvokeClientStream(
 	return stream.RecvMsg(out)
 }
 
-// InvokeClientServerStream invokes a client-server-stream method.
-func InvokeClientServerStream(
+// InvokeBidirectionalStream invokes a client-server-stream method.
+func InvokeBidirectionalStream(
 	ctx context.Context,
 	method string,
 	handle ClientStreamHandler,
@@ -131,7 +131,10 @@ func InvokeClientServerStream(
 		return err
 	}
 
-	desc := &grpc.StreamDesc{ClientStreams: true}
+	desc := &grpc.StreamDesc{
+		ClientStreams: true,
+		ServerStreams: true,
+	}
 
 	stream, err := conn.NewStream(ctx, desc, method, callOpts...)
 	if err != nil {
@@ -289,20 +292,35 @@ func RecvAll(out interface{}) ClientStreamHandler {
 	}
 }
 
-func newSliceMessageValue(t reflect.Type, v reflect.Value) reflect.Value {
-	if t.Kind() != reflect.Ptr {
-		return v
+// SendAndRecvAll sends and receives messages to and from grpc server in turn until server sends the io.EOF.
+func SendAndRecvAll(in interface{}, out interface{}) ClientStreamHandler {
+	return func(stream grpc.ClientStream) error {
+		errCh := make(chan error)
+
+		go func() {
+			defer close(errCh)
+
+			if err := RecvAll(out)(stream); err != nil {
+				errCh <- err
+
+				return
+			}
+		}()
+
+		if err := SendAll(in)(stream); err != nil {
+			return err
+		}
+
+		if err := stream.CloseSend(); err != nil {
+			return err
+		}
+
+		if err := <-errCh; err != nil {
+			return err
+		}
+
+		return nil
 	}
-
-	result := reflect.New(t.Elem())
-
-	result.Elem().Set(newSliceMessageValue(t.Elem(), v))
-
-	return result
-}
-
-func appendMessage(s reflect.Value, v interface{}) reflect.Value {
-	return reflect.Append(s, newSliceMessageValue(s.Type().Elem(), grpcReflect.UnwrapValue(v)))
 }
 
 func receiveMsg(stream grpc.ClientStream, out reflect.Value, msgType reflect.Type) (reflect.Value, error) {
@@ -322,6 +340,22 @@ func receiveMsg(stream grpc.ClientStream, out reflect.Value, msgType reflect.Typ
 	}
 
 	return out, nil
+}
+
+func newSliceMessageValue(t reflect.Type, v reflect.Value) reflect.Value {
+	if t.Kind() != reflect.Ptr {
+		return v
+	}
+
+	result := reflect.New(t.Elem())
+
+	result.Elem().Set(newSliceMessageValue(t.Elem(), v))
+
+	return result
+}
+
+func appendMessage(s reflect.Value, v interface{}) reflect.Value {
+	return reflect.Append(s, newSliceMessageValue(s.Type().Elem(), grpcReflect.UnwrapValue(v)))
 }
 
 func isPtrOfSlice(v interface{}) (reflect.Type, error) {
