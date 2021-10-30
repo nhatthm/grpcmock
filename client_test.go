@@ -288,6 +288,53 @@ func TestInvokeClientStream_NoHandlerShouldBeFine(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+func TestInvokeClientStream_Success(t *testing.T) {
+	t.Parallel()
+
+	received := make([]*grpctest.Item, 0)
+
+	dialer := testSrv.StartServer(t, testSrv.CreateItems(func(srv grpctest.ItemService_CreateItemsServer) error {
+		for {
+			msg, err := srv.Recv()
+
+			if errors.Is(err, io.EOF) {
+				break
+			}
+
+			if err != nil {
+				return err
+			}
+
+			received = append(received, msg)
+		}
+
+		return srv.SendAndClose(&grpctest.CreateItemsResponse{
+			NumItems: int64(len(received)),
+		})
+	}))
+
+	items := defaultItems()
+	result := &grpctest.CreateItemsResponse{}
+
+	err := grpcmock.InvokeClientStream(context.Background(),
+		"grpctest.ItemService/CreateItems",
+		grpcmock.SendAll(items),
+		result,
+		grpcmock.WithContextDialer(dialer),
+		grpcmock.WithInsecure(),
+	)
+
+	expectedResult := &grpctest.CreateItemsResponse{NumItems: int64(len(items))}
+
+	grpcmock.MessageEqual(t, expectedResult, result)
+	assert.NoError(t, err)
+	assert.Equal(t, len(received), len(items))
+
+	for i := 0; i < len(received); i++ {
+		grpcmock.MessageEqual(t, received[i], items[i])
+	}
+}
+
 func TestSendAll(t *testing.T) {
 	t.Parallel()
 

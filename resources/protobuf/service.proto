@@ -21,6 +21,7 @@ message ListItemsRequest {
 }
 
 message CreateItemsResponse {
+    int64 num_items = 1;
 }
 
 message Item {
