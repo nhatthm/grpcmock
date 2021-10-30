@@ -288,6 +288,27 @@ func TestInvokeClientStream_NoHandlerShouldBeFine(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+func TestInvokeClientStream_FailToHandle(t *testing.T) {
+	t.Parallel()
+
+	dialer := testSrv.StartServer(t, testSrv.CreateItems(func(srv grpctest.ItemService_CreateItemsServer) error {
+		return srv.SendAndClose(&grpctest.CreateItemsResponse{})
+	}))
+
+	err := grpcmock.InvokeClientStream(context.Background(), "grpctest.ItemService/CreateItems",
+		func(grpc.ClientStream) error {
+			return errors.New("handle error")
+		},
+		&grpctest.CreateItemsResponse{},
+		grpcmock.WithContextDialer(dialer),
+		grpcmock.WithInsecure(),
+	)
+
+	expected := errors.New("handle error")
+
+	assert.Equal(t, expected, err)
+}
+
 func TestInvokeClientStream_Success(t *testing.T) {
 	t.Parallel()
 
@@ -333,6 +354,66 @@ func TestInvokeClientStream_Success(t *testing.T) {
 	for i := 0; i < len(received); i++ {
 		grpcmock.MessageEqual(t, received[i], items[i])
 	}
+}
+
+func TestInvokeClientServerStream_DialError(t *testing.T) {
+	t.Parallel()
+
+	dialer := func(context.Context, string) (net.Conn, error) {
+		return nil, errors.New("dial error")
+	}
+
+	err := grpcmock.InvokeClientServerStream(context.Background(), "NotFound", nil,
+		grpcmock.WithContextDialer(dialer),
+		grpcmock.WithInsecure(),
+	)
+	expected := `rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing dial error"`
+
+	assert.EqualError(t, err, expected)
+}
+
+func TestInvokeClientServerStream_WithoutInsecure(t *testing.T) {
+	t.Parallel()
+
+	err := grpcmock.InvokeClientServerStream(context.Background(), "NotFound", nil)
+	expected := "grpc: no transport security set (use grpc.WithInsecure() explicitly or set credentials)"
+
+	assert.EqualError(t, err, expected)
+}
+
+func TestInvokeClientServerStream_NoHandlerShouldBeFine(t *testing.T) {
+	t.Parallel()
+
+	dialer := testSrv.StartServer(t, testSrv.CreateItems(func(srv grpctest.ItemService_CreateItemsServer) error {
+		return srv.SendAndClose(&grpctest.CreateItemsResponse{})
+	}))
+
+	err := grpcmock.InvokeClientServerStream(context.Background(), "grpctest.ItemService/CreateItems", nil,
+		grpcmock.WithContextDialer(dialer),
+		grpcmock.WithInsecure(),
+	)
+
+	assert.NoError(t, err)
+}
+
+func TestInvokeClientServerStream_FailToHandle(t *testing.T) {
+	t.Parallel()
+
+	dialer := testSrv.StartServer(t, testSrv.CreateItems(func(srv grpctest.ItemService_CreateItemsServer) error {
+		return srv.SendAndClose(&grpctest.CreateItemsResponse{})
+	}))
+
+	err := grpcmock.InvokeClientServerStream(context.Background(), "grpctest.ItemService/CreateItems",
+		func(grpc.ClientStream) error {
+			return errors.New("handle error")
+		},
+		grpcmock.WithContextDialer(dialer),
+		grpcmock.WithInsecure(),
+	)
+
+	expected := errors.New("handle error")
+
+	assert.Equal(t, expected, err)
 }
 
 func TestSendAll(t *testing.T) {

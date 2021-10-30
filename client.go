@@ -119,6 +119,28 @@ func InvokeClientStream(
 	return stream.RecvMsg(out)
 }
 
+// InvokeClientServerStream invokes a client-server-stream method.
+func InvokeClientServerStream(
+	ctx context.Context,
+	method string,
+	handle ClientStreamHandler,
+	opts ...InvokeOption,
+) error {
+	ctx, conn, method, callOpts, err := prepInvoke(ctx, method, opts...)
+	if err != nil {
+		return err
+	}
+
+	desc := &grpc.StreamDesc{ClientStreams: true}
+
+	stream, err := conn.NewStream(ctx, desc, method, callOpts...)
+	if err != nil {
+		return err
+	}
+
+	return handle.Handle(stream)
+}
+
 func prepInvoke(ctx context.Context, method string, opts ...InvokeOption) (context.Context, *grpc.ClientConn, string, []grpc.CallOption, error) {
 	addr, method, err := parseMethod(method)
 	if err != nil {
