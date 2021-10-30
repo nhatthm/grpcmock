@@ -1,14 +1,106 @@
 package reflect_test
 
 import (
+	"context"
 	"reflect"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"google.golang.org/grpc"
 
 	"github.com/nhatthm/grpcmock/internal/grpctest"
 	grpcReflect "github.com/nhatthm/grpcmock/reflect"
 )
+
+type testServer interface {
+	// RPC Methods.
+	GetItem(context.Context, getItemRequest) (getItemResponse, error)
+
+	// Methods that are not RPC.
+	NoArgAndNoReturn()
+	HasOnlyOneArg(interface{})
+	HasMoreThanTwoArgs(interface{}, interface{}, interface{})
+	FirstArgIsNotContext(interface{}, interface{})
+	SecondArgIsNotAStruct(context.Context, interface{})
+	NoReturn(context.Context, struct{})
+	HasOnlyOneReturn(context.Context, struct{}) interface{}
+	HasMoreThanTwoReturn(context.Context, struct{}) (interface{}, interface{}, interface{})
+	FirstReturnIsNotAStruct(context.Context, struct{}) (interface{}, error)
+	SecondReturnIsNotAnError(context.Context, struct{}) (struct{}, interface{})
+	unexportedMethod(context.Context, getItemRequest) (getItemResponse, error)
+}
+
+type getItemRequest struct{}
+
+type getItemResponse struct{}
+
+func TestBuildServiceMethods(t *testing.T) {
+	t.Parallel()
+
+	testCases := []struct {
+		scenario string
+		service  interface{}
+		expected []grpcReflect.ServiceMethod
+	}{
+		{
+			scenario: "no method",
+			service:  struct{}{},
+			expected: []grpcReflect.ServiceMethod{},
+		},
+		{
+			scenario: "interface with multiple cases",
+			service:  (*testServer)(nil),
+			expected: []grpcReflect.ServiceMethod{
+				{
+					Name:   "GetItem",
+					Input:  &getItemRequest{},
+					Output: &getItemResponse{},
+				},
+			},
+		},
+		{
+			scenario: "generated server",
+			service:  (*grpctest.ItemServiceServer)(nil),
+			expected: []grpcReflect.ServiceMethod{
+				{
+					Name:           "CreateItems",
+					Input:          &grpctest.Item{},
+					Output:         &grpctest.CreateItemsResponse{},
+					IsClientStream: true,
+				},
+				{
+					Name:   "GetItem",
+					Input:  &grpctest.GetItemRequest{},
+					Output: &grpctest.Item{},
+				},
+				{
+					Name:           "ListItems",
+					Input:          &grpctest.ListItemsRequest{},
+					Output:         &grpctest.Item{},
+					IsServerStream: true,
+				},
+				{
+					Name:           "TransformItems",
+					Input:          &grpctest.Item{},
+					Output:         &grpctest.Item{},
+					IsClientStream: true,
+					IsServerStream: true,
+				},
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		tc := tc
+		t.Run(tc.scenario, func(t *testing.T) {
+			t.Parallel()
+
+			actual := grpcReflect.FindServiceMethods(tc.service)
+
+			assert.Equal(t, tc.expected, actual)
+		})
+	}
+}
 
 // nolint: govet
 func TestUnwrapType(t *testing.T) {
@@ -176,6 +268,77 @@ func TestSetPtrValue(t *testing.T) {
 				assert.NotPanics(t, run)
 			} else {
 				assert.PanicsWithError(t, tc.expectedError, run)
+			}
+		})
+	}
+}
+
+func TestParseRegisterFunc(t *testing.T) {
+	t.Parallel()
+
+	testCases := []struct {
+		scenario            string
+		input               interface{}
+		expectedError       string
+		expectedServiceDesc grpc.ServiceDesc
+		expectedInstance    interface{}
+	}{
+		{
+			scenario:      "nil",
+			expectedError: "not a function: <nil>",
+		},
+		{
+			scenario:      "int",
+			input:         42,
+			expectedError: "not a function: int",
+		},
+		{
+			scenario:      "custom function",
+			input:         func() {},
+			expectedError: "not a register function: func()",
+		},
+		{
+			scenario:      "function with only service registrar",
+			input:         func(*grpc.ServiceRegistrar) {},
+			expectedError: "not a register function: func(*grpc.ServiceRegistrar)",
+		},
+		{
+			scenario:      "function with service registrar and int",
+			input:         func(*grpc.ServiceRegistrar, int) {},
+			expectedError: "not a register function: func(*grpc.ServiceRegistrar, int)",
+		},
+		{
+			scenario:      "function with more than two inputs",
+			input:         func(*grpc.ServiceRegistrar, grpctest.ItemServiceServer, int) {},
+			expectedError: "not a register function: func(*grpc.ServiceRegistrar, grpctest.ItemServiceServer, int)",
+		},
+		{
+			scenario:      "function with output",
+			input:         func(*grpc.ServiceRegistrar, grpctest.ItemServiceServer) error { return nil },
+			expectedError: "not a register function: func(*grpc.ServiceRegistrar, grpctest.ItemServiceServer) error",
+		},
+		{
+			scenario:            "success",
+			input:               grpctest.RegisterItemServiceServer,
+			expectedServiceDesc: grpctest.ItemService_ServiceDesc,
+			expectedInstance:    (*grpctest.ItemServiceServer)(nil),
+		},
+	}
+
+	for _, tc := range testCases {
+		tc := tc
+		t.Run(tc.scenario, func(t *testing.T) {
+			t.Parallel()
+
+			if tc.expectedError != "" {
+				assert.PanicsWithError(t, tc.expectedError, func() {
+					grpcReflect.ParseRegisterFunc(tc.input)
+				})
+			} else {
+				serviceDesc, instance := grpcReflect.ParseRegisterFunc(tc.input)
+
+				assert.Equal(t, tc.expectedServiceDesc, serviceDesc)
+				assert.Equal(t, tc.expectedInstance, instance)
 			}
 		})
 	}

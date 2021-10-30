@@ -1,9 +1,262 @@
 package reflect
 
 import (
+	"context"
 	"fmt"
 	"reflect"
+
+	"google.golang.org/grpc"
 )
+
+const (
+	unaryNumInput               = 2
+	unaryNumOutput              = 2
+	clientStreamNumInput        = 1
+	clientStreamNumOutput       = 1
+	serverStreamNumInput        = 2
+	serverStreamNumOutput       = 1
+	clientServerStreamNumInput  = 1
+	clientServerStreamNumOutput = 1
+	recvNumInput                = 0
+	recvNumOutput               = 2
+	sendNumInput                = 1
+	sendNumOutput               = 1
+	sendCloseNumInput           = 1
+	sendCloseNumOutput          = 1
+
+	unaryInputPosition               = 1
+	unaryOutputPosition              = 0
+	clientStreamPosition             = 0
+	clientStreamInputPosition        = 0
+	clientStreamOutputPosition       = 0
+	serverStreamPosition             = 1
+	serverStreamInputPosition        = 0
+	serverStreamOutputPosition       = 0
+	clientServerStreamPosition       = 0
+	clientServerStreamInputPosition  = 0
+	clientServerStreamOutputPosition = 0
+
+	methodNameSendAndClose = "SendAndClose"
+	methodNameRecv         = "Recv"
+	methodNameSend         = "Send"
+)
+
+// ServiceMethod provides all information about a service method.
+type ServiceMethod struct {
+	Name           string
+	Input          interface{}
+	Output         interface{}
+	IsClientStream bool
+	IsServerStream bool
+}
+
+type serviceRegistrarFunc func(desc *grpc.ServiceDesc, impl interface{})
+
+func (f serviceRegistrarFunc) RegisterService(desc *grpc.ServiceDesc, impl interface{}) {
+	f(desc, impl)
+}
+
+// FindServiceMethods finds all the service methods using reflection on the server.
+//
+//    reflect.FindServiceMethods((*grpctest.ItemServiceServer)(nil))
+func FindServiceMethods(svc interface{}) []ServiceMethod {
+	typeOf := UnwrapType(svc)
+	numMethods := typeOf.NumMethod()
+	result := make([]ServiceMethod, 0, numMethods)
+
+	for i := 0; i < numMethods; i++ {
+		method := typeOf.Method(i)
+
+		if svc := getMethodInfo(method); svc != nil {
+			result = append(result, *svc)
+		}
+	}
+
+	return result
+}
+
+func getMethodInfo(method reflect.Method) *ServiceMethod {
+	if isUnary(method) {
+		return &ServiceMethod{
+			Name:   method.Name,
+			Input:  methodInput(method, unaryInputPosition),
+			Output: methodOutput(method, unaryOutputPosition),
+		}
+	}
+
+	if isClientStream(method) {
+		sendAndClose, _ := method.Type.In(clientStreamPosition).MethodByName(methodNameSendAndClose)
+		recv, _ := method.Type.In(clientStreamPosition).MethodByName(methodNameRecv)
+
+		return &ServiceMethod{
+			Name:           method.Name,
+			Input:          methodOutput(recv, clientStreamInputPosition),
+			Output:         methodInput(sendAndClose, clientStreamOutputPosition),
+			IsClientStream: true,
+		}
+	}
+
+	if isServerStream(method) {
+		send, _ := method.Type.In(serverStreamPosition).MethodByName(methodNameSend)
+
+		return &ServiceMethod{
+			Name:           method.Name,
+			Input:          methodInput(method, serverStreamInputPosition),
+			Output:         methodInput(send, serverStreamOutputPosition),
+			IsServerStream: true,
+		}
+	}
+
+	if isClientServerStream(method) {
+		send, _ := method.Type.In(clientServerStreamPosition).MethodByName(methodNameSend)
+		recv, _ := method.Type.In(clientServerStreamPosition).MethodByName(methodNameRecv)
+
+		return &ServiceMethod{
+			Name:           method.Name,
+			Input:          methodOutput(recv, clientServerStreamInputPosition),
+			Output:         methodInput(send, clientServerStreamOutputPosition),
+			IsClientStream: true,
+			IsServerStream: true,
+		}
+	}
+
+	return nil
+}
+
+func isUnary(method reflect.Method) bool {
+	return method.IsExported() &&
+		method.Type.NumIn() == unaryNumInput &&
+		implementsContext(method.Type.In(0)) &&
+		isStruct(method.Type.In(unaryInputPosition)) &&
+		method.Type.NumOut() == unaryNumOutput &&
+		isStruct(method.Type.Out(unaryOutputPosition)) &&
+		implementsError(method.Type.Out(1))
+}
+
+func isClientStream(method reflect.Method) bool {
+	return method.IsExported() &&
+		method.Type.NumIn() == clientStreamNumInput &&
+		implementsClientStream(method.Type.In(clientStreamPosition)) &&
+		method.Type.NumOut() == clientStreamNumOutput &&
+		implementsError(method.Type.Out(0))
+}
+
+func isServerStream(method reflect.Method) bool {
+	return method.IsExported() &&
+		method.Type.NumIn() == serverStreamNumInput &&
+		isStruct(method.Type.In(clientStreamInputPosition)) &&
+		implementsServerStream(method.Type.In(serverStreamPosition)) &&
+		method.Type.NumOut() == serverStreamNumOutput &&
+		implementsError(method.Type.Out(0))
+}
+
+func isClientServerStream(method reflect.Method) bool {
+	return method.IsExported() &&
+		method.Type.NumIn() == clientServerStreamNumInput &&
+		implementsClientServerStream(method.Type.In(clientServerStreamPosition)) &&
+		method.Type.NumOut() == clientServerStreamNumOutput &&
+		implementsError(method.Type.Out(0))
+}
+
+func isSendAndClose(method reflect.Method) bool {
+	return method.IsExported() &&
+		method.Type.NumIn() == sendCloseNumInput &&
+		isStruct(method.Type.In(clientStreamOutputPosition)) &&
+		method.Type.NumOut() == sendCloseNumOutput &&
+		implementsError(method.Type.Out(0))
+}
+
+func isRecv(method reflect.Method) bool {
+	return method.IsExported() &&
+		method.Type.NumIn() == recvNumInput &&
+		method.Type.NumOut() == recvNumOutput &&
+		isStruct(method.Type.Out(clientStreamInputPosition)) &&
+		implementsError(method.Type.Out(1))
+}
+
+func isSend(method reflect.Method) bool {
+	return method.IsExported() &&
+		method.Type.NumIn() == sendNumInput &&
+		method.Type.NumOut() == sendNumOutput &&
+		isStruct(method.Type.In(serverStreamOutputPosition)) &&
+		implementsError(method.Type.Out(0))
+}
+
+func implementsContext(t reflect.Type) bool {
+	return t.Implements(UnwrapType((*context.Context)(nil)))
+}
+
+func implementsError(t reflect.Type) bool {
+	return t.Implements(UnwrapType((*error)(nil)))
+}
+
+func implementsGRPCServerStream(t reflect.Type) bool {
+	return isInterface(t) && t.Implements(UnwrapType((*grpc.ServerStream)(nil)))
+}
+
+func implementsClientStream(t reflect.Type) bool {
+	if !implementsGRPCServerStream(t) {
+		return false
+	}
+
+	if m, exists := t.MethodByName(methodNameSendAndClose); !exists || !isSendAndClose(m) {
+		return false
+	}
+
+	if m, exists := t.MethodByName(methodNameRecv); !exists || !isRecv(m) {
+		return false
+	}
+
+	return true
+}
+
+func implementsServerStream(t reflect.Type) bool {
+	if !implementsGRPCServerStream(t) {
+		return false
+	}
+
+	if m, exists := t.MethodByName(methodNameSend); !exists || !isSend(m) {
+		return false
+	}
+
+	return true
+}
+
+func implementsClientServerStream(t reflect.Type) bool {
+	if !implementsGRPCServerStream(t) {
+		return false
+	}
+
+	if m, exists := t.MethodByName(methodNameSend); !exists || !isSend(m) {
+		return false
+	}
+
+	if m, exists := t.MethodByName(methodNameRecv); !exists || !isRecv(m) {
+		return false
+	}
+
+	return true
+}
+
+func implementsServiceRegistrar(t reflect.Type) bool {
+	return t.Implements(UnwrapType((*grpc.ServiceRegistrar)(nil)))
+}
+
+func isStruct(t reflect.Type) bool {
+	return UnwrapType(t).Kind() == reflect.Struct
+}
+
+func isInterface(v interface{}) bool {
+	return UnwrapType(v).Kind() == reflect.Interface
+}
+
+func methodInput(method reflect.Method, position int) interface{} {
+	return New(method.Type.In(position))
+}
+
+func methodOutput(method reflect.Method, position int) interface{} {
+	return New(method.Type.Out(position))
+}
 
 // IsSlice checks whether the input is a slice.
 func IsSlice(v interface{}) error {
@@ -89,4 +342,38 @@ func SetPtrValue(ptr interface{}, v interface{}) {
 
 	valueOf := reflect.ValueOf(ptr)
 	valueOf.Elem().Set(UnwrapValue(v))
+}
+
+// ParseRegisterFunc parses te register function and returns the service description and the interface of the server.
+func ParseRegisterFunc(v interface{}) (grpc.ServiceDesc, interface{}) {
+	typeOf := reflect.TypeOf(v)
+
+	if typeOf == nil || typeOf.Kind() != reflect.Func {
+		panic(fmt.Errorf("%w: %T", ErrIsNotFunc, v))
+	}
+
+	if typeOf.NumIn() != 2 ||
+		!implementsServiceRegistrar(typeOf.In(0)) ||
+		!isInterface(typeOf.In(1)) ||
+		typeOf.NumOut() != 0 {
+		panic(fmt.Errorf("%w: %T", ErrIsNotRegisterFunc, v))
+	}
+
+	serviceDesc := (*grpc.ServiceDesc)(nil)
+
+	sr := serviceRegistrarFunc(func(desc *grpc.ServiceDesc, _ interface{}) {
+		serviceDesc = desc
+	})
+
+	reflect.ValueOf(v).
+		Call([]reflect.Value{
+			reflect.ValueOf(sr),
+			reflect.New(UnwrapType(typeOf.In(1))).Elem(),
+		})
+
+	if serviceDesc == nil {
+		panic(ErrCouldNotReadServiceDesc)
+	}
+
+	return *serviceDesc, NewZero(typeOf.In(1))
 }
