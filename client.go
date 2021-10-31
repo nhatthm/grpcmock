@@ -121,7 +121,7 @@ func InvokeClientStream(
 	return stream.RecvMsg(out)
 }
 
-// InvokeBidirectionalStream invokes a client-server-stream method.
+// InvokeBidirectionalStream invokes a bidirectional-stream method.
 func InvokeBidirectionalStream(
 	ctx context.Context,
 	method string,
