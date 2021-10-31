@@ -501,7 +501,7 @@ func TestSendAll(t *testing.T) {
 					Return(errors.New("send error"))
 			}),
 			input:         defaultItems(),
-			expectedError: `could not send msg: send error`,
+			expectedError: `send error`,
 		},
 		{
 			scenario: "success with a slice of struct",
@@ -584,7 +584,7 @@ func TestRecvAll(t *testing.T) {
 					Return(errors.New("recv error"))
 			}),
 			output:         &[]grpctest.Item{},
-			expectedError:  `could not recv msg: recv error`,
+			expectedError:  `recv error`,
 			expectedOutput: &[]grpctest.Item{},
 		},
 		{
@@ -656,7 +656,7 @@ func TestSendAndRecvAll_SendError(t *testing.T) {
 	result := make([]*grpctest.Item, 0)
 	err := grpcmock.SendAndRecvAll([]*grpctest.Item{{Id: 42}}, &result)(stream)
 
-	expected := "could not send msg: send error"
+	expected := "send error"
 
 	assert.EqualError(t, err, expected)
 }
@@ -675,7 +675,7 @@ func TestSendAndRecvAll_RecvError(t *testing.T) {
 	result := make([]*grpctest.Item, 0)
 	err := grpcmock.SendAndRecvAll([]*grpctest.Item{}, &result)(stream)
 
-	expected := "could not recv msg: recv error"
+	expected := "recv error"
 
 	assert.EqualError(t, err, expected)
 }

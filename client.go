@@ -257,7 +257,7 @@ func SendAll(in interface{}) ClientStreamHandler {
 			msg := grpcReflect.NewValue(valueOf.Index(i).Interface())
 
 			if err := stream.SendMsg(msg); err != nil {
-				return fmt.Errorf("could not send msg: %w", err)
+				return err
 			}
 		}
 
@@ -327,7 +327,7 @@ func receiveMsg(stream grpc.ClientStream, out reflect.Value, msgType reflect.Typ
 		}
 
 		if err != nil {
-			return reflect.Value{}, fmt.Errorf("could not recv msg: %w", err)
+			return reflect.Value{}, err
 		}
 
 		out = appendMessage(out, msg)
