@@ -17,29 +17,56 @@ func TestParseMethod(t *testing.T) {
 		expectedError  string
 	}{
 		{
-			scenario:      "method is not valid",
-			method:        "://",
-			expectedError: `parse "://": missing protocol scheme`,
+			scenario:      "method is empty",
+			method:        "",
+			expectedError: "malformed method",
 		},
 		{
-			scenario:      "method is missing",
-			method:        "tcp://:8000/",
-			expectedError: `missing method`,
+			scenario:      "method is /",
+			method:        "/",
+			expectedError: "malformed method",
 		},
 		{
-			scenario:       "full url",
-			method:         "tcp://127.0.0.1:8000/server/GetItem",
-			expectedAddr:   "tcp://127.0.0.1:8000",
+			scenario:      "method is //",
+			method:        "//",
+			expectedError: "malformed method",
+		},
+		{
+			scenario:      "missing method",
+			method:        "/server/",
+			expectedError: "malformed method",
+		},
+		{
+			scenario:      "missing service",
+			method:        "//method",
+			expectedError: "malformed method",
+		},
+		{
+			scenario:       "method without leading /",
+			method:         "server/GetItem",
 			expectedMethod: "/server/GetItem",
 		},
 		{
-			scenario:       "method only",
+			scenario:       "method with leading /",
 			method:         "/server/GetItem",
 			expectedMethod: "/server/GetItem",
 		},
 		{
-			scenario:       "relative method",
-			method:         "server/GetItem",
+			scenario:       "method only port",
+			method:         ":9090/server/GetItem",
+			expectedAddr:   ":9090",
+			expectedMethod: "/server/GetItem",
+		},
+		{
+			scenario:       "method with ip and port",
+			method:         "127.0.0.1:9090/server/GetItem",
+			expectedAddr:   "127.0.0.1:9090",
+			expectedMethod: "/server/GetItem",
+		},
+		{
+			scenario:       "method with hostname and port",
+			method:         "localhost:9090/server/GetItem",
+			expectedAddr:   "localhost:9090",
 			expectedMethod: "/server/GetItem",
 		},
 	}

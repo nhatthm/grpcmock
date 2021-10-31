@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"io"
 	"net"
-	"net/url"
 	"reflect"
+	"regexp"
 	"strings"
 
 	"google.golang.org/grpc"
@@ -16,6 +16,8 @@ import (
 
 	grpcReflect "github.com/nhatthm/grpcmock/reflect"
 )
+
+var methodRegex = regexp.MustCompile(`/?[^/]+/[^/]+$`)
 
 // ContextDialer is to set up the dialer.
 type ContextDialer = func(context.Context, string) (net.Conn, error)
@@ -161,24 +163,16 @@ func prepInvoke(ctx context.Context, method string, opts ...InvokeOption) (conte
 }
 
 func parseMethod(method string) (string, string, error) {
-	u, err := url.Parse(method)
-	if err != nil {
-		return "", "", err
+	if !methodRegex.MatchString(method) {
+		return "", "", ErrMalformedMethod
 	}
 
-	method = fmt.Sprintf("/%s", strings.TrimLeft(u.Path, "/"))
+	addr := methodRegex.ReplaceAllString(method, "")
 
-	if method == "/" {
-		return "", "", ErrMissingMethod
-	}
+	method = strings.Replace(method, addr, "", 1)
+	method = fmt.Sprintf("/%s", strings.TrimLeft(method, "/"))
 
-	addr := url.URL{
-		Scheme: u.Scheme,
-		User:   u.User,
-		Host:   u.Host,
-	}
-
-	return addr.String(), method, nil
+	return addr, method, nil
 }
 
 func invokeOptions(ctx context.Context, opts ...InvokeOption) (context.Context, []grpc.DialOption, []grpc.CallOption) {

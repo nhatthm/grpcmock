@@ -28,7 +28,7 @@ func TestInvokeUnary_MethodError(t *testing.T) {
 	t.Parallel()
 
 	err := grpcmock.InvokeUnary(context.Background(), "://", nil, nil)
-	expected := `coulld not parse method url: parse "://": missing protocol scheme`
+	expected := `coulld not parse method url: malformed method`
 
 	assert.EqualError(t, err, expected)
 }
@@ -40,7 +40,7 @@ func TestInvokeUnary_DialError(t *testing.T) {
 		return nil, errors.New("dial error")
 	}
 
-	err := grpcmock.InvokeUnary(context.Background(), "NotFound", nil, nil,
+	err := grpcmock.InvokeUnary(context.Background(), "Service/NotFound", nil, nil,
 		grpcmock.WithContextDialer(dialer),
 		grpcmock.WithInsecure(),
 	)
@@ -52,7 +52,7 @@ func TestInvokeUnary_DialError(t *testing.T) {
 func TestInvokeUnary_WithoutInsecure(t *testing.T) {
 	t.Parallel()
 
-	err := grpcmock.InvokeUnary(context.Background(), "NotFound", nil, nil)
+	err := grpcmock.InvokeUnary(context.Background(), "Service/NotFound", nil, nil)
 	expected := "grpc: no transport security set (use grpc.WithInsecure() explicitly or set credentials)"
 
 	assert.EqualError(t, err, expected)
@@ -131,7 +131,7 @@ func TestInvokeServerStream_DialError(t *testing.T) {
 		return nil, errors.New("dial error")
 	}
 
-	err := grpcmock.InvokeServerStream(context.Background(), "NotFound", nil, nil,
+	err := grpcmock.InvokeServerStream(context.Background(), "Service/NotFound", nil, nil,
 		grpcmock.WithContextDialer(dialer),
 		grpcmock.WithInsecure(),
 	)
@@ -143,7 +143,7 @@ func TestInvokeServerStream_DialError(t *testing.T) {
 func TestInvokeServerStream_WithoutInsecure(t *testing.T) {
 	t.Parallel()
 
-	err := grpcmock.InvokeServerStream(context.Background(), "NotFound", nil, nil)
+	err := grpcmock.InvokeServerStream(context.Background(), "Service/NotFound", nil, nil)
 	expected := "grpc: no transport security set (use grpc.WithInsecure() explicitly or set credentials)"
 
 	assert.EqualError(t, err, expected)
@@ -154,7 +154,7 @@ func TestInvokeServerStream_NoHandlerShouldBeFine(t *testing.T) {
 
 	dialer := testSrv.StartServer(t)
 
-	err := grpcmock.InvokeServerStream(context.Background(), "NotFound", nil, nil,
+	err := grpcmock.InvokeServerStream(context.Background(), "Service/NotFound", nil, nil,
 		grpcmock.WithContextDialer(dialer),
 		grpcmock.WithInsecure(),
 	)
@@ -257,7 +257,7 @@ func TestInvokeClientStream_DialError(t *testing.T) {
 		return nil, errors.New("dial error")
 	}
 
-	err := grpcmock.InvokeClientStream(context.Background(), "NotFound", nil, nil,
+	err := grpcmock.InvokeClientStream(context.Background(), "Service/NotFound", nil, nil,
 		grpcmock.WithContextDialer(dialer),
 		grpcmock.WithInsecure(),
 	)
@@ -269,7 +269,7 @@ func TestInvokeClientStream_DialError(t *testing.T) {
 func TestInvokeClientStream_WithoutInsecure(t *testing.T) {
 	t.Parallel()
 
-	err := grpcmock.InvokeClientStream(context.Background(), "NotFound", nil, nil)
+	err := grpcmock.InvokeClientStream(context.Background(), "Service/NotFound", nil, nil)
 	expected := "grpc: no transport security set (use grpc.WithInsecure() explicitly or set credentials)"
 
 	assert.EqualError(t, err, expected)
@@ -365,7 +365,7 @@ func TestInvokeBidirectionalStream_DialError(t *testing.T) {
 		return nil, errors.New("dial error")
 	}
 
-	err := grpcmock.InvokeBidirectionalStream(context.Background(), "NotFound", nil,
+	err := grpcmock.InvokeBidirectionalStream(context.Background(), "Service/NotFound", nil,
 		grpcmock.WithContextDialer(dialer),
 		grpcmock.WithInsecure(),
 	)
@@ -377,7 +377,7 @@ func TestInvokeBidirectionalStream_DialError(t *testing.T) {
 func TestInvokeBidirectionalStream_WithoutInsecure(t *testing.T) {
 	t.Parallel()
 
-	err := grpcmock.InvokeBidirectionalStream(context.Background(), "NotFound", nil)
+	err := grpcmock.InvokeBidirectionalStream(context.Background(), "Service/NotFound", nil)
 	expected := "grpc: no transport security set (use grpc.WithInsecure() explicitly or set credentials)"
 
 	assert.EqualError(t, err, expected)
