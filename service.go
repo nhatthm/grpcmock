@@ -12,7 +12,7 @@ const (
 	// MethodTypeServerStream indicates that the method is server-stream.
 	MethodTypeServerStream MethodType = "ServerStream"
 	// MethodTypeBidirectionalStream indicates that the method is bidirectional-stream.
-	MethodTypeBidirectionalStream MethodType = "ClientAndServerStream"
+	MethodTypeBidirectionalStream MethodType = "BidirectionalStream"
 )
 
 // MethodType is service method type.
