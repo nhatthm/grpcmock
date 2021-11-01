@@ -95,11 +95,11 @@ func TestInvokeUnary_Success(t *testing.T) {
 
 		actualRequest = request
 
-		response := &grpctest.Item{
-			Id:     request.Id,
-			Locale: locale,
-			Name:   "Foobar",
-		}
+		response := testSrv.BuildItem().
+			WithID(request.Id).
+			WithLocale(locale).
+			WithName("Foobar").
+			New()
 
 		return response, nil
 	}))
@@ -165,7 +165,7 @@ func TestInvokeServerStream_NoHandlerShouldBeFine(t *testing.T) {
 func TestInvokeServerStream_UnaryMethod(t *testing.T) {
 	t.Parallel()
 
-	item := &grpctest.Item{Id: 42}
+	item := testSrv.DefaultItem()
 
 	dialer := testSrv.StartServer(t, testSrv.GetItem(func(context.Context, *grpctest.GetItemRequest) (*grpctest.Item, error) {
 		return item, nil
@@ -207,7 +207,7 @@ func TestInvokeServerStream_Success(t *testing.T) {
 			}
 		}
 
-		for _, i := range defaultItems() {
+		for _, i := range testSrv.DefaultItems() {
 			i.Locale = locale
 
 			if err := server.Send(i); err != nil {
@@ -336,7 +336,7 @@ func TestInvokeClientStream_Success(t *testing.T) {
 		})
 	}))
 
-	items := defaultItems()
+	items := testSrv.DefaultItems()
 	result := &grpctest.CreateItemsResponse{}
 
 	err := grpcmock.InvokeClientStream(context.Background(),
@@ -443,7 +443,7 @@ func TestInvokeBidirectionalStream_Success(t *testing.T) {
 		return nil
 	}))
 
-	items := defaultItems()
+	items := testSrv.DefaultItems()
 	result := make([]*grpctest.Item, 0)
 
 	err := grpcmock.InvokeBidirectionalStream(context.Background(),
@@ -500,18 +500,18 @@ func TestSendAll(t *testing.T) {
 				s.On("SendMsg", mock.Anything).
 					Return(errors.New("send error"))
 			}),
-			input:         defaultItems(),
+			input:         testSrv.DefaultItems(),
 			expectedError: `send error`,
 		},
 		{
 			scenario: "success with a slice of struct",
 			mockStream: grpcMocker.MockClientStream(func(s *grpcMocker.ClientStream) {
-				for _, i := range defaultItems() {
+				for _, i := range testSrv.DefaultItems() {
 					s.On("SendMsg", i).Once().
 						Return(nil)
 				}
 			}),
-			input: defaultItems(),
+			input: testSrv.DefaultItems(),
 		},
 	}
 
@@ -535,7 +535,7 @@ func TestRecvAll(t *testing.T) {
 	t.Parallel()
 
 	sendItems := func(s *grpcMocker.ClientStream) {
-		for _, i := range defaultItems() {
+		for _, i := range testSrv.DefaultItems() {
 			i := i
 
 			s.On("RecvMsg", &grpctest.Item{}).Once().
@@ -725,13 +725,13 @@ func TestSendAndRecvAll_Success(t *testing.T) {
 				s.On("RecvMsg", mock.Anything).
 					Return(io.EOF)
 
-				s.On("SendMsg", &grpctest.Item{Id: 42}).
+				s.On("SendMsg", testSrv.DefaultItem()).
 					Return(nil)
 
 				s.On("CloseSend").
 					Return(nil)
 			}),
-			input:          []*grpctest.Item{{Id: 42}},
+			input:          []*grpctest.Item{testSrv.DefaultItem()},
 			expectedResult: []*grpctest.Item{},
 		},
 		{
@@ -770,20 +770,5 @@ func TestSendAndRecvAll_Success(t *testing.T) {
 				grpcAssert.EqualMessage(t, tc.expectedResult[i], result[i])
 			}
 		})
-	}
-}
-
-func defaultItems() []*grpctest.Item {
-	return []*grpctest.Item{
-		{
-			Id:     41,
-			Locale: "en-US",
-			Name:   "Item #41",
-		},
-		{
-			Id:     42,
-			Locale: "en-US",
-			Name:   "Item #42",
-		},
 	}
 }
