@@ -250,6 +250,17 @@ func isInterface(v interface{}) bool {
 	return UnwrapType(v).Kind() == reflect.Interface
 }
 
+// IsNil checks whether the given value is nil.
+func IsNil(v interface{}) bool {
+	if v == nil {
+		return true
+	}
+
+	t := reflect.TypeOf(v)
+
+	return reflect.ValueOf(v) == reflect.Zero(t)
+}
+
 func methodInput(method reflect.Method, position int) interface{} {
 	return New(method.Type.In(position))
 }
@@ -284,6 +295,23 @@ func UnwrapType(v interface{}) reflect.Type {
 	}
 
 	return t
+}
+
+// UnwrapPtrSliceType checks whether the given value is a pointer of a slice and return the type.
+func UnwrapPtrSliceType(v interface{}) (reflect.Type, error) {
+	typeOfPtr := reflect.TypeOf(v)
+
+	if typeOfPtr == nil || typeOfPtr.Kind() != reflect.Ptr {
+		return nil, fmt.Errorf("%w: %T", ErrIsNotPtr, v)
+	}
+
+	typeOfSlice := typeOfPtr.Elem()
+
+	if typeOfSlice.Kind() != reflect.Slice {
+		return nil, fmt.Errorf("%w: %T", ErrIsNotSlice, v)
+	}
+
+	return typeOfSlice, nil
 }
 
 // UnwrapValue returns a reflect.Value of the given input. If the value is a pointer, UnwrapValue will return the underlay

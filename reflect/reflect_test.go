@@ -102,6 +102,49 @@ func TestBuildServiceMethods(t *testing.T) {
 	}
 }
 
+func TestIsNil(t *testing.T) {
+	t.Parallel()
+
+	testCases := []struct {
+		scenario string
+		input    interface{}
+		expected bool
+	}{
+		{
+			scenario: "nil",
+			input:    nil,
+			expected: true,
+		},
+		{
+			scenario: "nil of interface",
+			input:    (error)(nil),
+			expected: true,
+		},
+		{
+			scenario: "nil of interface",
+			input:    (*grpctest.ItemServiceServer)(nil),
+			expected: true,
+		},
+		{
+			scenario: "string is not nil",
+			input:    "foobar",
+		},
+		{
+			scenario: "int is not nil",
+			input:    42,
+		},
+	}
+
+	for _, tc := range testCases {
+		tc := tc
+		t.Run(tc.scenario, func(t *testing.T) {
+			t.Parallel()
+
+			assert.Equal(t, tc.expected, grpcReflect.IsNil(tc.input))
+		})
+	}
+}
+
 // nolint: govet
 func TestUnwrapType(t *testing.T) {
 	t.Parallel()
@@ -339,6 +382,56 @@ func TestParseRegisterFunc(t *testing.T) {
 
 				assert.Equal(t, tc.expectedServiceDesc, serviceDesc)
 				assert.Equal(t, tc.expectedInstance, instance)
+			}
+		})
+	}
+}
+
+func TestUnwrapPtrSliceType(t *testing.T) {
+	t.Parallel()
+
+	int42 := 42
+
+	testCases := []struct {
+		scenario       string
+		input          interface{}
+		expectedResult reflect.Type
+		expectedError  string
+	}{
+		{
+			scenario:      "nil",
+			expectedError: `not a pointer: <nil>`,
+		},
+		{
+			scenario:      "not a pointer",
+			input:         42,
+			expectedError: `not a pointer: int`,
+		},
+		{
+			scenario:      "not a slice",
+			input:         &int42,
+			expectedError: `not a slice: *int`,
+		},
+		{
+			scenario:       "success",
+			input:          &[]int{42},
+			expectedResult: reflect.TypeOf([]int{}),
+		},
+	}
+
+	for _, tc := range testCases {
+		tc := tc
+		t.Run(tc.scenario, func(t *testing.T) {
+			t.Parallel()
+
+			result, err := grpcReflect.UnwrapPtrSliceType(tc.input)
+
+			assert.Equal(t, tc.expectedResult, result)
+
+			if tc.expectedError == "" {
+				assert.NoError(t, err)
+			} else {
+				assert.EqualError(t, err, tc.expectedError)
 			}
 		})
 	}

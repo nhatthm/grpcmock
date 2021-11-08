@@ -2,11 +2,8 @@ package grpcmock
 
 import (
 	"context"
-	"errors"
 	"fmt"
-	"io"
 	"net"
-	"reflect"
 	"regexp"
 	"strings"
 
@@ -14,7 +11,7 @@ import (
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/test/bufconn"
 
-	grpcReflect "github.com/nhatthm/grpcmock/reflect"
+	grpcStream "github.com/nhatthm/grpcmock/stream"
 )
 
 var methodRegex = regexp.MustCompile(`/?[^/]+/[^/]+$`)
@@ -247,123 +244,20 @@ func WithCallOptions(opts ...grpc.CallOption) InvokeOption {
 // SendAll sends everything to the stream.
 func SendAll(in interface{}) ClientStreamHandler {
 	return func(stream grpc.ClientStream) error {
-		if err := grpcReflect.IsSlice(in); err != nil {
-			return err
-		}
-
-		valueOf := reflect.ValueOf(in)
-
-		for i := 0; i < valueOf.Len(); i++ {
-			msg := grpcReflect.NewValue(valueOf.Index(i).Interface())
-
-			if err := stream.SendMsg(msg); err != nil {
-				return err
-			}
-		}
-
-		return nil
+		return grpcStream.SendAll(stream, in)
 	}
 }
 
 // RecvAll reads everything from the stream and put into the output.
 func RecvAll(out interface{}) ClientStreamHandler {
 	return func(stream grpc.ClientStream) error {
-		outType, err := isPtrOfSlice(out)
-		if err != nil {
-			return err
-		}
-
-		newOut := reflect.MakeSlice(outType, 0, 0)
-
-		newOut, err = receiveMsg(stream, newOut, outType.Elem())
-		if err != nil {
-			return err
-		}
-
-		reflect.ValueOf(out).Elem().Set(newOut)
-
-		return nil
+		return grpcStream.RecvAll(stream, out)
 	}
 }
 
 // SendAndRecvAll sends and receives messages to and from grpc server in turn until server sends the io.EOF.
 func SendAndRecvAll(in interface{}, out interface{}) ClientStreamHandler {
 	return func(stream grpc.ClientStream) error {
-		errCh := make(chan error)
-
-		go func() {
-			defer close(errCh)
-
-			if err := RecvAll(out)(stream); err != nil {
-				errCh <- err
-
-				return
-			}
-		}()
-
-		if err := SendAll(in)(stream); err != nil {
-			return err
-		}
-
-		if err := stream.CloseSend(); err != nil {
-			return err
-		}
-
-		if err := <-errCh; err != nil {
-			return err
-		}
-
-		return nil
+		return grpcStream.SendAndRecvAll(stream, in, out)
 	}
-}
-
-func receiveMsg(stream grpc.ClientStream, out reflect.Value, msgType reflect.Type) (reflect.Value, error) {
-	for {
-		msg := grpcReflect.New(msgType)
-		err := stream.RecvMsg(msg)
-
-		if errors.Is(err, io.EOF) {
-			break
-		}
-
-		if err != nil {
-			return reflect.Value{}, err
-		}
-
-		out = appendMessage(out, msg)
-	}
-
-	return out, nil
-}
-
-func newSliceMessageValue(t reflect.Type, v reflect.Value) reflect.Value {
-	if t.Kind() != reflect.Ptr {
-		return v
-	}
-
-	result := reflect.New(t.Elem())
-
-	result.Elem().Set(newSliceMessageValue(t.Elem(), v))
-
-	return result
-}
-
-func appendMessage(s reflect.Value, v interface{}) reflect.Value {
-	return reflect.Append(s, newSliceMessageValue(s.Type().Elem(), grpcReflect.UnwrapValue(v)))
-}
-
-func isPtrOfSlice(v interface{}) (reflect.Type, error) {
-	typeOfPtr := reflect.TypeOf(v)
-
-	if typeOfPtr == nil || typeOfPtr.Kind() != reflect.Ptr {
-		return nil, fmt.Errorf("%T is not a pointer", v) // nolint: goerr113
-	}
-
-	typeOfSlice := typeOfPtr.Elem()
-
-	if typeOfSlice.Kind() != reflect.Slice {
-		return nil, fmt.Errorf("%T is not a slice", v) // nolint: goerr113
-	}
-
-	return typeOfSlice, nil
 }

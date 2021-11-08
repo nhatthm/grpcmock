@@ -561,20 +561,20 @@ func TestRecvAll(t *testing.T) {
 		{
 			scenario:      "output is nil",
 			mockStream:    grpcMocker.NoMockClientStream,
-			expectedError: `<nil> is not a pointer`,
+			expectedError: `not a pointer: <nil>`,
 		},
 		{
 			scenario:       "output is not a pointer",
 			mockStream:     grpcMocker.NoMockClientStream,
 			output:         grpctest.Item{},
-			expectedError:  `grpctest.Item is not a pointer`,
+			expectedError:  `not a pointer: grpctest.Item`,
 			expectedOutput: grpctest.Item{},
 		},
 		{
 			scenario:       "output is not a slice",
 			mockStream:     grpcMocker.NoMockClientStream,
 			output:         &grpctest.Item{},
-			expectedError:  `*grpctest.Item is not a slice`,
+			expectedError:  `not a slice: *grpctest.Item`,
 			expectedOutput: &grpctest.Item{},
 		},
 		{
