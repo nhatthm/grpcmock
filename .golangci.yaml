@@ -29,6 +29,7 @@ linters:
     - gomnd
     - ifshort
     - interfacer
+    - ireturn
     - lll
     - maligned
     - paralleltest

@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/mock"
 
 	"github.com/nhatthm/grpcmock/internal/grpctest"
-	grpcMocker "github.com/nhatthm/grpcmock/internal/mock/grpc"
+	grpcMock "github.com/nhatthm/grpcmock/internal/mock/grpc"
 	testSrv "github.com/nhatthm/grpcmock/internal/test/grpctest"
 	grpcStream "github.com/nhatthm/grpcmock/stream"
 )
@@ -18,24 +18,24 @@ func TestSendAll(t *testing.T) {
 
 	testCases := []struct {
 		scenario      string
-		mockStream    grpcMocker.ClientStreamMocker
+		mockStream    grpcMock.ClientStreamMocker
 		input         interface{}
 		expectedError string
 	}{
 		{
 			scenario:      "input is nil",
-			mockStream:    grpcMocker.NoMockClientStream,
+			mockStream:    grpcMock.NoMockClientStream,
 			expectedError: `not a slice: <nil>`,
 		},
 		{
 			scenario:      "input is not a slice",
-			mockStream:    grpcMocker.NoMockClientStream,
+			mockStream:    grpcMock.NoMockClientStream,
 			input:         &grpctest.Item{},
 			expectedError: `not a slice: *grpctest.Item`,
 		},
 		{
 			scenario: "send error",
-			mockStream: grpcMocker.MockClientStream(func(s *grpcMocker.ClientStream) {
+			mockStream: grpcMock.MockClientStream(func(s *grpcMock.ClientStream) {
 				s.On("SendMsg", mock.Anything).
 					Return(errors.New("send error"))
 			}),
@@ -44,7 +44,7 @@ func TestSendAll(t *testing.T) {
 		},
 		{
 			scenario: "success with a slice of struct",
-			mockStream: grpcMocker.MockClientStream(func(s *grpcMocker.ClientStream) {
+			mockStream: grpcMock.MockClientStream(func(s *grpcMock.ClientStream) {
 				for _, i := range testSrv.DefaultItems() {
 					s.On("SendMsg", i).Once().
 						Return(nil)

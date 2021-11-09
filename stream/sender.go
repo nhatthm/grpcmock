@@ -1,6 +1,7 @@
 package stream
 
 import (
+	"fmt"
 	"reflect"
 
 	grpcReflect "github.com/nhatthm/grpcmock/reflect"
@@ -20,8 +21,8 @@ type SendCloser interface {
 
 // SendAll sends all the messages from a given input.
 func SendAll(s Sender, in interface{}) error {
-	if err := grpcReflect.IsSlice(in); err != nil {
-		return err
+	if !grpcReflect.IsSlice(in) {
+		return fmt.Errorf("%w: %T", grpcReflect.ErrIsNotSlice, in)
 	}
 
 	valueOf := reflect.ValueOf(in)

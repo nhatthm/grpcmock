@@ -10,7 +10,7 @@ import (
 
 	grpcAssert "github.com/nhatthm/grpcmock/assert"
 	"github.com/nhatthm/grpcmock/internal/grpctest"
-	grpcMocker "github.com/nhatthm/grpcmock/internal/mock/grpc"
+	grpcMock "github.com/nhatthm/grpcmock/internal/mock/grpc"
 	testSrv "github.com/nhatthm/grpcmock/internal/test/grpctest"
 	grpcStream "github.com/nhatthm/grpcmock/stream"
 )
@@ -18,7 +18,7 @@ import (
 func TestSendAndRecvAll_SendError(t *testing.T) {
 	t.Parallel()
 
-	stream := grpcMocker.MockClientStream(func(s *grpcMocker.ClientStream) {
+	stream := grpcMock.MockClientStream(func(s *grpcMock.ClientStream) {
 		s.On("RecvMsg", mock.Anything).Maybe().
 			Return(io.EOF)
 
@@ -37,7 +37,7 @@ func TestSendAndRecvAll_SendError(t *testing.T) {
 func TestSendAndRecvAll_RecvError(t *testing.T) {
 	t.Parallel()
 
-	stream := grpcMocker.MockClientStream(func(s *grpcMocker.ClientStream) {
+	stream := grpcMock.MockClientStream(func(s *grpcMock.ClientStream) {
 		s.On("RecvMsg", mock.Anything).
 			Return(errors.New("recv error"))
 
@@ -56,7 +56,7 @@ func TestSendAndRecvAll_RecvError(t *testing.T) {
 func TestSendAndRecvAll_CloseSendError(t *testing.T) {
 	t.Parallel()
 
-	stream := grpcMocker.MockClientStream(func(s *grpcMocker.ClientStream) {
+	stream := grpcMock.MockClientStream(func(s *grpcMock.ClientStream) {
 		s.On("RecvMsg", mock.Anything).Maybe().
 			Return(io.EOF)
 
@@ -77,13 +77,13 @@ func TestSendAndRecvAll_Success_ClientStream(t *testing.T) {
 
 	testCases := []struct {
 		scenario       string
-		mockStream     grpcMocker.ClientStreamMocker
+		mockStream     grpcMock.ClientStreamMocker
 		input          []*grpctest.Item
 		expectedResult []*grpctest.Item
 	}{
 		{
 			scenario: "send zero and receive zero",
-			mockStream: grpcMocker.MockClientStream(func(s *grpcMocker.ClientStream) {
+			mockStream: grpcMock.MockClientStream(func(s *grpcMock.ClientStream) {
 				s.On("RecvMsg", mock.Anything).
 					Return(io.EOF)
 
@@ -94,7 +94,7 @@ func TestSendAndRecvAll_Success_ClientStream(t *testing.T) {
 		},
 		{
 			scenario: "send one and receive zero",
-			mockStream: grpcMocker.MockClientStream(func(s *grpcMocker.ClientStream) {
+			mockStream: grpcMock.MockClientStream(func(s *grpcMock.ClientStream) {
 				s.On("RecvMsg", mock.Anything).
 					Return(io.EOF)
 
@@ -109,7 +109,7 @@ func TestSendAndRecvAll_Success_ClientStream(t *testing.T) {
 		},
 		{
 			scenario: "send zero and receive one",
-			mockStream: grpcMocker.MockClientStream(func(s *grpcMocker.ClientStream) {
+			mockStream: grpcMock.MockClientStream(func(s *grpcMock.ClientStream) {
 				s.On("RecvMsg", mock.Anything).Once().
 					Run(func(args mock.Arguments) {
 						out := args.Get(0).(*grpctest.Item) // nolint: errcheck
@@ -151,13 +151,13 @@ func TestSendAndRecvAll_Success_ServerStream(t *testing.T) {
 
 	testCases := []struct {
 		scenario       string
-		mockStream     grpcMocker.ServerStreamMocker
+		mockStream     grpcMock.ServerStreamMocker
 		input          []*grpctest.Item
 		expectedResult []*grpctest.Item
 	}{
 		{
 			scenario: "send zero and receive zero",
-			mockStream: grpcMocker.MockServerStream(func(s *grpcMocker.ServerStream) {
+			mockStream: grpcMock.MockServerStream(func(s *grpcMock.ServerStream) {
 				s.On("RecvMsg", mock.Anything).
 					Return(io.EOF)
 			}),
@@ -165,7 +165,7 @@ func TestSendAndRecvAll_Success_ServerStream(t *testing.T) {
 		},
 		{
 			scenario: "send one and receive zero",
-			mockStream: grpcMocker.MockServerStream(func(s *grpcMocker.ServerStream) {
+			mockStream: grpcMock.MockServerStream(func(s *grpcMock.ServerStream) {
 				s.On("RecvMsg", mock.Anything).
 					Return(io.EOF)
 
@@ -177,7 +177,7 @@ func TestSendAndRecvAll_Success_ServerStream(t *testing.T) {
 		},
 		{
 			scenario: "send zero and receive one",
-			mockStream: grpcMocker.MockServerStream(func(s *grpcMocker.ServerStream) {
+			mockStream: grpcMock.MockServerStream(func(s *grpcMock.ServerStream) {
 				s.On("RecvMsg", mock.Anything).Once().
 					Run(func(args mock.Arguments) {
 						out := args.Get(0).(*grpctest.Item) // nolint: errcheck

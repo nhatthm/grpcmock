@@ -269,15 +269,18 @@ func methodOutput(method reflect.Method, position int) interface{} {
 	return New(method.Type.Out(position))
 }
 
-// IsSlice checks whether the input is a slice.
-func IsSlice(v interface{}) error {
+// IsPtr checks whether the input is a pointer and not nil.
+func IsPtr(v interface{}) bool {
 	typeOf := reflect.TypeOf(v)
 
-	if typeOf == nil || typeOf.Kind() != reflect.Slice {
-		return fmt.Errorf("%w: %T", ErrIsNotSlice, v)
-	}
+	return !IsNil(v) && typeOf.Kind() == reflect.Ptr
+}
 
-	return nil
+// IsSlice checks whether the input is a slice.
+func IsSlice(v interface{}) bool {
+	typeOf := reflect.TypeOf(v)
+
+	return typeOf != nil && typeOf.Kind() == reflect.Slice
 }
 
 // UnwrapType returns a reflect.Type of the given input. If the type is a pointer, UnwrapType will return the underlay

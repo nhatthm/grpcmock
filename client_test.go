@@ -20,7 +20,7 @@ import (
 	"github.com/nhatthm/grpcmock"
 	grpcAssert "github.com/nhatthm/grpcmock/assert"
 	"github.com/nhatthm/grpcmock/internal/grpctest"
-	grpcMocker "github.com/nhatthm/grpcmock/internal/mock/grpc"
+	grpcMock "github.com/nhatthm/grpcmock/internal/mock/grpc"
 	testSrv "github.com/nhatthm/grpcmock/internal/test/grpctest"
 )
 
@@ -479,24 +479,24 @@ func TestSendAll(t *testing.T) {
 
 	testCases := []struct {
 		scenario      string
-		mockStream    grpcMocker.ClientStreamMocker
+		mockStream    grpcMock.ClientStreamMocker
 		input         interface{}
 		expectedError string
 	}{
 		{
 			scenario:      "input is nil",
-			mockStream:    grpcMocker.NoMockClientStream,
+			mockStream:    grpcMock.NoMockClientStream,
 			expectedError: `not a slice: <nil>`,
 		},
 		{
 			scenario:      "input is not a slice",
-			mockStream:    grpcMocker.NoMockClientStream,
+			mockStream:    grpcMock.NoMockClientStream,
 			input:         &grpctest.Item{},
 			expectedError: `not a slice: *grpctest.Item`,
 		},
 		{
 			scenario: "send error",
-			mockStream: grpcMocker.MockClientStream(func(s *grpcMocker.ClientStream) {
+			mockStream: grpcMock.MockClientStream(func(s *grpcMock.ClientStream) {
 				s.On("SendMsg", mock.Anything).
 					Return(errors.New("send error"))
 			}),
@@ -505,7 +505,7 @@ func TestSendAll(t *testing.T) {
 		},
 		{
 			scenario: "success with a slice of struct",
-			mockStream: grpcMocker.MockClientStream(func(s *grpcMocker.ClientStream) {
+			mockStream: grpcMock.MockClientStream(func(s *grpcMock.ClientStream) {
 				for _, i := range testSrv.DefaultItems() {
 					s.On("SendMsg", i).Once().
 						Return(nil)
@@ -534,7 +534,7 @@ func TestSendAll(t *testing.T) {
 func TestRecvAll(t *testing.T) {
 	t.Parallel()
 
-	sendItems := func(s *grpcMocker.ClientStream) {
+	sendItems := func(s *grpcMock.ClientStream) {
 		for _, i := range testSrv.DefaultItems() {
 			i := i
 
@@ -553,33 +553,33 @@ func TestRecvAll(t *testing.T) {
 
 	testCases := []struct {
 		scenario       string
-		mockStream     grpcMocker.ClientStreamMocker
+		mockStream     grpcMock.ClientStreamMocker
 		output         interface{}
 		expectedOutput interface{}
 		expectedError  string
 	}{
 		{
 			scenario:      "output is nil",
-			mockStream:    grpcMocker.NoMockClientStream,
+			mockStream:    grpcMock.NoMockClientStream,
 			expectedError: `not a pointer: <nil>`,
 		},
 		{
 			scenario:       "output is not a pointer",
-			mockStream:     grpcMocker.NoMockClientStream,
+			mockStream:     grpcMock.NoMockClientStream,
 			output:         grpctest.Item{},
 			expectedError:  `not a pointer: grpctest.Item`,
 			expectedOutput: grpctest.Item{},
 		},
 		{
 			scenario:       "output is not a slice",
-			mockStream:     grpcMocker.NoMockClientStream,
+			mockStream:     grpcMock.NoMockClientStream,
 			output:         &grpctest.Item{},
 			expectedError:  `not a slice: *grpctest.Item`,
 			expectedOutput: &grpctest.Item{},
 		},
 		{
 			scenario: "recv error",
-			mockStream: grpcMocker.MockClientStream(func(s *grpcMocker.ClientStream) {
+			mockStream: grpcMock.MockClientStream(func(s *grpcMock.ClientStream) {
 				s.On("RecvMsg", mock.Anything).
 					Return(errors.New("recv error"))
 			}),
@@ -589,7 +589,7 @@ func TestRecvAll(t *testing.T) {
 		},
 		{
 			scenario:   "success with a slice of struct",
-			mockStream: grpcMocker.MockClientStream(sendItems),
+			mockStream: grpcMock.MockClientStream(sendItems),
 			output:     &[]grpctest.Item{},
 			expectedOutput: &[]grpctest.Item{
 				{
@@ -606,7 +606,7 @@ func TestRecvAll(t *testing.T) {
 		},
 		{
 			scenario:   "success with a slice of pointer",
-			mockStream: grpcMocker.MockClientStream(sendItems),
+			mockStream: grpcMock.MockClientStream(sendItems),
 			output:     &[]*grpctest.Item{},
 			expectedOutput: &[]*grpctest.Item{
 				{
@@ -645,7 +645,7 @@ func TestRecvAll(t *testing.T) {
 func TestSendAndRecvAll_SendError(t *testing.T) {
 	t.Parallel()
 
-	stream := grpcMocker.MockClientStream(func(s *grpcMocker.ClientStream) {
+	stream := grpcMock.MockClientStream(func(s *grpcMock.ClientStream) {
 		s.On("RecvMsg", mock.Anything).Maybe().
 			Return(io.EOF)
 
@@ -664,7 +664,7 @@ func TestSendAndRecvAll_SendError(t *testing.T) {
 func TestSendAndRecvAll_RecvError(t *testing.T) {
 	t.Parallel()
 
-	stream := grpcMocker.MockClientStream(func(s *grpcMocker.ClientStream) {
+	stream := grpcMock.MockClientStream(func(s *grpcMock.ClientStream) {
 		s.On("RecvMsg", mock.Anything).
 			Return(errors.New("recv error"))
 
@@ -683,7 +683,7 @@ func TestSendAndRecvAll_RecvError(t *testing.T) {
 func TestSendAndRecvAll_CloseSendError(t *testing.T) {
 	t.Parallel()
 
-	stream := grpcMocker.MockClientStream(func(s *grpcMocker.ClientStream) {
+	stream := grpcMock.MockClientStream(func(s *grpcMock.ClientStream) {
 		s.On("RecvMsg", mock.Anything).Maybe().
 			Return(io.EOF)
 
@@ -704,13 +704,13 @@ func TestSendAndRecvAll_Success(t *testing.T) {
 
 	testCases := []struct {
 		scenario       string
-		mockStream     grpcMocker.ClientStreamMocker
+		mockStream     grpcMock.ClientStreamMocker
 		input          []*grpctest.Item
 		expectedResult []*grpctest.Item
 	}{
 		{
 			scenario: "send zero and receive zero",
-			mockStream: grpcMocker.MockClientStream(func(s *grpcMocker.ClientStream) {
+			mockStream: grpcMock.MockClientStream(func(s *grpcMock.ClientStream) {
 				s.On("RecvMsg", mock.Anything).
 					Return(io.EOF)
 
@@ -721,7 +721,7 @@ func TestSendAndRecvAll_Success(t *testing.T) {
 		},
 		{
 			scenario: "send one and receive zero",
-			mockStream: grpcMocker.MockClientStream(func(s *grpcMocker.ClientStream) {
+			mockStream: grpcMock.MockClientStream(func(s *grpcMock.ClientStream) {
 				s.On("RecvMsg", mock.Anything).
 					Return(io.EOF)
 
@@ -736,7 +736,7 @@ func TestSendAndRecvAll_Success(t *testing.T) {
 		},
 		{
 			scenario: "send zero and receive one",
-			mockStream: grpcMocker.MockClientStream(func(s *grpcMocker.ClientStream) {
+			mockStream: grpcMock.MockClientStream(func(s *grpcMock.ClientStream) {
 				s.On("RecvMsg", mock.Anything).Once().
 					Run(func(args mock.Arguments) {
 						out := args.Get(0).(*grpctest.Item) // nolint: errcheck

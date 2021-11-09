@@ -145,6 +145,51 @@ func TestIsNil(t *testing.T) {
 	}
 }
 
+func TestIsPtr(t *testing.T) {
+	t.Parallel()
+
+	testCases := []struct {
+		scenario string
+		input    interface{}
+		expected bool
+	}{
+		{
+			scenario: "nil",
+			input:    nil,
+		},
+		{
+			scenario: "nil of interface",
+			input:    (error)(nil),
+		},
+		{
+			scenario: "nil of interface",
+			input:    (*grpctest.ItemServiceServer)(nil),
+		},
+		{
+			scenario: "string is not a pointer",
+			input:    "foobar",
+		},
+		{
+			scenario: "struct is not a pointer",
+			input:    grpctest.Item{},
+		},
+		{
+			scenario: "pointer",
+			input:    &grpctest.Item{},
+			expected: true,
+		},
+	}
+
+	for _, tc := range testCases {
+		tc := tc
+		t.Run(tc.scenario, func(t *testing.T) {
+			t.Parallel()
+
+			assert.Equal(t, tc.expected, grpcReflect.IsPtr(tc.input))
+		})
+	}
+}
+
 // nolint: govet
 func TestUnwrapType(t *testing.T) {
 	t.Parallel()
