@@ -11,7 +11,8 @@ import (
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/test/bufconn"
 
-	grpcStream "github.com/nhatthm/grpcmock/stream"
+	"github.com/nhatthm/grpcmock/errors"
+	"github.com/nhatthm/grpcmock/stream"
 )
 
 var methodRegex = regexp.MustCompile(`/?[^/]+/[^/]+$`)
@@ -20,15 +21,15 @@ var methodRegex = regexp.MustCompile(`/?[^/]+/[^/]+$`)
 type ContextDialer = func(context.Context, string) (net.Conn, error)
 
 // ClientStreamHandler handles a client stream.
-type ClientStreamHandler func(stream grpc.ClientStream) error
+type ClientStreamHandler func(s grpc.ClientStream) error
 
 // Handle handles a client stream.
-func (h ClientStreamHandler) Handle(stream grpc.ClientStream) error {
+func (h ClientStreamHandler) Handle(s grpc.ClientStream) error {
 	if h == nil {
 		return nil
 	}
 
-	return h(stream)
+	return h(s)
 }
 
 type invokeConfig struct {
@@ -71,20 +72,20 @@ func InvokeServerStream(
 
 	desc := &grpc.StreamDesc{ServerStreams: true}
 
-	stream, err := conn.NewStream(ctx, desc, method, callOpts...)
+	s, err := conn.NewStream(ctx, desc, method, callOpts...)
 	if err != nil {
 		return err
 	}
 
-	if err := stream.SendMsg(in); err != nil {
+	if err := s.SendMsg(in); err != nil {
 		return err
 	}
 
-	if err := stream.CloseSend(); err != nil {
+	if err := s.CloseSend(); err != nil {
 		return err
 	}
 
-	return handle.Handle(stream)
+	return handle.Handle(s)
 }
 
 // InvokeClientStream invokes a client-stream method.
@@ -102,20 +103,20 @@ func InvokeClientStream(
 
 	desc := &grpc.StreamDesc{ClientStreams: true}
 
-	stream, err := conn.NewStream(ctx, desc, method, callOpts...)
+	s, err := conn.NewStream(ctx, desc, method, callOpts...)
 	if err != nil {
 		return err
 	}
 
-	if err := handle.Handle(stream); err != nil {
+	if err := handle.Handle(s); err != nil {
 		return err
 	}
 
-	if err := stream.CloseSend(); err != nil {
+	if err := s.CloseSend(); err != nil {
 		return err
 	}
 
-	return stream.RecvMsg(out)
+	return s.RecvMsg(out)
 }
 
 // InvokeBidirectionalStream invokes a bidirectional-stream method.
@@ -135,12 +136,12 @@ func InvokeBidirectionalStream(
 		ServerStreams: true,
 	}
 
-	stream, err := conn.NewStream(ctx, desc, method, callOpts...)
+	s, err := conn.NewStream(ctx, desc, method, callOpts...)
 	if err != nil {
 		return err
 	}
 
-	return handle.Handle(stream)
+	return handle.Handle(s)
 }
 
 func prepInvoke(ctx context.Context, method string, opts ...InvokeOption) (context.Context, *grpc.ClientConn, string, []grpc.CallOption, error) {
@@ -161,7 +162,7 @@ func prepInvoke(ctx context.Context, method string, opts ...InvokeOption) (conte
 
 func parseMethod(method string) (string, string, error) {
 	if !methodRegex.MatchString(method) {
-		return "", "", ErrMalformedMethod
+		return "", "", errors.ErrMalformedMethod
 	}
 
 	addr := methodRegex.ReplaceAllString(method, "")
@@ -243,21 +244,21 @@ func WithCallOptions(opts ...grpc.CallOption) InvokeOption {
 
 // SendAll sends everything to the stream.
 func SendAll(in interface{}) ClientStreamHandler {
-	return func(stream grpc.ClientStream) error {
-		return grpcStream.SendAll(stream, in)
+	return func(s grpc.ClientStream) error {
+		return stream.SendAll(s, in)
 	}
 }
 
 // RecvAll reads everything from the stream and put into the output.
 func RecvAll(out interface{}) ClientStreamHandler {
-	return func(stream grpc.ClientStream) error {
-		return grpcStream.RecvAll(stream, out)
+	return func(s grpc.ClientStream) error {
+		return stream.RecvAll(s, out)
 	}
 }
 
 // SendAndRecvAll sends and receives messages to and from grpc server in turn until server sends the io.EOF.
 func SendAndRecvAll(in interface{}, out interface{}) ClientStreamHandler {
-	return func(stream grpc.ClientStream) error {
-		return grpcStream.SendAndRecvAll(stream, in, out)
+	return func(s grpc.ClientStream) error {
+		return stream.SendAndRecvAll(s, in, out)
 	}
 }

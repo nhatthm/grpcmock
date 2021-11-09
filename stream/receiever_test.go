@@ -11,16 +11,16 @@ import (
 
 	grpcAssert "github.com/nhatthm/grpcmock/assert"
 	"github.com/nhatthm/grpcmock/internal/grpctest"
-	grpcMock "github.com/nhatthm/grpcmock/internal/mock/grpc"
-	testSrv "github.com/nhatthm/grpcmock/internal/test/grpctest"
-	grpcStream "github.com/nhatthm/grpcmock/stream"
+	"github.com/nhatthm/grpcmock/internal/test"
+	grpcMock "github.com/nhatthm/grpcmock/mock/grpc"
+	"github.com/nhatthm/grpcmock/stream"
 )
 
 func TestRecvAll(t *testing.T) {
 	t.Parallel()
 
 	sendItems := func(s *grpcMock.ClientStream) {
-		for _, i := range testSrv.DefaultItems() {
+		for _, i := range test.DefaultItems() {
 			i := i
 
 			s.On("RecvMsg", &grpctest.Item{}).Once().
@@ -114,7 +114,7 @@ func TestRecvAll(t *testing.T) {
 			t.Parallel()
 
 			result := tc.output
-			err := grpcStream.RecvAll(tc.mockStream(t), result)
+			err := stream.RecvAll(tc.mockStream(t), result)
 
 			grpcAssert.JSONEq(t, tc.expectedOutput, result)
 

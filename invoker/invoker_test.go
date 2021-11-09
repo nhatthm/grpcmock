@@ -18,8 +18,9 @@ import (
 	"github.com/nhatthm/grpcmock"
 	grpcAssert "github.com/nhatthm/grpcmock/assert"
 	"github.com/nhatthm/grpcmock/internal/grpctest"
-	testSrv "github.com/nhatthm/grpcmock/internal/test/grpctest"
+	"github.com/nhatthm/grpcmock/internal/test"
 	"github.com/nhatthm/grpcmock/invoker"
+	"github.com/nhatthm/grpcmock/service"
 )
 
 func TestInvoker_Invoke_Unary_Unimplemented(t *testing.T) {
@@ -49,7 +50,7 @@ func TestInvoker_Invoke_Unary_Success(t *testing.T) {
 
 	var actualRequest *grpctest.GetItemRequest
 
-	dialer := testSrv.StartServer(t, testSrv.GetItem(func(ctx context.Context, request *grpctest.GetItemRequest) (*grpctest.Item, error) {
+	dialer := test.StartServer(t, test.GetItem(func(ctx context.Context, request *grpctest.GetItemRequest) (*grpctest.Item, error) {
 		var locale string
 
 		if md, ok := metadata.FromIncomingContext(ctx); ok {
@@ -103,7 +104,7 @@ func TestInvoker_Invoke_ServerStream_WithoutInsecure(t *testing.T) {
 func TestInvoker_Invoke_ServerStream_Success(t *testing.T) {
 	t.Parallel()
 
-	dialer := testSrv.StartServer(t, testSrv.ListItems(func(_ *grpctest.ListItemsRequest, server grpctest.ItemService_ListItemsServer) error {
+	dialer := test.StartServer(t, test.ListItems(func(_ *grpctest.ListItemsRequest, server grpctest.ItemService_ListItemsServer) error {
 		var locale string
 
 		if md, ok := metadata.FromIncomingContext(server.Context()); ok {
@@ -168,7 +169,7 @@ func TestInvoker_Invoke_ClientStream_Success(t *testing.T) {
 
 	received := make([]*grpctest.Item, 0)
 
-	dialer := testSrv.StartServer(t, testSrv.CreateItems(func(srv grpctest.ItemService_CreateItemsServer) error {
+	dialer := test.StartServer(t, test.CreateItems(func(srv grpctest.ItemService_CreateItemsServer) error {
 		for {
 			msg, err := srv.Recv()
 
@@ -221,7 +222,7 @@ func TestInvoker_Invoke_BidirectionalStream_WithoutInsecure(t *testing.T) {
 func TestInvoker_Invoke_BidirectionalStream_Success(t *testing.T) {
 	t.Parallel()
 
-	dialer := testSrv.StartServer(t, testSrv.TransformItems(func(srv grpctest.ItemService_TransformItemsServer) error {
+	dialer := test.StartServer(t, test.TransformItems(func(srv grpctest.ItemService_TransformItemsServer) error {
 		for {
 			msg, err := srv.Recv()
 
@@ -311,7 +312,7 @@ func TestInvoker_Timeout(t *testing.T) {
 		t.Run(tc.scenario, func(t *testing.T) {
 			t.Parallel()
 
-			d := testSrv.StartServer(t, testSrv.GetItem(func(context.Context, *grpctest.GetItemRequest) (*grpctest.Item, error) {
+			d := test.StartServer(t, test.GetItem(func(context.Context, *grpctest.GetItemRequest) (*grpctest.Item, error) {
 				time.Sleep(timeout * 2)
 
 				return &grpctest.Item{Id: 42}, nil
@@ -330,35 +331,35 @@ func TestInvoker_Timeout(t *testing.T) {
 	}
 }
 
-func getItemMethod() grpcmock.ServiceMethod {
-	return grpcmock.ServiceMethod{
+func getItemMethod() service.Method {
+	return service.Method{
 		ServiceName: "grpctest.ItemService",
 		MethodName:  "GetItem",
-		MethodType:  grpcmock.MethodTypeUnary,
+		MethodType:  service.TypeUnary,
 	}
 }
 
-func listItemsMethod() grpcmock.ServiceMethod {
-	return grpcmock.ServiceMethod{
+func listItemsMethod() service.Method {
+	return service.Method{
 		ServiceName: "grpctest.ItemService",
 		MethodName:  "ListItems",
-		MethodType:  grpcmock.MethodTypeServerStream,
+		MethodType:  service.TypeServerStream,
 	}
 }
 
-func createItemsMethod() grpcmock.ServiceMethod {
-	return grpcmock.ServiceMethod{
+func createItemsMethod() service.Method {
+	return service.Method{
 		ServiceName: "grpctest.ItemService",
 		MethodName:  "CreateItems",
-		MethodType:  grpcmock.MethodTypeClientStream,
+		MethodType:  service.TypeClientStream,
 	}
 }
 
-func transformItemsMethod() grpcmock.ServiceMethod {
-	return grpcmock.ServiceMethod{
+func transformItemsMethod() service.Method {
+	return service.Method{
 		ServiceName: "grpctest.ItemService",
 		MethodName:  "TransformItems",
-		MethodType:  grpcmock.MethodTypeBidirectionalStream,
+		MethodType:  service.TypeBidirectionalStream,
 	}
 }
 

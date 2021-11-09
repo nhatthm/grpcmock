@@ -1,4 +1,4 @@
-package grpctest
+package test
 
 import (
 	"google.golang.org/protobuf/proto"

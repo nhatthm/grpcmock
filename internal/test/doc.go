@@ -1,2 +1,2 @@
-// Package test provides functionalities for testing the project.
+// Package test provides helpers for testing grpcmock.
 package test

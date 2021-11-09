@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/nhatthm/grpcmock/internal/grpctest"
-	grpcMock "github.com/nhatthm/grpcmock/internal/mock/grpc"
+	grpcMock "github.com/nhatthm/grpcmock/mock/grpc"
 	"github.com/nhatthm/grpcmock/stream"
 )
 

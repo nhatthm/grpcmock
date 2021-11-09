@@ -8,9 +8,9 @@ import (
 	"github.com/stretchr/testify/mock"
 
 	"github.com/nhatthm/grpcmock/internal/grpctest"
-	grpcMock "github.com/nhatthm/grpcmock/internal/mock/grpc"
-	testSrv "github.com/nhatthm/grpcmock/internal/test/grpctest"
-	grpcStream "github.com/nhatthm/grpcmock/stream"
+	"github.com/nhatthm/grpcmock/internal/test"
+	grpcMock "github.com/nhatthm/grpcmock/mock/grpc"
+	"github.com/nhatthm/grpcmock/stream"
 )
 
 func TestSendAll(t *testing.T) {
@@ -39,18 +39,18 @@ func TestSendAll(t *testing.T) {
 				s.On("SendMsg", mock.Anything).
 					Return(errors.New("send error"))
 			}),
-			input:         testSrv.DefaultItems(),
+			input:         test.DefaultItems(),
 			expectedError: `send error`,
 		},
 		{
 			scenario: "success with a slice of struct",
 			mockStream: grpcMock.MockClientStream(func(s *grpcMock.ClientStream) {
-				for _, i := range testSrv.DefaultItems() {
+				for _, i := range test.DefaultItems() {
 					s.On("SendMsg", i).Once().
 						Return(nil)
 				}
 			}),
-			input: testSrv.DefaultItems(),
+			input: test.DefaultItems(),
 		},
 	}
 
@@ -59,7 +59,7 @@ func TestSendAll(t *testing.T) {
 		t.Run(tc.scenario, func(t *testing.T) {
 			t.Parallel()
 
-			err := grpcStream.SendAll(tc.mockStream(t), tc.input)
+			err := stream.SendAll(tc.mockStream(t), tc.input)
 
 			if tc.expectedError == "" {
 				assert.NoError(t, err)

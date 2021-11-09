@@ -9,9 +9,27 @@
 
 Test gRPC service and client like a pro.
 
+## Table of Contents
+
+- [Prerequisites](#prerequisites)
+- [Install](#install)
+- [Usage](#usage)
+    - [Mock a gRPC server](#mock-a-grpc-server)
+        - [Unary Method](#unary-method)
+        - [Client-Stream Method](#client-stream-method)
+        - [Server-Stream Method](#server-stream-method)
+        - [Bidirectional-Stream Method](#bidirectional-stream-method)
+    - [Invoke a gRPC method](#invoke-a-grpc-method)
+        - [Unary Method](#unary-method-1)
+        - [Client-Stream Method](#client-stream-method-1)
+        - [Server-Stream Method](#server-stream-method-1)
+        - [Bidirectional-Stream Method](#bidirectional-stream-method-1)
+
 ## Prerequisites
 
 - `Go >= 1.17`
+
+[<sub><sup>[table of contents]</sup></sub>](#table-of-contents)
 
 ## Install
 
@@ -19,7 +37,178 @@ Test gRPC service and client like a pro.
 go get github.com/nhatthm/grpcmock
 ```
 
+[<sub><sup>[table of contents]</sup></sub>](#table-of-contents)
+
 ## Usage
+
+### Mock a gRPC server
+
+Read more about [mocking a gRPC server](SERVER.md)
+
+[<sub><sup>[table of contents]</sup></sub>](#table-of-contents)
+
+#### Unary Method
+
+Read more about [mocking a Unary Method](SERVER.md#mock-a-unary-method)
+
+```go
+package main
+
+import (
+	"context"
+	"testing"
+	"time"
+
+	"github.com/nhatthm/grpcmock"
+	grpcAssert "github.com/nhatthm/grpcmock/assert"
+	"github.com/stretchr/testify/assert"
+)
+
+func TestGetItems(t *testing.T) {
+	t.Parallel()
+
+	expected := &Item{Id: 42, Name: "Item 42"}
+
+	_, d := grpcmock.MockAndStartServer(
+		grpcmock.RegisterService(RegisterItemServiceServer),
+		func(s *grpcmock.Server) {
+			s.ExpectUnary("myservice/GetItem").
+				WithHeader("locale", "en-US").
+				WithPayload(&GetItemRequest{Id: 42}).
+				Return(expected)
+		},
+	)(t)
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*50)
+	defer cancel()
+
+	out := &Item{}
+
+	err := grpcmock.InvokeUnary(ctx,
+		"myservice/GetItem",
+		&GetItemRequest{Id: 42}, out,
+		grpcmock.WithHeader("locale", "en-US"),
+		grpcmock.WithContextDialer(d),
+		grpcmock.WithInsecure(),
+	)
+
+	grpcAssert.EqualMessage(t, expected, out)
+	assert.NoError(t, err)
+}
+```
+
+[<sub><sup>[table of contents]</sup></sub>](#table-of-contents)
+
+#### Client-Stream Method
+
+Read more about [mocking a Client-Stream Method](SERVER.md#mock-a-client-stream-method)
+
+```go
+package main
+
+import (
+	"context"
+	"testing"
+	"time"
+
+	"github.com/nhatthm/grpcmock"
+	grpcAssert "github.com/nhatthm/grpcmock/assert"
+	"github.com/stretchr/testify/assert"
+)
+
+func TestCreateItems(t *testing.T) {
+	t.Parallel()
+
+	expected := &CreateItemsResponse{NumItems: 1}
+
+	_, d := grpcmock.MockAndStartServer(
+		grpcmock.RegisterService(RegisterItemServiceServer),
+		func(s *grpcmock.Server) {
+			s.ExpectClientStream("myservice/CreateItems").
+				WithPayload([]*Item{{Id: 42}}).
+				Return(expected)
+		},
+	)(t)
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*50)
+	defer cancel()
+
+	out := &CreateItemsResponse{}
+	err := grpcmock.InvokeClientStream(ctx, "myservice/CreateItems",
+		grpcmock.SendAll([]*Item{{Id: 42}}), out,
+		grpcmock.WithContextDialer(d),
+		grpcmock.WithInsecure(),
+	)
+
+	grpcAssert.EqualMessage(t, expected, out)
+	assert.NoError(t, err)
+}
+```
+
+[<sub><sup>[table of contents]</sup></sub>](#table-of-contents)
+
+#### Server-Stream Method
+
+Read more about [mocking a Server-Stream Method](SERVER.md#mock-a-server-stream-method)
+
+```go
+package main
+
+import (
+	"context"
+	"testing"
+	"time"
+
+	"github.com/nhatthm/grpcmock"
+	"github.com/stretchr/testify/assert"
+)
+
+func TestListItems(t *testing.T) {
+	t.Parallel()
+
+	expected := []*Item{
+		{Id: 41, Name: "Item 41"},
+		{Id: 42, Name: "Item 42"},
+	}
+
+	_, d := grpcmock.MockAndStartServer(
+		grpcmock.RegisterService(RegisterItemServiceServer),
+		func(s *grpcmock.Server) {
+			s.ExpectServerStream("myservice/ListItems").
+				WithPayload(&ListItemsRequest{}).
+				Return(expected)
+		},
+	)(t)
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*50)
+	defer cancel()
+
+	actual := make([]*Item, 0)
+
+	err := grpcmock.InvokeServerStream(ctx,
+		"myservice/ListItems",
+		&ListItemsRequest{},
+		grpcmock.RecvAll(&out),
+		grpcmock.WithContextDialer(d),
+		grpcmock.WithInsecure(),
+	)
+
+	assert.NoError(t, err)
+	assert.Len(t, actual, len(expected))
+
+	for i := 0; i < len(expected); i++ {
+		grpcAssert.EqualMessage(t, expected[i], actual[i])
+	}
+}
+```
+
+[<sub><sup>[table of contents]</sup></sub>](#table-of-contents)
+
+#### Bidirectional-Stream Method
+
+Coming soon by EOY 2021.
+
+[<sub><sup>[table of contents]</sup></sub>](#table-of-contents)
 
 ### Invoke a gRPC method
 
@@ -52,7 +241,9 @@ func getItem(l *bufconn.Listener, id int32) (*Item, error) {
 }
 ```
 
-### Client-Stream Method
+[<sub><sup>[table of contents]</sup></sub>](#table-of-contents)
+
+#### Client-Stream Method
 
 ```go
 package main
@@ -100,7 +291,7 @@ func createItems(l *bufconn.Listener, items []*Item) (*CreateItemsResponse, erro
 
 	out := &CreateItemsResponse{}
 	err := grpcmock.InvokeClientStream(ctx, "myservice/CreateItems",
-		func(stream grpc.ClientStream) error {
+		func(s grpc.ClientStream) error {
 			// Handle the stream here.
 			return nil
 		},
@@ -113,7 +304,9 @@ func createItems(l *bufconn.Listener, items []*Item) (*CreateItemsResponse, erro
 }
 ```
 
-### Server-Stream Method
+[<sub><sup>[table of contents]</sup></sub>](#table-of-contents)
+
+#### Server-Stream Method
 
 ```go
 package main
@@ -163,7 +356,7 @@ func listItems(l *bufconn.Listener) ([]*Item, error) {
 	out := make([]*Item, 0)
 	err := grpcmock.InvokeServerStream(ctx, "myservice/ListItems",
 		&ListItemsRequest{},
-		func(stream grpc.ClientStream) error {
+		func(s grpc.ClientStream) error {
 			// Handle the stream here.
 			return nil
 		},
@@ -175,7 +368,9 @@ func listItems(l *bufconn.Listener) ([]*Item, error) {
 }
 ```
 
-### Bidirectional-Stream Method
+[<sub><sup>[table of contents]</sup></sub>](#table-of-contents)
+
+#### Bidirectional-Stream Method
 
 ```go
 package main
@@ -223,7 +418,7 @@ func transformItems(l *bufconn.Listener, in []*Item) ([]*Item, error) {
 
 	out := make([]*Item, 0)
 	err := grpcmock.InvokeBidirectionalStream(ctx, "myservice/TransformItems",
-		func(stream grpc.ClientStream) error {
+		func(s grpc.ClientStream) error {
 			// Handle the stream here.
 			return nil
 		},
@@ -235,9 +430,13 @@ func transformItems(l *bufconn.Listener, in []*Item) ([]*Item, error) {
 }
 ```
 
+[<sub><sup>[table of contents]</sup></sub>](#table-of-contents)
+
 ## Donation
 
 If this project help you reduce time to develop, you can give me a cup of coffee :)
+
+[<sub><sup>[table of contents]</sup></sub>](#table-of-contents)
 
 ### Paypal donation
 
@@ -246,3 +445,5 @@ If this project help you reduce time to develop, you can give me a cup of coffee
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;or scan this
 
 <img src="https://user-images.githubusercontent.com/1154587/113494222-ad8cb200-94e6-11eb-9ef3-eb883ada222a.png" width="147px" />
+
+[<sub><sup>[table of contents]</sup></sub>](#table-of-contents)

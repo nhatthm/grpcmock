@@ -1,4 +1,4 @@
-package grpctest
+package test
 
 import (
 	"context"
@@ -9,6 +9,7 @@ import (
 	"google.golang.org/grpc/test/bufconn"
 
 	"github.com/nhatthm/grpcmock/internal/grpctest"
+	"github.com/nhatthm/grpcmock/service"
 )
 
 var _ grpctest.ItemServiceServer = (*Service)(nil)
@@ -124,5 +125,38 @@ func CreateItems(h func(itemsServer grpctest.ItemService_CreateItemsServer) erro
 func TransformItems(h func(itemsServer grpctest.ItemService_TransformItemsServer) error) ServiceOption {
 	return func(s *Service) {
 		s.transformItems = h
+	}
+}
+
+// GetItemsSvc returns the GetItem service method.
+func GetItemsSvc() service.Method {
+	return service.Method{
+		ServiceName: "grpctest.Service",
+		MethodName:  "GetItem",
+		MethodType:  service.TypeUnary,
+		Input:       &grpctest.GetItemRequest{},
+		Output:      &grpctest.Item{},
+	}
+}
+
+// ListItemsSvc returns the ListItems service method.
+func ListItemsSvc() service.Method {
+	return service.Method{
+		ServiceName: "grpctest.Service",
+		MethodName:  "ListItems",
+		MethodType:  service.TypeServerStream,
+		Input:       &grpctest.ListItemsRequest{},
+		Output:      &grpctest.Item{},
+	}
+}
+
+// CreateItemsSvc returns the CreateItems service method.
+func CreateItemsSvc() service.Method {
+	return service.Method{
+		ServiceName: "grpctest.Service",
+		MethodName:  "CreateItems",
+		MethodType:  service.TypeClientStream,
+		Input:       &grpctest.Item{},
+		Output:      &grpctest.CreateItemsResponse{},
 	}
 }

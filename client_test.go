@@ -20,8 +20,8 @@ import (
 	"github.com/nhatthm/grpcmock"
 	grpcAssert "github.com/nhatthm/grpcmock/assert"
 	"github.com/nhatthm/grpcmock/internal/grpctest"
-	grpcMock "github.com/nhatthm/grpcmock/internal/mock/grpc"
-	testSrv "github.com/nhatthm/grpcmock/internal/test/grpctest"
+	"github.com/nhatthm/grpcmock/internal/test"
+	grpcMock "github.com/nhatthm/grpcmock/mock/grpc"
 )
 
 func TestInvokeUnary_MethodError(t *testing.T) {
@@ -84,7 +84,7 @@ func TestInvokeUnary_Success(t *testing.T) {
 
 	var actualRequest *grpctest.GetItemRequest
 
-	dialer := testSrv.StartServer(t, testSrv.GetItem(func(ctx context.Context, request *grpctest.GetItemRequest) (*grpctest.Item, error) {
+	dialer := test.StartServer(t, test.GetItem(func(ctx context.Context, request *grpctest.GetItemRequest) (*grpctest.Item, error) {
 		var locale string
 
 		if md, ok := metadata.FromIncomingContext(ctx); ok {
@@ -95,7 +95,7 @@ func TestInvokeUnary_Success(t *testing.T) {
 
 		actualRequest = request
 
-		response := testSrv.BuildItem().
+		response := test.BuildItem().
 			WithID(request.Id).
 			WithLocale(locale).
 			WithName("Foobar").
@@ -152,7 +152,7 @@ func TestInvokeServerStream_WithoutInsecure(t *testing.T) {
 func TestInvokeServerStream_NoHandlerShouldBeFine(t *testing.T) {
 	t.Parallel()
 
-	dialer := testSrv.StartServer(t)
+	dialer := test.StartServer(t)
 
 	err := grpcmock.InvokeServerStream(context.Background(), "Service/NotFound", nil, nil,
 		grpcmock.WithContextDialer(dialer),
@@ -165,24 +165,24 @@ func TestInvokeServerStream_NoHandlerShouldBeFine(t *testing.T) {
 func TestInvokeServerStream_UnaryMethod(t *testing.T) {
 	t.Parallel()
 
-	item := testSrv.DefaultItem()
+	item := test.DefaultItem()
 
-	dialer := testSrv.StartServer(t, testSrv.GetItem(func(context.Context, *grpctest.GetItemRequest) (*grpctest.Item, error) {
+	dialer := test.StartServer(t, test.GetItem(func(context.Context, *grpctest.GetItemRequest) (*grpctest.Item, error) {
 		return item, nil
 	}))
 
 	err := grpcmock.InvokeServerStream(context.Background(),
 		"grpctest.ItemService/GetItem",
 		&grpctest.ListItemsRequest{},
-		func(stream grpc.ClientStream) error {
+		func(s grpc.ClientStream) error {
 			msg := &grpctest.Item{}
-			err := stream.RecvMsg(msg)
+			err := s.RecvMsg(msg)
 
 			grpcAssert.EqualMessage(t, item, msg)
 			assert.NoError(t, err)
 
 			// Stream is closed.
-			err = stream.RecvMsg(msg)
+			err = s.RecvMsg(msg)
 			assert.ErrorIs(t, err, io.EOF)
 
 			return nil
@@ -198,7 +198,7 @@ func TestInvokeServerStream_UnaryMethod(t *testing.T) {
 func TestInvokeServerStream_Success(t *testing.T) {
 	t.Parallel()
 
-	dialer := testSrv.StartServer(t, testSrv.ListItems(func(_ *grpctest.ListItemsRequest, server grpctest.ItemService_ListItemsServer) error {
+	dialer := test.StartServer(t, test.ListItems(func(_ *grpctest.ListItemsRequest, server grpctest.ItemService_ListItemsServer) error {
 		var locale string
 
 		if md, ok := metadata.FromIncomingContext(server.Context()); ok {
@@ -207,7 +207,7 @@ func TestInvokeServerStream_Success(t *testing.T) {
 			}
 		}
 
-		for _, i := range testSrv.DefaultItems() {
+		for _, i := range test.DefaultItems() {
 			i.Locale = locale
 
 			if err := server.Send(i); err != nil {
@@ -278,7 +278,7 @@ func TestInvokeClientStream_WithoutInsecure(t *testing.T) {
 func TestInvokeClientStream_NoHandlerShouldBeFine(t *testing.T) {
 	t.Parallel()
 
-	dialer := testSrv.StartServer(t, testSrv.CreateItems(func(srv grpctest.ItemService_CreateItemsServer) error {
+	dialer := test.StartServer(t, test.CreateItems(func(srv grpctest.ItemService_CreateItemsServer) error {
 		return srv.SendAndClose(&grpctest.CreateItemsResponse{})
 	}))
 
@@ -293,7 +293,7 @@ func TestInvokeClientStream_NoHandlerShouldBeFine(t *testing.T) {
 func TestInvokeClientStream_FailToHandle(t *testing.T) {
 	t.Parallel()
 
-	dialer := testSrv.StartServer(t, testSrv.CreateItems(func(srv grpctest.ItemService_CreateItemsServer) error {
+	dialer := test.StartServer(t, test.CreateItems(func(srv grpctest.ItemService_CreateItemsServer) error {
 		return srv.SendAndClose(&grpctest.CreateItemsResponse{})
 	}))
 
@@ -316,7 +316,7 @@ func TestInvokeClientStream_Success(t *testing.T) {
 
 	received := make([]*grpctest.Item, 0)
 
-	dialer := testSrv.StartServer(t, testSrv.CreateItems(func(srv grpctest.ItemService_CreateItemsServer) error {
+	dialer := test.StartServer(t, test.CreateItems(func(srv grpctest.ItemService_CreateItemsServer) error {
 		for {
 			msg, err := srv.Recv()
 
@@ -336,7 +336,7 @@ func TestInvokeClientStream_Success(t *testing.T) {
 		})
 	}))
 
-	items := testSrv.DefaultItems()
+	items := test.DefaultItems()
 	result := &grpctest.CreateItemsResponse{}
 
 	err := grpcmock.InvokeClientStream(context.Background(),
@@ -386,7 +386,7 @@ func TestInvokeBidirectionalStream_WithoutInsecure(t *testing.T) {
 func TestInvokeBidirectionalStream_NoHandlerShouldBeFine(t *testing.T) {
 	t.Parallel()
 
-	dialer := testSrv.StartServer(t, testSrv.CreateItems(func(srv grpctest.ItemService_CreateItemsServer) error {
+	dialer := test.StartServer(t, test.CreateItems(func(srv grpctest.ItemService_CreateItemsServer) error {
 		return srv.SendAndClose(&grpctest.CreateItemsResponse{})
 	}))
 
@@ -401,7 +401,7 @@ func TestInvokeBidirectionalStream_NoHandlerShouldBeFine(t *testing.T) {
 func TestInvokeBidirectionalStream_FailToHandle(t *testing.T) {
 	t.Parallel()
 
-	dialer := testSrv.StartServer(t, testSrv.CreateItems(func(srv grpctest.ItemService_CreateItemsServer) error {
+	dialer := test.StartServer(t, test.CreateItems(func(srv grpctest.ItemService_CreateItemsServer) error {
 		return srv.SendAndClose(&grpctest.CreateItemsResponse{})
 	}))
 
@@ -421,7 +421,7 @@ func TestInvokeBidirectionalStream_FailToHandle(t *testing.T) {
 func TestInvokeBidirectionalStream_Success(t *testing.T) {
 	t.Parallel()
 
-	dialer := testSrv.StartServer(t, testSrv.TransformItems(func(srv grpctest.ItemService_TransformItemsServer) error {
+	dialer := test.StartServer(t, test.TransformItems(func(srv grpctest.ItemService_TransformItemsServer) error {
 		for {
 			msg, err := srv.Recv()
 
@@ -443,7 +443,7 @@ func TestInvokeBidirectionalStream_Success(t *testing.T) {
 		return nil
 	}))
 
-	items := testSrv.DefaultItems()
+	items := test.DefaultItems()
 	result := make([]*grpctest.Item, 0)
 
 	err := grpcmock.InvokeBidirectionalStream(context.Background(),
@@ -500,18 +500,18 @@ func TestSendAll(t *testing.T) {
 				s.On("SendMsg", mock.Anything).
 					Return(errors.New("send error"))
 			}),
-			input:         testSrv.DefaultItems(),
+			input:         test.DefaultItems(),
 			expectedError: `send error`,
 		},
 		{
 			scenario: "success with a slice of struct",
 			mockStream: grpcMock.MockClientStream(func(s *grpcMock.ClientStream) {
-				for _, i := range testSrv.DefaultItems() {
+				for _, i := range test.DefaultItems() {
 					s.On("SendMsg", i).Once().
 						Return(nil)
 				}
 			}),
-			input: testSrv.DefaultItems(),
+			input: test.DefaultItems(),
 		},
 	}
 
@@ -535,7 +535,7 @@ func TestRecvAll(t *testing.T) {
 	t.Parallel()
 
 	sendItems := func(s *grpcMock.ClientStream) {
-		for _, i := range testSrv.DefaultItems() {
+		for _, i := range test.DefaultItems() {
 			i := i
 
 			s.On("RecvMsg", &grpctest.Item{}).Once().
@@ -725,13 +725,13 @@ func TestSendAndRecvAll_Success(t *testing.T) {
 				s.On("RecvMsg", mock.Anything).
 					Return(io.EOF)
 
-				s.On("SendMsg", testSrv.DefaultItem()).
+				s.On("SendMsg", test.DefaultItem()).
 					Return(nil)
 
 				s.On("CloseSend").
 					Return(nil)
 			}),
-			input:          []*grpctest.Item{testSrv.DefaultItem()},
+			input:          []*grpctest.Item{test.DefaultItem()},
 			expectedResult: []*grpctest.Item{},
 		},
 		{

@@ -250,6 +250,14 @@ func isInterface(v interface{}) bool {
 	return UnwrapType(v).Kind() == reflect.Interface
 }
 
+func methodInput(method reflect.Method, position int) interface{} {
+	return New(method.Type.In(position))
+}
+
+func methodOutput(method reflect.Method, position int) interface{} {
+	return New(method.Type.Out(position))
+}
+
 // IsNil checks whether the given value is nil.
 func IsNil(v interface{}) bool {
 	if v == nil {
@@ -259,14 +267,6 @@ func IsNil(v interface{}) bool {
 	t := reflect.TypeOf(v)
 
 	return reflect.ValueOf(v) == reflect.Zero(t)
-}
-
-func methodInput(method reflect.Method, position int) interface{} {
-	return New(method.Type.In(position))
-}
-
-func methodOutput(method reflect.Method, position int) interface{} {
-	return New(method.Type.Out(position))
 }
 
 // IsPtr checks whether the input is a pointer and not nil.
@@ -353,6 +353,16 @@ func NewValue(value interface{}) interface{} {
 	valueOf.Elem().Set(UnwrapValue(value))
 
 	return valueOf.Interface()
+}
+
+// NewSlicePtr creates a pointer to a slice of the pointer of the unwrapped value.
+func NewSlicePtr(value interface{}) interface{} {
+	slice := reflect.MakeSlice(reflect.SliceOf(reflect.New(UnwrapType(value)).Type()), 0, 0)
+
+	outVal := reflect.New(slice.Type())
+	outVal.Elem().Set(slice)
+
+	return outVal.Interface()
 }
 
 // SetPtrValue sets value for a pointer.

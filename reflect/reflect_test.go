@@ -297,6 +297,44 @@ func TestNewValue(t *testing.T) {
 	assert.Equal(t, expected, actual)
 }
 
+func TestNewSlicePre(t *testing.T) {
+	t.Parallel()
+
+	testCases := []struct {
+		scenario string
+		v        interface{}
+	}{
+		{
+			scenario: "type of value",
+			v:        reflect.TypeOf(grpctest.Item{}),
+		},
+		{
+			scenario: "type of ptr",
+			v:        reflect.TypeOf(&grpctest.Item{}),
+		},
+		{
+			scenario: "value",
+			v:        grpctest.Item{},
+		},
+		{
+			scenario: "ptr",
+			v:        &grpctest.Item{},
+		},
+	}
+
+	for _, tc := range testCases {
+		tc := tc
+		t.Run(tc.scenario, func(t *testing.T) {
+			t.Parallel()
+
+			actual := grpcReflect.NewSlicePtr(tc.v)
+			expected := &[]*grpctest.Item{}
+
+			assert.Equal(t, expected, actual)
+		})
+	}
+}
+
 // nolint: govet
 func TestSetPtrValue(t *testing.T) {
 	t.Parallel()

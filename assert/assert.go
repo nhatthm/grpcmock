@@ -6,12 +6,10 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/swaggest/assertjson"
 	"google.golang.org/protobuf/proto"
-
-	"github.com/nhatthm/grpcmock"
 )
 
 // EqualMessage asserts that two proto messages are equal.
-func EqualMessage(t grpcmock.TestingT, expected, actual proto.Message, msgAndArgs ...interface{}) bool {
+func EqualMessage(t assert.TestingT, expected, actual proto.Message, msgAndArgs ...interface{}) bool {
 	if proto.Equal(expected, actual) {
 		return true
 	}
@@ -20,7 +18,7 @@ func EqualMessage(t grpcmock.TestingT, expected, actual proto.Message, msgAndArg
 }
 
 // JSONEq compares 2 json objects.
-func JSONEq(t grpcmock.TestingT, expected, actual interface{}, msgAndArgs ...interface{}) bool {
+func JSONEq(t assert.TestingT, expected, actual interface{}, msgAndArgs ...interface{}) bool {
 	if !assert.IsType(t, expected, actual) {
 		return false
 	}

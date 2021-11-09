@@ -1,17 +1,17 @@
-package grpcmock_test
+package service_test
 
 import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/nhatthm/grpcmock"
+	"github.com/nhatthm/grpcmock/service"
 )
 
 func TestServiceMethod_FullName(t *testing.T) {
 	t.Parallel()
 
-	s := grpcmock.ServiceMethod{
+	s := service.Method{
 		ServiceName: "grpc.test",
 		MethodName:  "GetItem",
 	}
@@ -26,23 +26,23 @@ func TestToMethodType(t *testing.T) {
 	t.Parallel()
 
 	testCases := []struct {
-		methodType     grpcmock.MethodType
+		methodType     service.Type
 		isClientStream bool
 		isServerStream bool
 	}{
 		{
-			methodType: grpcmock.MethodTypeUnary,
+			methodType: service.TypeUnary,
 		},
 		{
-			methodType:     grpcmock.MethodTypeClientStream,
+			methodType:     service.TypeClientStream,
 			isClientStream: true,
 		},
 		{
-			methodType:     grpcmock.MethodTypeServerStream,
+			methodType:     service.TypeServerStream,
 			isServerStream: true,
 		},
 		{
-			methodType:     grpcmock.MethodTypeBidirectionalStream,
+			methodType:     service.TypeBidirectionalStream,
 			isClientStream: true,
 			isServerStream: true,
 		},
@@ -53,7 +53,7 @@ func TestToMethodType(t *testing.T) {
 		t.Run(string(tc.methodType), func(t *testing.T) {
 			t.Parallel()
 
-			assert.Equal(t, tc.methodType, grpcmock.ToMethodType(tc.isClientStream, tc.isServerStream))
+			assert.Equal(t, tc.methodType, service.ToType(tc.isClientStream, tc.isServerStream))
 		})
 	}
 }
@@ -62,23 +62,23 @@ func TestFromMethodType(t *testing.T) {
 	t.Parallel()
 
 	testCases := []struct {
-		methodType     grpcmock.MethodType
+		methodType     service.Type
 		isClientStream bool
 		isServerStream bool
 	}{
 		{
-			methodType: grpcmock.MethodTypeUnary,
+			methodType: service.TypeUnary,
 		},
 		{
-			methodType:     grpcmock.MethodTypeClientStream,
+			methodType:     service.TypeClientStream,
 			isClientStream: true,
 		},
 		{
-			methodType:     grpcmock.MethodTypeServerStream,
+			methodType:     service.TypeServerStream,
 			isServerStream: true,
 		},
 		{
-			methodType:     grpcmock.MethodTypeBidirectionalStream,
+			methodType:     service.TypeBidirectionalStream,
 			isClientStream: true,
 			isServerStream: true,
 		},
@@ -89,7 +89,7 @@ func TestFromMethodType(t *testing.T) {
 		t.Run(string(tc.methodType), func(t *testing.T) {
 			t.Parallel()
 
-			isClientStream, isServerStream := grpcmock.FromMethodType(tc.methodType)
+			isClientStream, isServerStream := service.FromType(tc.methodType)
 
 			assert.Equal(t, tc.isClientStream, isClientStream)
 			assert.Equal(t, tc.isServerStream, isServerStream)
@@ -101,21 +101,21 @@ func TestIsMethodUnary(t *testing.T) {
 	t.Parallel()
 
 	testCases := []struct {
-		methodType grpcmock.MethodType
+		methodType service.Type
 		expected   bool
 	}{
 		{
-			methodType: grpcmock.MethodTypeUnary,
+			methodType: service.TypeUnary,
 			expected:   true,
 		},
 		{
-			methodType: grpcmock.MethodTypeClientStream,
+			methodType: service.TypeClientStream,
 		},
 		{
-			methodType: grpcmock.MethodTypeServerStream,
+			methodType: service.TypeServerStream,
 		},
 		{
-			methodType: grpcmock.MethodTypeBidirectionalStream,
+			methodType: service.TypeBidirectionalStream,
 		},
 	}
 
@@ -124,7 +124,7 @@ func TestIsMethodUnary(t *testing.T) {
 		t.Run(string(tc.methodType), func(t *testing.T) {
 			t.Parallel()
 
-			assert.Equal(t, tc.expected, grpcmock.IsMethodUnary(tc.methodType))
+			assert.Equal(t, tc.expected, service.IsMethodUnary(tc.methodType))
 		})
 	}
 }
@@ -133,21 +133,21 @@ func TestIsMethodClientStream(t *testing.T) {
 	t.Parallel()
 
 	testCases := []struct {
-		methodType grpcmock.MethodType
+		methodType service.Type
 		expected   bool
 	}{
 		{
-			methodType: grpcmock.MethodTypeUnary,
+			methodType: service.TypeUnary,
 		},
 		{
-			methodType: grpcmock.MethodTypeClientStream,
+			methodType: service.TypeClientStream,
 			expected:   true,
 		},
 		{
-			methodType: grpcmock.MethodTypeServerStream,
+			methodType: service.TypeServerStream,
 		},
 		{
-			methodType: grpcmock.MethodTypeBidirectionalStream,
+			methodType: service.TypeBidirectionalStream,
 		},
 	}
 
@@ -156,7 +156,7 @@ func TestIsMethodClientStream(t *testing.T) {
 		t.Run(string(tc.methodType), func(t *testing.T) {
 			t.Parallel()
 
-			assert.Equal(t, tc.expected, grpcmock.IsMethodClientStream(tc.methodType))
+			assert.Equal(t, tc.expected, service.IsMethodClientStream(tc.methodType))
 		})
 	}
 }
@@ -165,21 +165,21 @@ func TestIsMethodServerStream(t *testing.T) {
 	t.Parallel()
 
 	testCases := []struct {
-		methodType grpcmock.MethodType
+		methodType service.Type
 		expected   bool
 	}{
 		{
-			methodType: grpcmock.MethodTypeUnary,
+			methodType: service.TypeUnary,
 		},
 		{
-			methodType: grpcmock.MethodTypeClientStream,
+			methodType: service.TypeClientStream,
 		},
 		{
-			methodType: grpcmock.MethodTypeServerStream,
+			methodType: service.TypeServerStream,
 			expected:   true,
 		},
 		{
-			methodType: grpcmock.MethodTypeBidirectionalStream,
+			methodType: service.TypeBidirectionalStream,
 		},
 	}
 
@@ -188,7 +188,7 @@ func TestIsMethodServerStream(t *testing.T) {
 		t.Run(string(tc.methodType), func(t *testing.T) {
 			t.Parallel()
 
-			assert.Equal(t, tc.expected, grpcmock.IsMethodServerStream(tc.methodType))
+			assert.Equal(t, tc.expected, service.IsMethodServerStream(tc.methodType))
 		})
 	}
 }
@@ -197,20 +197,20 @@ func TestMethodTypeBidirectionalStream(t *testing.T) {
 	t.Parallel()
 
 	testCases := []struct {
-		methodType grpcmock.MethodType
+		methodType service.Type
 		expected   bool
 	}{
 		{
-			methodType: grpcmock.MethodTypeUnary,
+			methodType: service.TypeUnary,
 		},
 		{
-			methodType: grpcmock.MethodTypeClientStream,
+			methodType: service.TypeClientStream,
 		},
 		{
-			methodType: grpcmock.MethodTypeServerStream,
+			methodType: service.TypeServerStream,
 		},
 		{
-			methodType: grpcmock.MethodTypeBidirectionalStream,
+			methodType: service.TypeBidirectionalStream,
 			expected:   true,
 		},
 	}
@@ -220,7 +220,7 @@ func TestMethodTypeBidirectionalStream(t *testing.T) {
 		t.Run(string(tc.methodType), func(t *testing.T) {
 			t.Parallel()
 
-			assert.Equal(t, tc.expected, grpcmock.IsMethodBidirectionalStream(tc.methodType))
+			assert.Equal(t, tc.expected, service.IsMethodBidirectionalStream(tc.methodType))
 		})
 	}
 }

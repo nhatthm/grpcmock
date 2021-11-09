@@ -18,7 +18,7 @@ test: test-unit
 ## Run unit tests
 test-unit:
 	@echo ">> unit test"
-	@$(GO) test -gcflags=-l -coverprofile=unit.coverprofile -covermode=atomic -race ./...
+	@$(GO) test -gcflags=-l -coverprofile=unit.coverprofile -covermode=atomic -race ./... -tags testcoverage
 
 #test-integration:
 #	@echo ">> integration test"

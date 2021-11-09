@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/nhatthm/grpcmock"
+	"github.com/nhatthm/grpcmock/service"
 )
 
 const noTimeout time.Duration = 0
@@ -15,7 +16,7 @@ const noTimeout time.Duration = 0
 type Invoker struct {
 	address    string
 	method     string
-	methodType grpcmock.MethodType
+	methodType service.Type
 
 	input  interface{}
 	output interface{}
@@ -56,16 +57,16 @@ func (i *Invoker) Invoke(ctx context.Context) error {
 	method := methodWithAddress(i.address, i.method)
 
 	switch i.methodType {
-	case grpcmock.MethodTypeBidirectionalStream:
+	case service.TypeBidirectionalStream:
 		return grpcmock.InvokeBidirectionalStream(ctx, method, i.handle, i.options...)
 
-	case grpcmock.MethodTypeClientStream:
+	case service.TypeClientStream:
 		return grpcmock.InvokeClientStream(ctx, method, i.handle, i.output, i.options...)
 
-	case grpcmock.MethodTypeServerStream:
+	case service.TypeServerStream:
 		return grpcmock.InvokeServerStream(ctx, method, i.input, i.handle, i.options...)
 
-	case grpcmock.MethodTypeUnary:
+	case service.TypeUnary:
 		fallthrough
 	default:
 		return grpcmock.InvokeUnary(ctx, method, i.input, i.output, i.options...)
@@ -73,7 +74,7 @@ func (i *Invoker) Invoke(ctx context.Context) error {
 }
 
 // New creates a new Invoker.
-func New(svc grpcmock.ServiceMethod, opts ...Option) *Invoker {
+func New(svc service.Method, opts ...Option) *Invoker {
 	i := Invoker{
 		method:     svc.FullName(),
 		methodType: svc.MethodType,
