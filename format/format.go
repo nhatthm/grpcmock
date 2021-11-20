@@ -103,6 +103,10 @@ func formatValueInline(v interface{}) string {
 		return formatValueInline(m.Matcher())
 
 	case *grpcMatcher.PayloadMatcher:
+		if m == nil {
+			return ""
+		}
+
 		return formatValueInline(m.Matcher())
 
 	case matcher.Matcher:

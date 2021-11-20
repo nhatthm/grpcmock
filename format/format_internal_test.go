@@ -56,6 +56,16 @@ func TestFormatValueInline(t *testing.T) {
 			}),
 			expected: `en-US`,
 		},
+		{
+			scenario: "Payload Matcher is nil",
+			input:    (*grpcMatcher.PayloadMatcher)(nil),
+			expected: "",
+		},
+		{
+			scenario: "Payload Matcher is not nil",
+			input:    grpcMatcher.Payload(matcher.Exact(`expected`), nil),
+			expected: "expected",
+		},
 	}
 
 	for _, tc := range testCases {
@@ -194,6 +204,16 @@ func TestFormatValue(t *testing.T) {
 				return grpcMatcher.Fn("", nil)
 			}),
 			expected: `matches custom expectation`,
+		},
+		{
+			scenario: "Payload Matcher is nil",
+			input:    (*grpcMatcher.PayloadMatcher)(nil),
+			expected: "",
+		},
+		{
+			scenario: "Payload Matcher is not nil",
+			input:    grpcMatcher.Payload(matcher.Exact(`expected`), nil),
+			expected: "expected",
 		},
 	}
 
