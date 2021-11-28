@@ -29,23 +29,27 @@ func MockCreateItemsStreamer(mocks ...func(s *grpcMock.ServerStream)) func(t *te
 	}
 }
 
+// MockStreamRecvItemSuccess mocks the stream to receive the given item.
+func MockStreamRecvItemSuccess(i *grpctest.Item) func(s *grpcMock.ServerStream) {
+	return func(s *grpcMock.ServerStream) {
+		s.On("RecvMsg", &grpctest.Item{}).Once().
+			Run(func(args mock.Arguments) {
+				item := args.Get(0).(*grpctest.Item) // nolint: errcheck
+
+				proto.Merge(item, i)
+			}).
+			Return(nil)
+	}
+}
+
 // MockStreamRecvItemsSuccess mocks the stream to receive the given items.
 func MockStreamRecvItemsSuccess(items ...*grpctest.Item) func(s *grpcMock.ServerStream) {
 	return func(s *grpcMock.ServerStream) {
 		for _, i := range items {
-			i := i
-
-			s.On("RecvMsg", &grpctest.Item{}).Once().
-				Run(func(args mock.Arguments) {
-					item := args.Get(0).(*grpctest.Item) // nolint: errcheck
-
-					proto.Merge(item, i)
-				}).
-				Return(nil)
+			MockStreamRecvItemSuccess(i)(s)
 		}
 
-		s.On("RecvMsg", &grpctest.Item{}).Once().
-			Return(io.EOF)
+		MockStreamRecvItemEOF()(s)
 	}
 }
 
@@ -54,5 +58,13 @@ func MockStreamSendCreateItemsResponseSuccess(numItems int64) func(s *grpcMock.S
 	return func(s *grpcMock.ServerStream) {
 		s.On("SendMsg", &grpctest.CreateItemsResponse{NumItems: numItems}).Once().
 			Return(nil)
+	}
+}
+
+// MockStreamRecvItemEOF mocks the stream to return io.EOF.
+func MockStreamRecvItemEOF() func(s *grpcMock.ServerStream) {
+	return func(s *grpcMock.ServerStream) {
+		s.On("RecvMsg", &grpctest.Item{}).Once().
+			Return(io.EOF)
 	}
 }

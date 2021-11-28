@@ -24,12 +24,19 @@ func MockListItemsStreamer(mocks ...func(s *grpcMock.ServerStream)) func(t *test
 	}
 }
 
-// MockStreamSendItemsSuccess mocks the stream to receive the given items.
+// MockStreamSendItemSuccess mocks the stream to send the given item.
+func MockStreamSendItemSuccess(i *grpctest.Item) func(s *grpcMock.ServerStream) {
+	return func(s *grpcMock.ServerStream) {
+		s.On("SendMsg", i).Once().
+			Return(nil)
+	}
+}
+
+// MockStreamSendItemsSuccess mocks the stream to send the given items.
 func MockStreamSendItemsSuccess(items ...*grpctest.Item) func(s *grpcMock.ServerStream) {
 	return func(s *grpcMock.ServerStream) {
 		for _, i := range items {
-			s.On("SendMsg", i).Once().
-				Return(nil)
+			MockStreamSendItemSuccess(i)(s)
 		}
 	}
 }
