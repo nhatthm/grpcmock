@@ -985,16 +985,18 @@ func TestClientStreamRequest_Calls(t *testing.T) {
 func TestClientStreamRequest_Handle(t *testing.T) {
 	t.Parallel()
 
-	expected := &grpctest.CreateItemsResponse{NumItems: 1}
+	expected := &grpctest.CreateItemsResponse{NumItems: 2}
 
-	r := newGetItemRequest()
+	r := newCreateItemsRequest()
 	r.Return(expected)
 
-	out := &grpctest.CreateItemsResponse{}
-	err := Handle(context.Background(), r, nil, out)
+	in := test.MockCreateItemsStreamer(
+		test.MockStreamSendCreateItemsResponseSuccess(2),
+	)(t)
+
+	err := Handle(context.Background(), r, in, &grpctest.CreateItemsResponse{})
 
 	assert.NoError(t, err)
-	assert.Equal(t, expected, out)
 }
 
 func newCreateItemsRequest() *ClientStreamRequest {
