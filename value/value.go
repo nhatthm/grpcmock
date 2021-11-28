@@ -36,6 +36,9 @@ func Marshal(v interface{}) (string, error) {
 
 	case *streamer.ClientStreamer:
 		return marshalClientStreamerPayload(v)
+
+	case *streamer.BidirectionalStreamer:
+		return "", nil
 	}
 
 	b, err := json.Marshal(v)

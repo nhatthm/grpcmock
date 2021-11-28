@@ -161,3 +161,9 @@ func expectCreateItems() *request.ClientStreamRequest {
 
 	return request.NewClientStreamRequest(&sync.Mutex{}, &svc).Once()
 }
+
+func expectTransformItems() *request.BidirectionalStreamRequest {
+	svc := test.TransformItemsSvc()
+
+	return request.NewBidirectionalStreamRequest(&sync.Mutex{}, &svc).Once()
+}

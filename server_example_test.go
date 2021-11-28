@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 
 	"github.com/stretchr/testify/mock"
 	"google.golang.org/grpc"
@@ -412,6 +413,82 @@ func ExampleNewServer_serverStreamMethod_customStreamBehaviors() {
 	// Output:
 	// received items: 0
 	// error: rpc error: code = Aborted desc = server aborted the transaction
+}
+
+func ExampleNewServer_bidirectionalStreamMethod() {
+	buf := bufconn.Listen(1024 * 1024)
+	srv := grpcmock.NewServer(
+		grpcmock.RegisterService(grpctest.RegisterItemServiceServer),
+		func(s *grpcmock.Server) {
+			s.ExpectBidirectionalStream("grpctest.ItemService/TransformItems").
+				Run(func(ctx context.Context, s grpc.ServerStream) error {
+					for {
+						item := &grpctest.Item{}
+						err := s.RecvMsg(item)
+
+						if errors.Is(err, io.EOF) {
+							return nil
+						}
+
+						if err != nil {
+							return err
+						}
+
+						item.Name = fmt.Sprintf("Modified #%d", item.Id)
+
+						if err := s.SendMsg(item); err != nil {
+							return err
+						}
+					}
+				})
+		},
+	)
+
+	defer srv.Close(context.Background()) // nolint: errcheck
+
+	go func() {
+		defer buf.Close() // nolint: errcheck
+
+		_ = srv.Serve(buf) // nolint: errcheck
+	}()
+
+	// Call the service.
+	in := []*grpctest.Item{
+		{Id: 40, Name: "Item #40"},
+		{Id: 41, Name: "Item #41"},
+		{Id: 42, Name: "Item #42"},
+	}
+
+	out := make([]*grpctest.Item, 0)
+
+	err := grpcmock.InvokeBidirectionalStream(context.Background(),
+		"grpctest.ItemService/TransformItems",
+		grpcmock.SendAndRecvAll(in, &out),
+		grpcmock.WithInsecure(),
+		grpcmock.WithBufConnDialer(buf),
+	)
+	must.NotFail(err)
+
+	output, err := json.MarshalIndent(out, "", "    ")
+	must.NotFail(err)
+
+	fmt.Println(string(output))
+
+	// Output:
+	// [
+	//     {
+	//         "id": 40,
+	//         "name": "Modified #40"
+	//     },
+	//     {
+	//         "id": 41,
+	//         "name": "Modified #41"
+	//     },
+	//     {
+	//         "id": 42,
+	//         "name": "Modified #42"
+	//     }
+	// ]
 }
 
 func ExampleRegisterService() {

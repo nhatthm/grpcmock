@@ -14,6 +14,8 @@ const (
 	ErrMethodNotClientStream err = "method is not client-stream"
 	// ErrMethodNotServerStream indicates that the GRPC method is not a server-stream kind.
 	ErrMethodNotServerStream err = "method is not server-stream"
+	// ErrMethodNotBidirectionalStream indicates that the GRPC method is not a bidirectional-stream kind.
+	ErrMethodNotBidirectionalStream err = "method is not bidirectional-stream"
 )
 
 type err string

@@ -87,11 +87,16 @@ func TestMarshal(t *testing.T) {
 		},
 		{
 			scenario:       "object",
+			in:             streamer.NewBidirectionalStreamer(nil, nil, nil),
+			expectedResult: "",
+		},
+		{
+			scenario:       "object",
 			in:             []*grpctest.Item{{Id: 42}},
 			expectedResult: payload,
 		},
 		{
-			scenario: "stream error",
+			scenario: "client stream error",
 			in: streamer.NewClientStreamer(grpcMock.MockServerStream(func(s *grpcMock.ServerStream) {
 				s.On("RecvMsg", &grpctest.Item{}).
 					Return(errors.New("recv error"))
@@ -99,7 +104,7 @@ func TestMarshal(t *testing.T) {
 			expectedError: `recv error`,
 		},
 		{
-			scenario: "stream success",
+			scenario: "client stream success",
 			in: streamer.NewClientStreamer(grpcMock.MockServerStream(func(s *grpcMock.ServerStream) {
 				s.On("RecvMsg", &grpctest.Item{}).
 					Once().

@@ -11,7 +11,6 @@ import (
 	"google.golang.org/grpc/status"
 
 	"github.com/nhatthm/grpcmock/internal/grpctest"
-	"github.com/nhatthm/grpcmock/internal/test"
 	grpcMock "github.com/nhatthm/grpcmock/mock/grpc"
 	"github.com/nhatthm/grpcmock/planner"
 	"github.com/nhatthm/grpcmock/service"
@@ -260,7 +259,43 @@ func TestNewStreamHandler_BidirectionalStream(t *testing.T) {
 		Output:     &grpctest.Item{},
 	}
 
-	assert.Panics(t, func() {
-		_ = newStreamHandler(svc, nil)(nil, test.NoMockServerStreamer(t)) // nolint: errcheck
-	})
+	testCases := []struct {
+		scenario      string
+		mockStream    grpcMock.ServerStreamMocker
+		handle        func(ctx context.Context, svc service.Method, in interface{}, out interface{}) error
+		expectedError error
+	}{
+		{
+			scenario: "handle error",
+			mockStream: grpcMock.MockServerStream(func(s *grpcMock.ServerStream) {
+				s.On("Context").
+					Return(context.Background())
+			}),
+			handle: func(context.Context, service.Method, interface{}, interface{}) error {
+				return status.Error(codes.Internal, "handle error")
+			},
+			expectedError: status.Error(codes.Internal, "handle error"),
+		},
+		{
+			scenario: "success",
+			mockStream: grpcMock.MockServerStream(func(s *grpcMock.ServerStream) {
+				s.On("Context").
+					Return(context.Background())
+			}),
+			handle: func(context.Context, service.Method, interface{}, interface{}) error {
+				return nil
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		tc := tc
+		t.Run(tc.scenario, func(t *testing.T) {
+			t.Parallel()
+
+			err := newStreamHandler(svc, tc.handle)(nil, tc.mockStream(t))
+
+			assert.Equal(t, tc.expectedError, err)
+		})
+	}
 }

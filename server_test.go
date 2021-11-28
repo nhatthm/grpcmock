@@ -3,6 +3,7 @@ package grpcmock_test
 import (
 	"context"
 	"errors"
+	"fmt"
 	"io"
 	"testing"
 	"time"
@@ -487,6 +488,106 @@ Error: payload does not match expectation, received: [{"id":42}]
 	assert.Equal(t, status.Convert(err).Message(), expected)
 }
 
+func TestServer_ExpectBidirectionalStream_Unexpected(t *testing.T) {
+	t.Parallel()
+
+	_, d := mockItemServiceServer(t)
+
+	actual, err := transformItems(d, &grpctest.Item{Id: 42})
+
+	expectedError := `rpc error: code = FailedPrecondition desc = unexpected request received: "/grpctest.ItemService/TransformItems"`
+
+	assert.Nil(t, actual)
+	assert.EqualError(t, err, expectedError)
+}
+
+func TestServer_ExpectBidirectionalStream_Panic(t *testing.T) {
+	t.Parallel()
+
+	testCases := []struct {
+		scenario string
+		method   string
+		expected string
+	}{
+		{
+			scenario: "not found",
+			method:   "unknown",
+			expected: `method not found: /unknown`,
+		},
+		{
+			scenario: "unary",
+			method:   grpcTestServiceGetItem,
+			expected: `method is not bidirectional-stream: grpctest.ItemService/GetItem`,
+		},
+		{
+			scenario: "client stream",
+			method:   grpcTestServiceCreateItems,
+			expected: `method is not bidirectional-stream: grpctest.ItemService/CreateItems`,
+		},
+		{
+			scenario: "server stream",
+			method:   grpcTestServiceListItems,
+			expected: `method is not bidirectional-stream: grpctest.ItemService/ListItems`,
+		},
+	}
+
+	for _, tc := range testCases {
+		tc := tc
+		t.Run(tc.scenario, func(t *testing.T) {
+			t.Parallel()
+
+			assert.PanicsWithError(t, tc.expected, func() {
+				mockItemServiceServer(t, func(s *grpcmock.Server) {
+					s.ExpectBidirectionalStream(tc.method)
+				})
+			})
+		})
+	}
+}
+
+func TestServer_ExpectBidirectionalStream_Success(t *testing.T) {
+	t.Parallel()
+
+	_, d := mockItemServiceServer(t, func(s *grpcmock.Server) {
+		s.ExpectBidirectionalStream(grpcTestServiceTransformItems).
+			WithHeader(`locale`, `en-US`).
+			Run(func(ctx context.Context, s grpc.ServerStream) error {
+				for {
+					item := &grpctest.Item{}
+					err := s.RecvMsg(item)
+
+					if errors.Is(err, io.EOF) {
+						return nil
+					}
+
+					if err != nil {
+						return err
+					}
+
+					item.Name = fmt.Sprintf("Modified #%d", item.Id)
+
+					if err := s.SendMsg(item); err != nil {
+						return err
+					}
+				}
+			})
+	})
+
+	actual, err := transformItems(d, &grpctest.Item{Id: 40}, &grpctest.Item{Id: 41}, &grpctest.Item{Id: 42})
+	expected := []*grpctest.Item{
+		{Id: 40, Name: "Modified #40"},
+		{Id: 41, Name: "Modified #41"},
+		{Id: 42, Name: "Modified #42"},
+	}
+
+	assert.NoError(t, err)
+	assert.Len(t, actual, len(expected))
+
+	for i := 0; i < len(expected); i++ {
+		grpcAssert.EqualMessage(t, expected[i], actual[i])
+	}
+}
+
 func TestServer_ExpectationsWereNotMet_LimitedRequest(t *testing.T) {
 	t.Parallel()
 
@@ -670,6 +771,26 @@ func createItems(d grpcmock.ContextDialer, items ...*grpctest.Item) (*grpctest.C
 	err := grpcmock.InvokeClientStream(ctx,
 		grpcTestServiceCreateItems,
 		grpcmock.SendAll(items), out,
+		grpcmock.WithHeader("Locale", "en-US"),
+		grpcmock.WithContextDialer(d),
+		grpcmock.WithInsecure(),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return out, nil
+}
+
+func transformItems(d grpcmock.ContextDialer, items ...*grpctest.Item) ([]*grpctest.Item, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+
+	out := make([]*grpctest.Item, 0)
+
+	err := grpcmock.InvokeBidirectionalStream(ctx,
+		grpcTestServiceTransformItems,
+		grpcmock.SendAndRecvAll(items, &out),
 		grpcmock.WithHeader("Locale", "en-US"),
 		grpcmock.WithContextDialer(d),
 		grpcmock.WithInsecure(),

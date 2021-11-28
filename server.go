@@ -168,10 +168,22 @@ func (s *Server) ExpectServerStream(method string) *request.ServerStreamRequest 
 	return r
 }
 
-// // ExpectBidirectionalStream adds a new expected bidirectional-stream request.
-// //
-// //    Server.ExpectBidirectionalStream("grpctest.Service/TransformItems")
-// func (s *Server) ExpectBidirectionalStream(method string) {}
+// ExpectBidirectionalStream adds a new expected bidirectional-stream request.
+//
+//    Server.ExpectBidirectionalStream("grpctest.Service/TransformItems")
+func (s *Server) ExpectBidirectionalStream(method string) *request.BidirectionalStreamRequest {
+	svc := s.method(method)
+
+	if !service.IsMethodBidirectionalStream(svc.MethodType) {
+		panic(fmt.Errorf("%w: %s", grpcErrors.ErrMethodNotBidirectionalStream, method))
+	}
+
+	r := request.NewBidirectionalStreamRequest(&s.mu, svc).Once()
+
+	s.expect(r)
+
+	return r
+}
 
 // ExpectationsWereMet checks whether all queued expectations were met in order.
 // If any of them was not met - an error is returned.
@@ -430,7 +442,8 @@ func newStreamHandler(
 			out = reflect.New(svc.Output)
 
 		default:
-			panic("unsupported")
+			in = streamer.NewBidirectionalStreamer(s, reflect.UnwrapType(svc.Input), reflect.UnwrapType(svc.Output))
+			out = in
 		}
 
 		return handle(s.Context(), svc, in, out)

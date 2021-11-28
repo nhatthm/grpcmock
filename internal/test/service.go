@@ -160,3 +160,14 @@ func CreateItemsSvc() service.Method {
 		Output:      &grpctest.CreateItemsResponse{},
 	}
 }
+
+// TransformItemsSvc returns the TransformItems service method.
+func TransformItemsSvc() service.Method {
+	return service.Method{
+		ServiceName: "grpctest.Service",
+		MethodName:  "TransformItems",
+		MethodType:  service.TypeBidirectionalStream,
+		Input:       &grpctest.Item{},
+		Output:      &grpctest.Item{},
+	}
+}

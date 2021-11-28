@@ -386,6 +386,98 @@ Error: header "locale" with value "en-US" expected, "en-CA" received
 	}
 }
 
+func TestMatchHeader_BidirectionalStream(t *testing.T) {
+	t.Parallel()
+
+	testCases := []struct {
+		scenario      string
+		mockRequest   func(r *request.BidirectionalStreamRequest)
+		context       context.Context
+		expectedError string
+	}{
+		{
+			scenario:    "no header",
+			context:     context.Background(),
+			mockRequest: func(r *request.BidirectionalStreamRequest) {},
+		},
+		{
+			scenario: "match panic",
+			context:  context.Background(),
+			mockRequest: func(r *request.BidirectionalStreamRequest) {
+				r.WithHeader("locale", matcher.Fn("en-US", func(interface{}) (bool, error) {
+					panic("match panic")
+				}))
+			},
+			expectedError: `Expected: BidirectionalStream /grpctest.Service/TransformItems
+    with header:
+        locale: en-US
+Actual: BidirectionalStream /grpctest.Service/TransformItems
+Error: could not match header: match panic
+`,
+		},
+		{
+			scenario: "match error",
+			context:  context.Background(),
+			mockRequest: func(r *request.BidirectionalStreamRequest) {
+				r.WithHeader("locale", matcher.Fn("en-US", func(interface{}) (bool, error) {
+					return false, errors.New("match error")
+				}))
+			},
+			expectedError: `Expected: BidirectionalStream /grpctest.Service/TransformItems
+    with header:
+        locale: en-US
+Actual: BidirectionalStream /grpctest.Service/TransformItems
+Error: could not match header: match error
+`,
+		},
+		{
+			scenario: "mismatched",
+			context: metadata.NewIncomingContext(context.Background(), metadata.New(map[string]string{
+				"locale": "en-CA",
+			})),
+			mockRequest: func(r *request.BidirectionalStreamRequest) {
+				r.WithHeader("locale", "en-US")
+			},
+			expectedError: `Expected: BidirectionalStream /grpctest.Service/TransformItems
+    with header:
+        locale: en-US
+Actual: BidirectionalStream /grpctest.Service/TransformItems
+    with header:
+        locale: en-CA
+Error: header "locale" with value "en-US" expected, "en-CA" received
+`,
+		},
+		{
+			scenario: "matched",
+			context: metadata.NewIncomingContext(context.Background(), metadata.New(map[string]string{
+				"locale": "en-US",
+			})),
+			mockRequest: func(r *request.BidirectionalStreamRequest) {
+				r.WithHeader("locale", "en-US")
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		tc := tc
+		t.Run(tc.scenario, func(t *testing.T) {
+			t.Parallel()
+
+			expected := expectTransformItems()
+
+			tc.mockRequest(expected)
+
+			err := planner.MatchHeader(tc.context, expected, test.TransformItemsSvc(), test.NoMockBidirectionalStreamer(t))
+
+			if tc.expectedError == "" {
+				assert.NoError(t, err)
+			} else {
+				assert.EqualError(t, err, tc.expectedError)
+			}
+		})
+	}
+}
+
 func TestMatchPayload_Unary(t *testing.T) {
 	t.Parallel()
 
