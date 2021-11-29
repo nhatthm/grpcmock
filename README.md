@@ -160,6 +160,7 @@ import (
 	"time"
 
 	"github.com/nhatthm/grpcmock"
+	grpcAssert "github.com/nhatthm/grpcmock/assert"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -188,7 +189,7 @@ func TestListItems(t *testing.T) {
 	err := grpcmock.InvokeServerStream(ctx,
 		"myservice/ListItems",
 		&ListItemsRequest{},
-		grpcmock.RecvAll(&out),
+		grpcmock.RecvAll(&actual),
 		grpcmock.WithContextDialer(d),
 		grpcmock.WithInsecure(),
 	)
@@ -206,7 +207,85 @@ func TestListItems(t *testing.T) {
 
 #### Bidirectional-Stream Method
 
-Coming soon by EOY 2021.
+Read more about [mocking a Bidirectional-Stream Method](SERVER.md#mock-a-bidirectional-stream-method)
+
+```go
+package main
+
+import (
+	"context"
+	"errors"
+	"fmt"
+	"io"
+	"testing"
+	"time"
+
+	"github.com/nhatthm/grpcmock"
+	grpcAssert "github.com/nhatthm/grpcmock/assert"
+	"github.com/stretchr/testify/assert"
+	"google.golang.org/grpc"
+)
+
+func TestTransformItems(t *testing.T) {
+	t.Parallel()
+
+	expected := []*Item{
+		{Id: 41, Name: "Item 41"},
+		{Id: 42, Name: "Item 42"},
+	}
+
+	_, d := grpcmock.MockAndStartServer(
+		grpcmock.RegisterService(RegisterItemServiceServer),
+		func(s *grpcmock.Server) {
+			s.ExpectBidirectionalStream("myservice/TransformItems").
+				Run(func(ctx context.Context, s grpc.ServerStream) error {
+					for {
+						item := &Item{}
+						err := s.RecvMsg(item)
+
+						if errors.Is(err, io.EOF) {
+							return nil
+						}
+
+						if err != nil {
+							return err
+						}
+
+						item.Name = fmt.Sprintf("Modified #%d", item.Id)
+
+						if err := s.SendMsg(item); err != nil {
+							return err
+						}
+					}
+				})
+		},
+	)(t)
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*50)
+	defer cancel()
+
+	in := []*Item{
+		{Id: 41, Name: "Item 41"},
+		{Id: 42, Name: "Item 42"},
+	}
+
+	actual := make([]*Item, 0)
+
+	err := grpcmock.InvokeBidirectionalStream(ctx,
+		"myservice/TransformItems",
+		grpcmock.SendAndRecvAll(in, &actual),
+		grpcmock.WithContextDialer(d),
+		grpcmock.WithInsecure(),
+	)
+
+	assert.NoError(t, err)
+	assert.Len(t, actual, len(expected))
+
+	for i := 0; i < len(expected); i++ {
+		grpcAssert.EqualMessage(t, expected[i], actual[i])
+	}
+}
+```
 
 [<sub><sup>[table of contents]</sup></sub>](#table-of-contents)
 

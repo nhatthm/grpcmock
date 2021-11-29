@@ -38,6 +38,10 @@
         - [Return with custom stream behaviors](#return-with-custom-stream-behaviors)
         - [Return with a custom handler](#return-with-a-custom-handler-2)
 - [Mock a Bidirectional-Stream Method](#mock-a-bidirectional-stream-method)
+    - [Expect Header](#expect-header)
+    - [Return](#return-3)
+        - [Return an error](#return-an-error-3)
+        - [Return with a custom handler](#return-with-a-custom-handler-3)
 - [Execution Plan](#execution-plan)
 - [Examples](#examples)
 
@@ -1267,7 +1271,170 @@ func TestServer(t *testing.T) {
 
 ## Mock a Bidirectional-Stream Method
 
-Coming soon by EOY 2021.
+### Expect Header
+
+There are 2 methods for matching the headers:
+
+`BidirectionalStreamRequest.WithHeader(header string, value interface{})`
+
+It checks whether a header matches the given `value`. The `value` could be `string`, `[]byte`, or a [`matcher.Matcher`](#match-a-value). If the `value` is
+a `string` or a `[]byte`, the header is checked by using the [`matcher.Exact`](#exact).
+
+For example:
+
+```go
+package main
+
+import (
+	"regexp"
+	"testing"
+
+	"github.com/nhatthm/grpcmock"
+)
+
+func TestServer(t *testing.T) {
+	s, d := grpcmock.MockAndStartServer(
+		grpcmock.RegisterService(RegisterItemServiceServer),
+		func(s *grpcmock.Server) {
+			s.ExpectBidirectionalStream("grpctest.Service/TransformItems").
+				WithHeader("locale", regexp.MustCompile(`-US$`)).
+				WithHeader("country", "US")
+		},
+	)(t)
+
+	// Your request and assertions.
+}
+```
+
+[<sub><sup>[table of contents]</sup></sub>](#table-of-contents)
+
+`BidirectionalStreamRequest.WithHeaders(headers map[string]interface{})`
+
+Similar to `WithHeader()`, this method checks for multiple headers. For example:
+
+```go
+package main
+
+import (
+	"regexp"
+	"testing"
+
+	"github.com/nhatthm/grpcmock"
+)
+
+func TestServer(t *testing.T) {
+	s, d := grpcmock.MockAndStartServer(
+		grpcmock.RegisterService(RegisterItemServiceServer),
+		func(s *grpcmock.Server) {
+			s.ExpectBidirectionalStream("grpctest.Service/TransformItems").
+				WithHeaders(map[string]interface{}{
+					"locale":  regexp.MustCompile(`-US$`),
+					"country": "US",
+				})
+		},
+	)(t)
+
+	// Your request and assertions.
+}
+```
+
+[<sub><sup>[table of contents]</sup></sub>](#table-of-contents)
+
+### Return
+
+By default, if you don't specify anything, the mocked gRPC server will return a `codes.Unimplemented` error. You can return an error, a payload or write a
+custom handler to feed the test scenario.
+
+[<sub><sup>[table of contents]</sup></sub>](#table-of-contents)
+
+#### Return an error
+
+There are 4 methods, they are straightforward:
+
+| Method | Explanation |
+| :--- | :--- |
+| `ReturnCode(code codes.Code)` | Change status code. If it is `codes.OK`, the error message is removed. |
+| `ReturnErrorMessage(msg string)` | Change error message. Tf the current status code is `codes.OK`, it's changed to `codes.Internal` |
+| `ReturnError(code codes.Code, msg string)` | Change status code and error message. If the code is `codes.OK`, the error message is removed. |
+| `ReturnErrorf(code codes.Code, format string, args ...interface{})` | Same as `ReturnError` but with the support of `fmt.Sprintf() |
+
+For example:
+
+```go
+package main
+
+import (
+	"testing"
+
+	"github.com/nhatthm/grpcmock"
+	"google.golang.org/grpc/codes"
+)
+
+func TestServer(t *testing.T) {
+	s, d := grpcmock.MockAndStartServer(
+		grpcmock.RegisterService(RegisterItemServiceServer),
+		func(s *grpcmock.Server) {
+			s.ExpectBidirectionalStream("grpctest.Service/TransformItems").
+				ReturnError(codes.Internal, `server went away`)
+		},
+	)(t)
+
+	// Your request and assertions.
+}
+```
+
+[<sub><sup>[table of contents]</sup></sub>](#table-of-contents)
+
+#### Return with a custom handler
+
+You can write your own logic for handling the request, for example:
+
+```go
+package main
+
+import (
+	"context"
+	"errors"
+	"fmt"
+	"io"
+	"testing"
+
+	"github.com/nhatthm/grpcmock"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/metadata"
+)
+
+func TestServer(t *testing.T) {
+	s, d := grpcmock.MockAndStartServer(
+		grpcmock.RegisterService(RegisterItemServiceServer),
+		func(s *grpcmock.Server) {
+			s.ExpectBidirectionalStream("grpctest.Service/TransformItems").
+				Run(func(ctx context.Context, s grpc.ServerStream) error {
+					for {
+						item := &Item{}
+						err := s.RecvMsg(item)
+
+						if errors.Is(err, io.EOF) {
+							return nil
+						}
+
+						if err != nil {
+							return err
+						}
+
+						item.Name = fmt.Sprintf("Modified #%d", item.Id)
+
+						if err := s.SendMsg(item); err != nil {
+							return err
+						}
+					}
+				})
+		},
+	)(t)
+
+	// Your request and assertions.
+}
+```
 
 [<sub><sup>[table of contents]</sup></sub>](#table-of-contents)
 
@@ -1300,7 +1467,7 @@ type Planner interface {
 }
 ```
 
-Then use it with `Server.WithPlanner(newPlanner)` (see the [`ExampleServer_WithPlanner`](server_example_test.go#L23))
+Then use it with `Server.WithPlanner(newPlanner)` (see the [`ExampleServer_WithPlanner`](server_example_test.go#L24))
 
 When the `Server.Expect[METHOD]()` is called, the mocked server will prepare a request and sends it to the planner. If there is an incoming request, the server
 will call `Planner.PLan()` to find the expectation that matches the request and executes it.
