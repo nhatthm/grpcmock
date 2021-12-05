@@ -42,3 +42,9 @@ func newListItemsRequest() *request.ServerStreamRequest {
 
 	return request.NewServerStreamRequest(&sync.Mutex{}, &svc)
 }
+
+func newCreateItemsRequest() *request.ClientStreamRequest {
+	svc := test.CreateItemsSvc()
+
+	return request.NewClientStreamRequest(&sync.Mutex{}, &svc)
+}
