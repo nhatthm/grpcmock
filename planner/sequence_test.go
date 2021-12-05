@@ -2,7 +2,6 @@ package planner_test
 
 import (
 	"context"
-	"sync"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -11,7 +10,6 @@ import (
 	"github.com/nhatthm/grpcmock/internal/grpctest"
 	"github.com/nhatthm/grpcmock/internal/test"
 	"github.com/nhatthm/grpcmock/planner"
-	"github.com/nhatthm/grpcmock/request"
 	"github.com/nhatthm/grpcmock/service"
 )
 
@@ -142,28 +140,4 @@ func mockSequence(mocks ...func(p planner.Planner)) func() planner.Planner {
 
 		return p
 	}
-}
-
-func expectGetItems() *request.UnaryRequest {
-	svc := test.GetItemsSvc()
-
-	return request.NewUnaryRequest(&sync.Mutex{}, &svc).Once()
-}
-
-func expectListItems() *request.ServerStreamRequest {
-	svc := test.ListItemsSvc()
-
-	return request.NewServerStreamRequest(&sync.Mutex{}, &svc).Once()
-}
-
-func expectCreateItems() *request.ClientStreamRequest {
-	svc := test.CreateItemsSvc()
-
-	return request.NewClientStreamRequest(&sync.Mutex{}, &svc).Once()
-}
-
-func expectTransformItems() *request.BidirectionalStreamRequest {
-	svc := test.TransformItemsSvc()
-
-	return request.NewBidirectionalStreamRequest(&sync.Mutex{}, &svc).Once()
 }

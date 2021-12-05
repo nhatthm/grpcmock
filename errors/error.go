@@ -1,5 +1,10 @@
 package errors
 
+import (
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+)
+
 const (
 	// ErrUnsupportedDataType represents that the data type is not supported.
 	ErrUnsupportedDataType err = "unsupported data type"
@@ -23,4 +28,19 @@ type err string
 // Error returns the error string.
 func (e err) Error() string {
 	return string(e)
+}
+
+// StatusError converts error to status.Error if applicable.
+func StatusError(err error) error {
+	if err == nil {
+		return nil
+	}
+
+	code := status.Code(err)
+
+	if code == codes.Unknown {
+		return status.Error(codes.Internal, err.Error())
+	}
+
+	return err
 }

@@ -65,18 +65,9 @@ func Sequence() Planner {
 
 func nextExpectations(expectedRequests []request.Request) (request.Request, []request.Request) {
 	r := expectedRequests[0]
-	t := request.Repeatability(r)
 
-	if t == 0 {
+	if trackRepeatable(r) {
 		return r, expectedRequests
-	}
-
-	if t > 0 {
-		request.SetRepeatability(r, t-1)
-
-		if request.Repeatability(r) > 0 {
-			return r, expectedRequests
-		}
 	}
 
 	return r, expectedRequests[1:]
