@@ -13,8 +13,6 @@ import (
 	grpcTags "github.com/grpc-ecosystem/go-grpc-middleware/tags"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 
 	grpcErrors "github.com/nhatthm/grpcmock/errors"
 	"github.com/nhatthm/grpcmock/format"
@@ -23,7 +21,6 @@ import (
 	"github.com/nhatthm/grpcmock/request"
 	"github.com/nhatthm/grpcmock/service"
 	"github.com/nhatthm/grpcmock/streamer"
-	"github.com/nhatthm/grpcmock/value"
 )
 
 // Server wraps a grpc server and provides mocking functionalities.
@@ -279,19 +276,14 @@ func (s *Server) handleRequest(ctx context.Context, svc service.Method, in inter
 	defer s.mu.Unlock()
 
 	if s.planner.IsEmpty() {
-		payload, err := value.Marshal(in)
-		if err == nil && len(payload) > 0 {
-			return status.Errorf(codes.FailedPrecondition, "unexpected request received: %q, payload: %s", svc.FullName(), payload)
-		}
-
-		return status.Errorf(codes.FailedPrecondition, "unexpected request received: %q", svc.FullName())
+		return planner.UnexpectedRequestError(svc, in)
 	}
 
 	expected, err := s.planner.Plan(ctx, svc, in)
 	assert.NoError(s.test, err)
 
 	if err != nil {
-		return status.Error(codes.Internal, err.Error())
+		return grpcErrors.StatusError(err)
 	}
 
 	// Log the request.
@@ -389,7 +381,7 @@ func newUnaryHandler(
 		in := reflect.New(svc.Input)
 
 		if err := dec(in); err != nil {
-			return reflect.NewZero(svc.Output), status.Error(codes.Internal, err.Error())
+			return reflect.NewZero(svc.Output), grpcErrors.StatusError(err)
 		}
 
 		intercept := func(ctx context.Context, in interface{}) (interface{}, error) {
@@ -432,7 +424,7 @@ func newStreamHandler(
 		case service.TypeServerStream:
 			in = reflect.New(svc.Input)
 			if err := s.RecvMsg(in); err != nil {
-				return status.Error(codes.Internal, err.Error())
+				return grpcErrors.StatusError(err)
 			}
 
 			out = streamer.NewServerStreamer(s, reflect.UnwrapType(svc.Output))
@@ -447,6 +439,22 @@ func newStreamHandler(
 		}
 
 		return handle(s.Context(), svc, in, out)
+	}
+}
+
+// WithPlanner sets the expectations' planner.
+//
+//    grpcmock.MockServer(
+//    	grpcmock.RegisterService(grpctest.RegisterItemServiceServer),
+//    	grpcmock.WithPlanner(planner.FirstMatch()),
+//    	func(s *grpcmock.Server) {
+//    		s.ExpectUnary("grpctest.ItemService/GetItem").UnlimitedTimes().
+//    			Return(&grpctest.Item{})
+//    	},
+//    )(t)
+func WithPlanner(p planner.Planner) ServerOption {
+	return func(s *Server) {
+		s.WithPlanner(p)
 	}
 }
 

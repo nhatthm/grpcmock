@@ -6,7 +6,9 @@ import (
 	"io"
 	"strings"
 
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/status"
 
 	"github.com/nhatthm/grpcmock/format"
 	"github.com/nhatthm/grpcmock/request"
@@ -85,4 +87,18 @@ func NewError(ctx context.Context, expected request.Request, req service.Method,
 		messageFormat: messageFormat,
 		messageArgs:   messageArgs,
 	}
+}
+
+// UnexpectedRequestError returns an error because of the unexpected request.
+func UnexpectedRequestError(m service.Method, in interface{}) error {
+	payload, err := value.Marshal(in)
+	if err != nil {
+		return status.Errorf(codes.FailedPrecondition, "unexpected request received: %q, unable to decode payload: %s", m.FullName(), err.Error())
+	}
+
+	if len(payload) > 0 {
+		return status.Errorf(codes.FailedPrecondition, "unexpected request received: %q, payload: %s", m.FullName(), payload)
+	}
+
+	return status.Errorf(codes.FailedPrecondition, "unexpected request received: %q", m.FullName())
 }

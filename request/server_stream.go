@@ -14,6 +14,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
+	grpcErrors "github.com/nhatthm/grpcmock/errors"
 	grpcMatcher "github.com/nhatthm/grpcmock/matcher"
 	"github.com/nhatthm/grpcmock/must"
 	"github.com/nhatthm/grpcmock/service"
@@ -292,15 +293,7 @@ func (r *ServerStreamRequest) handle(ctx context.Context, in interface{}, out in
 		return status.Error(r.statusCode, r.statusMessage)
 	}
 
-	if err := r.run(ctx, in, out.(*streamer.ServerStreamer)); err != nil {
-		if status.Code(err) != codes.Unknown {
-			return err
-		}
-
-		return status.Error(codes.Internal, err.Error())
-	}
-
-	return nil
+	return grpcErrors.StatusError(r.run(ctx, in, out.(*streamer.ServerStreamer)))
 }
 
 // Once indicates that the mock should only return the value once.

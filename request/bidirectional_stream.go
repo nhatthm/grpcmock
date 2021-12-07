@@ -12,6 +12,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
+	grpcErrors "github.com/nhatthm/grpcmock/errors"
 	grpcMatcher "github.com/nhatthm/grpcmock/matcher"
 	"github.com/nhatthm/grpcmock/service"
 	"github.com/nhatthm/grpcmock/streamer"
@@ -165,15 +166,7 @@ func (r *BidirectionalStreamRequest) handle(ctx context.Context, in interface{},
 		return status.Error(r.statusCode, r.statusMessage)
 	}
 
-	if err := r.run(ctx, in.(*streamer.BidirectionalStreamer)); err != nil {
-		if status.Code(err) != codes.Unknown {
-			return err
-		}
-
-		return status.Error(codes.Internal, err.Error())
-	}
-
-	return nil
+	return grpcErrors.StatusError(r.run(ctx, in.(*streamer.BidirectionalStreamer)))
 }
 
 // Once indicates that the mock should only return the value once.

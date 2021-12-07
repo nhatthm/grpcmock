@@ -13,6 +13,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
+	grpcErrors "github.com/nhatthm/grpcmock/errors"
 	grpcMatcher "github.com/nhatthm/grpcmock/matcher"
 	"github.com/nhatthm/grpcmock/must"
 	"github.com/nhatthm/grpcmock/reflect"
@@ -248,11 +249,7 @@ func (r *UnaryRequest) handle(ctx context.Context, in interface{}, out interface
 
 	resp, err := r.run(ctx, in)
 	if err != nil {
-		if status.Code(err) != codes.Unknown {
-			return err
-		}
-
-		return status.Error(codes.Internal, err.Error())
+		return grpcErrors.StatusError(err)
 	}
 
 	if reflect.UnwrapType(out) == reflect.UnwrapType(resp) {

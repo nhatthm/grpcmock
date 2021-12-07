@@ -38,7 +38,7 @@ func TestServer_HandleRequest_Unexpected(t *testing.T) {
 		{
 			scenario:      "invalid payload",
 			in:            make(chan struct{}, 1),
-			expectedError: `rpc error: code = FailedPrecondition desc = unexpected request received: "/grpctest.Server/GetItem"`,
+			expectedError: `rpc error: code = FailedPrecondition desc = unexpected request received: "/grpctest.Server/GetItem", unable to decode payload: json: unsupported type: chan struct {}`,
 		},
 	}
 
