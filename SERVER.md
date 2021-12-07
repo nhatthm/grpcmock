@@ -1468,7 +1468,7 @@ type Planner interface {
 }
 ```
 
-Then use it with `Server.WithPlanner(newPlanner)` (see the [`ExampleServer_WithPlanner`](server_example_test.go#L24))
+Then use it with `Server.WithPlanner(newPlanner)` (see the [`ExampleServer_WithPlanner`](server_example_test.go#L27))
 
 When the `Server.Expect[METHOD]()` is called, the mocked server will prepare a request and sends it to the planner. If there is an incoming request, the server
 will call `Planner.PLan()` to find the expectation that matches the request and executes it.

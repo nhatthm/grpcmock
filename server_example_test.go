@@ -6,6 +6,8 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"math/rand"
+	"sync"
 
 	"github.com/stretchr/testify/mock"
 	"google.golang.org/grpc"
@@ -17,6 +19,7 @@ import (
 	"github.com/nhatthm/grpcmock/internal/grpctest"
 	plannerMock "github.com/nhatthm/grpcmock/mock/planner"
 	"github.com/nhatthm/grpcmock/must"
+	"github.com/nhatthm/grpcmock/planner"
 	"github.com/nhatthm/grpcmock/service"
 	"github.com/nhatthm/grpcmock/stream"
 )
@@ -61,6 +64,87 @@ func ExampleServer_WithPlanner() {
 
 	// Output:
 	// rpc error: code = Internal desc = always fail
+}
+
+func ExampleServer_firstMatch_planner() {
+	buf := bufconn.Listen(1024 * 1024)
+	srv := grpcmock.NewServer(
+		grpcmock.RegisterService(grpctest.RegisterItemServiceServer),
+		grpcmock.WithPlanner(planner.FirstMatch()),
+		func(s *grpcmock.Server) {
+			s.ExpectUnary("grpctest.ItemService/GetItem").
+				WithPayload(&grpctest.GetItemRequest{Id: 1}).
+				Return(&grpctest.Item{Id: 1, Name: "FoodUniversity"})
+
+			s.ExpectUnary("grpctest.ItemService/GetItem").
+				WithPayload(&grpctest.GetItemRequest{Id: 2}).
+				Return(&grpctest.Item{Id: 2, Name: "Metaverse"})
+
+			s.ExpectUnary("grpctest.ItemService/GetItem").
+				WithPayload(&grpctest.GetItemRequest{Id: 3}).
+				Return(&grpctest.Item{Id: 3, Name: "Crypto"})
+		},
+	)
+
+	defer srv.Close(context.Background()) // nolint: errcheck
+
+	go func() {
+		defer buf.Close() // nolint: errcheck
+
+		_ = srv.Serve(buf) // nolint: errcheck
+	}()
+
+	// Call the service.
+	ids := []int32{1, 2, 3}
+	result := make([]*grpctest.Item, len(ids))
+
+	rand.Shuffle(len(ids), func(i, j int) {
+		ids[i], ids[j] = ids[j], ids[i]
+	})
+
+	var wg sync.WaitGroup
+
+	for _, id := range ids {
+		wg.Add(1)
+
+		go func(id int32) {
+			defer wg.Done()
+
+			out := &grpctest.Item{}
+
+			err := grpcmock.InvokeUnary(context.Background(),
+				"grpctest.ItemService/GetItem", &grpctest.GetItemRequest{Id: id}, out,
+				grpcmock.WithInsecure(),
+				grpcmock.WithBufConnDialer(buf),
+			)
+			must.NotFail(err)
+
+			result[id-1] = out
+		}(id)
+	}
+
+	wg.Wait()
+
+	output, err := json.MarshalIndent(result, "", "    ")
+	must.NotFail(err)
+
+	fmt.Println(string(output))
+
+	// Output:
+	// [
+	//     {
+	//         "id": 1,
+	//         "name": "FoodUniversity"
+	//     },
+	//     {
+	//         "id": 2,
+	//         "name": "Metaverse"
+	//     },
+	//     {
+	//         "id": 3,
+	//         "name": "Crypto"
+	//     }
+	// ]
 }
 
 func ExampleNewServer_unaryMethod() {

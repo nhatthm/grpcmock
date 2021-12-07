@@ -442,6 +442,22 @@ func newStreamHandler(
 	}
 }
 
+// WithPlanner sets the expectations' planner.
+//
+//    grpcmock.MockServer(
+//    	grpcmock.RegisterService(grpctest.RegisterItemServiceServer),
+//    	grpcmock.WithPlanner(planner.FirstMatch()),
+//    	func(s *grpcmock.Server) {
+//    		s.ExpectUnary("grpctest.ItemService/GetItem").UnlimitedTimes().
+//    			Return(&grpctest.Item{})
+//    	},
+//    )(t)
+func WithPlanner(p planner.Planner) ServerOption {
+	return func(s *Server) {
+		s.WithPlanner(p)
+	}
+}
+
 // RegisterService registers a new service using the generated register function.
 //
 //    grpcmock.MockServer(
