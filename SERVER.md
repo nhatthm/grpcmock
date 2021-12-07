@@ -43,6 +43,7 @@
         - [Return an error](#return-an-error-3)
         - [Return with a custom handler](#return-with-a-custom-handler-3)
 - [Execution Plan](#execution-plan)
+    - [First Match](#first-match)
 - [Examples](#examples)
 
 ## Usage
@@ -1471,6 +1472,56 @@ Then use it with `Server.WithPlanner(newPlanner)` (see the [`ExampleServer_WithP
 
 When the `Server.Expect[METHOD]()` is called, the mocked server will prepare a request and sends it to the planner. If there is an incoming request, the server
 will call `Planner.PLan()` to find the expectation that matches the request and executes it.
+
+[<sub><sup>[table of contents]</sup></sub>](#table-of-contents)
+
+### First Match
+
+`planner.FirstMatch` creates a new `planner.Planner` that finds the first expectation that matches the incoming request.
+
+For example, there are 3 expectations in order:
+
+```
+Server.ExpectUnary("grpctest.Service/GetItem").WithPayload(&Item{Id: 40})
+Server.ExpectUnary("grpctest.Service/GetItem").WithPayload(&Item{Id: 41}).
+    Return(`{"id": 41, "name": "Item #41 - 1"}`)
+Server.ExpectUnary("grpctest.Service/GetItem").WithPayload(&Item{Id: 41}).
+    Return(`{"id": 41, "name": "Item #41 - 2"}`)
+Server.ExpectUnary("grpctest.Service/GetItem").WithPayload(&Item{Id: 42})
+```
+
+When the server receives a request with payload `{"id": 41}`, the `planner.FirstMatch` looks up and finds the second expectation which is the first
+expectation that matches all the criteria. After that, there are only 3 expectations left:
+
+```
+Server.ExpectUnary("grpctest.Service/GetItem").WithPayload(&Item{Id: 40})
+Server.ExpectUnary("grpctest.Service/GetItem").WithPayload(&Item{Id: 41}).
+   	Return(`{"id": 41, "name": "Item #41 - 2"}`)
+Server.ExpectUnary("grpctest.Service/GetItem").WithPayload(&Item{Id: 42})
+```
+
+When the server receives another request with payload `{"id": 40}`, the `planner.FirstMatch` does the same thing and there are only 2 expectations left:
+
+```
+Server.ExpectUnary("grpctest.Service/GetItem").WithPayload(&Item{Id: 41}).
+   	Return(`{"id": 41, "name": "Item #41 - 2"}`)
+Server.ExpectUnary("grpctest.Service/GetItem").WithPayload(&Item{Id: 42})
+```
+
+When the server receives another request with payload `{"id": 100}`, the `planner.FirstMatch` can not match it with any expectations and the server returns
+a `FailedPrecondition` result with error message `unexpected request received`.
+
+Due to the nature of the matcher, pay extra attention when you use repeatability. For example, given these expectations:
+
+```
+Server.ExpectUnary("grpctest.Service/GetItem").WithPayload(&Item{Id: 41}).
+   	UnlimitedTimes().
+   	Return(`{"id": 41, "name": "Item #41 - 1"}`)
+Server.ExpectUnary("grpctest.Service/GetItem").WithPayload(&Item{Id: 41}).
+   	Return(`{"id": 41, "name": "Item #41 - 2"}`)
+```
+
+The 2nd expectation is never taken in account because with the same criteria, the planner always picks the first match, which is the first expectation.
 
 [<sub><sup>[table of contents]</sup></sub>](#table-of-contents)
 
