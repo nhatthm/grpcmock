@@ -260,6 +260,237 @@ func TestFirstMatch_Plan_ClientStream_MatchedRequestIsRemoved(t *testing.T) {
 	assert.Len(t, p.Remain(), 0)
 }
 
+func TestFirstMatch_Plan_ServerStream_Error(t *testing.T) {
+	t.Parallel()
+
+	expected := `rpc error: code = FailedPrecondition desc = unexpected request received: "/grpctest.Service/ListItems", payload: {}`
+
+	testCases := []struct {
+		scenario        string
+		mockPlanner     func() planner.Planner
+		expectedRemains int
+	}{
+		{
+			scenario:    "no expectations",
+			mockPlanner: mockFirstMatch(),
+		},
+		{
+			scenario: "service mismatched",
+			mockPlanner: mockFirstMatch(func(p planner.Planner) {
+				p.Expect(newGetItemRequest())
+			}),
+			expectedRemains: 1,
+		},
+		{
+			scenario: "header mismatched",
+			mockPlanner: mockFirstMatch(func(p planner.Planner) {
+				p.Expect(newListItemsRequest().
+					WithHeader("locale", "en-US"),
+				)
+			}),
+			expectedRemains: 1,
+		},
+		{
+			scenario: "payload mismatched",
+			mockPlanner: mockFirstMatch(func(p planner.Planner) {
+				p.Expect(newListItemsRequest().
+					WithPayload(grpctest.GetItemRequest{Id: 40}),
+				)
+			}),
+			expectedRemains: 1,
+		},
+	}
+
+	for _, tc := range testCases {
+		tc := tc
+		t.Run(tc.scenario, func(t *testing.T) {
+			t.Parallel()
+
+			p := tc.mockPlanner()
+			result, err := p.Plan(context.Background(), test.ListItemsSvc(), grpctest.ListItemsRequest{})
+
+			assert.Nil(t, result)
+			assert.EqualError(t, err, expected)
+			assert.Len(t, p.Remain(), tc.expectedRemains)
+		})
+	}
+}
+
+func TestFirstMatch_Plan_ServerStream_AlwaysMatchTheFirstUnlimitedRequest(t *testing.T) {
+	t.Parallel()
+
+	p := mockFirstMatch(func(p planner.Planner) {
+		p.Expect(newListItemsRequest().UnlimitedTimes())
+
+		p.Expect(newListItemsRequest().Once().
+			WithHeader("locale", "en-US"),
+		)
+
+		p.Expect(newListItemsRequest().Once().
+			WithPayload(grpctest.ListItemsRequest{}),
+		)
+	})()
+
+	expectedRemains := 3
+
+	// First hit.
+	result, err := p.Plan(context.Background(), test.ListItemsSvc(), grpctest.ListItemsRequest{})
+
+	assert.NotNil(t, result)
+	assert.Nil(t, request.HeaderMatcher(result))
+	assert.Nil(t, request.PayloadMatcher(result))
+	assert.NoError(t, err)
+	assert.Len(t, p.Remain(), expectedRemains)
+
+	// Second hit.
+	result, err = p.Plan(context.Background(), test.ListItemsSvc(), grpctest.ListItemsRequest{})
+
+	assert.NotNil(t, result)
+	assert.Nil(t, request.HeaderMatcher(result))
+	assert.Nil(t, request.PayloadMatcher(result))
+	assert.NoError(t, err)
+	assert.Len(t, p.Remain(), expectedRemains)
+}
+
+func TestFirstMatch_Plan_ServerStream_MatchedRequestIsRemoved(t *testing.T) {
+	t.Parallel()
+
+	p := mockFirstMatch(func(p planner.Planner) {
+		p.Expect(newListItemsRequest().Once().
+			WithPayload(grpctest.ListItemsRequest{}),
+		)
+
+		p.Expect(newListItemsRequest().Once().
+			WithPayload(grpctest.ListItemsRequest{}),
+		)
+	})()
+
+	// First hit.
+	result, err := p.Plan(context.Background(), test.ListItemsSvc(), grpctest.ListItemsRequest{})
+
+	assert.NotNil(t, result)
+	assert.NoError(t, err)
+	assert.Len(t, p.Remain(), 1)
+
+	// Second hit.
+	result, err = p.Plan(context.Background(), test.ListItemsSvc(), grpctest.ListItemsRequest{})
+
+	assert.NotNil(t, result)
+	assert.NoError(t, err)
+	assert.Len(t, p.Remain(), 0)
+}
+
+func TestFirstMatch_Plan_BidirectionalStream_Error(t *testing.T) {
+	t.Parallel()
+
+	expected := `rpc error: code = FailedPrecondition desc = unexpected request received: "/grpctest.Service/TransformItems"`
+
+	testCases := []struct {
+		scenario        string
+		mockPlanner     func() planner.Planner
+		expectedRemains int
+	}{
+		{
+			scenario:    "no expectations",
+			mockPlanner: mockFirstMatch(),
+		},
+		{
+			scenario: "service mismatched",
+			mockPlanner: mockFirstMatch(func(p planner.Planner) {
+				p.Expect(newGetItemRequest())
+			}),
+			expectedRemains: 1,
+		},
+		{
+			scenario: "header mismatched",
+			mockPlanner: mockFirstMatch(func(p planner.Planner) {
+				p.Expect(newTransformItemsRequest().
+					WithHeader("locale", "en-US"),
+				)
+			}),
+			expectedRemains: 1,
+		},
+	}
+
+	for _, tc := range testCases {
+		tc := tc
+		t.Run(tc.scenario, func(t *testing.T) {
+			t.Parallel()
+
+			p := tc.mockPlanner()
+			result, err := p.Plan(context.Background(), test.TransformItemsSvc(), test.NoMockBidirectionalStreamer(t))
+
+			assert.Nil(t, result)
+			assert.EqualError(t, err, expected)
+			assert.Len(t, p.Remain(), tc.expectedRemains)
+		})
+	}
+}
+
+func TestFirstMatch_Plan_BidirectionalStream_AlwaysMatchTheFirstUnlimitedRequest(t *testing.T) {
+	t.Parallel()
+
+	p := mockFirstMatch(func(p planner.Planner) {
+		p.Expect(newTransformItemsRequest().UnlimitedTimes())
+
+		p.Expect(newTransformItemsRequest().Once().
+			WithHeader("locale", "en-US"),
+		)
+
+		p.Expect(newTransformItemsRequest().Once().
+			WithHeader("locale", "es-US"),
+		)
+	})()
+
+	expectedRemains := 3
+
+	// First hit.
+	result, err := p.Plan(context.Background(), test.TransformItemsSvc(), test.NoMockBidirectionalStreamer(t))
+
+	assert.NotNil(t, result)
+	assert.Nil(t, request.HeaderMatcher(result))
+	assert.Nil(t, request.PayloadMatcher(result))
+	assert.NoError(t, err)
+	assert.Len(t, p.Remain(), expectedRemains)
+
+	// Second hit.
+	result, err = p.Plan(context.Background(), test.TransformItemsSvc(), test.NoMockBidirectionalStreamer(t))
+
+	assert.NotNil(t, result)
+	assert.Nil(t, request.HeaderMatcher(result))
+	assert.Nil(t, request.PayloadMatcher(result))
+	assert.NoError(t, err)
+	assert.Len(t, p.Remain(), expectedRemains)
+}
+
+func TestFirstMatch_Plan_BidirectionalStream_MatchedRequestIsRemoved(t *testing.T) {
+	t.Parallel()
+
+	p := mockFirstMatch(func(p planner.Planner) {
+		p.Expect(newTransformItemsRequest().Once().
+			WithHeader("locale", "en-US"),
+		)
+
+		p.Expect(newTransformItemsRequest().Once().
+			WithHeader("locale", "es-US"),
+		)
+	})()
+
+	// First hit.
+	result, err := p.Plan(withIncomingHeader("locale", "es-US"), test.TransformItemsSvc(), test.NoMockBidirectionalStreamer(t))
+
+	assert.NotNil(t, result)
+	assert.NoError(t, err)
+	assert.Len(t, p.Remain(), 1)
+
+	// Second hit.
+	result, err = p.Plan(withIncomingHeader("locale", "en-US"), test.TransformItemsSvc(), test.NoMockBidirectionalStreamer(t))
+
+	assert.NotNil(t, result)
+	assert.NoError(t, err)
+	assert.Len(t, p.Remain(), 0)
+}
+
 func TestFirstMatch_Empty(t *testing.T) {
 	t.Parallel()
 
