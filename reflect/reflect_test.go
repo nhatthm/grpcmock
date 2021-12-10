@@ -399,6 +399,48 @@ func TestSetPtrValue(t *testing.T) {
 	}
 }
 
+func TestPtrValue(t *testing.T) {
+	t.Parallel()
+
+	num := 42
+
+	testCases := []struct {
+		scenario string
+		value    interface{}
+		expected interface{}
+	}{
+		{
+			scenario: "not a pointer",
+			value:    num,
+			expected: &num,
+		},
+		{
+			scenario: "is a pointer",
+			value:    &num,
+			expected: &num,
+		},
+	}
+
+	for _, tc := range testCases {
+		tc := tc
+		t.Run(tc.scenario, func(t *testing.T) {
+			t.Parallel()
+
+			actual := grpcReflect.PtrValue(tc.value)
+
+			assert.Equal(t, tc.expected, actual)
+		})
+	}
+}
+
+func TestPtrValue_Panic(t *testing.T) {
+	t.Parallel()
+
+	assert.Panics(t, func() {
+		grpcReflect.PtrValue(nil)
+	})
+}
+
 func TestParseRegisterFunc(t *testing.T) {
 	t.Parallel()
 

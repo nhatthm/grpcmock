@@ -385,6 +385,24 @@ func SetPtrValue(ptr interface{}, v interface{}) {
 	valueOf.Elem().Set(UnwrapValue(v))
 }
 
+// PtrValue ensures the value is a pointer. If it is not, a new pointer to the value is returned.
+func PtrValue(v interface{}) interface{} {
+	typeOf := reflect.TypeOf(v)
+
+	if typeOf == nil {
+		panic(ErrPtrIsNil)
+	}
+
+	if typeOf.Kind() == reflect.Ptr {
+		return v
+	}
+
+	p := reflect.New(typeOf)
+	p.Elem().Set(reflect.ValueOf(v))
+
+	return p.Interface()
+}
+
 // ParseRegisterFunc parses te register function and returns the service description and the interface of the server.
 func ParseRegisterFunc(v interface{}) (grpc.ServiceDesc, interface{}) {
 	typeOf := reflect.TypeOf(v)
