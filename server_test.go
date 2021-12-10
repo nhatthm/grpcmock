@@ -14,7 +14,6 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
-	"google.golang.org/grpc/test/bufconn"
 
 	"github.com/nhatthm/grpcmock"
 	grpcAssert "github.com/nhatthm/grpcmock/assert"
@@ -87,7 +86,7 @@ func TestServer_Expect_Unimplemented(t *testing.T) {
 func TestServer_NoService(t *testing.T) {
 	t.Parallel()
 
-	_, d := grpcmock.MockAndStartServer()(grpcmock.NoOpT())
+	_, d := grpcmock.MockServerWithBufConn()(grpcmock.NoOpT())
 
 	actual, err := getItem(d, 42)
 
@@ -677,7 +676,7 @@ func TestServer_ExpectationsWereMet_UnlimitedRequest(t *testing.T) {
 func TestServer_ResetExpectations(t *testing.T) {
 	t.Parallel()
 
-	s := grpcmock.MockServer(
+	s := grpcmock.MockUnstartedServer(
 		grpcmock.RegisterService(grpctest.RegisterItemServiceServer),
 		func(s *grpcmock.Server) {
 			s.ExpectUnary(grpcTestServiceGetItem).
@@ -691,33 +690,11 @@ func TestServer_ResetExpectations(t *testing.T) {
 	assert.NoError(t, s.ExpectationsWereMet())
 }
 
-func TestServer_Close_Error(t *testing.T) {
-	t.Parallel()
-
-	buf := bufconn.Listen(1024 * 1024)
-	s := grpcmock.MockServer()(t)
-
-	go func() {
-		defer buf.Close() // nolint: errcheck
-
-		_ = s.Serve(buf) // nolint: errcheck
-	}()
-
-	time.Sleep(50 * time.Millisecond)
-
-	ctx, cancel := context.WithCancel(context.Background())
-	cancel()
-
-	err := s.Close(ctx)
-
-	assert.ErrorIs(t, err, context.Canceled)
-}
-
 func mockItemServiceServer(t grpcmock.T, m ...grpcmock.ServerOption) (*grpcmock.Server, grpcmock.ContextDialer) {
 	opts := []grpcmock.ServerOption{grpcmock.RegisterService(grpctest.RegisterItemServiceServer)}
 	opts = append(opts, m...)
 
-	return grpcmock.MockAndStartServer(opts...)(t)
+	return grpcmock.MockServerWithBufConn(opts...)(t)
 }
 
 // nolint: unparam

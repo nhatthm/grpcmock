@@ -8,6 +8,7 @@ import (
 	"sort"
 	"strings"
 	"sync"
+	"time"
 
 	grpcRecovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
 	grpcTags "github.com/grpc-ecosystem/go-grpc-middleware/tags"
@@ -16,6 +17,7 @@ import (
 
 	grpcErrors "github.com/nhatthm/grpcmock/errors"
 	"github.com/nhatthm/grpcmock/format"
+	"github.com/nhatthm/grpcmock/must"
 	"github.com/nhatthm/grpcmock/planner"
 	"github.com/nhatthm/grpcmock/reflect"
 	"github.com/nhatthm/grpcmock/request"
@@ -31,7 +33,10 @@ type Server struct {
 	planner planner.Planner
 
 	// Test server.
-	server     *grpc.Server
+	closeServer func() error
+	listener    net.Listener
+	newListener func() (net.Listener, func() error)
+
 	serverOpts []grpc.ServerOption
 	services   map[string]*service.Method
 
@@ -46,6 +51,15 @@ type ServerOption func(s *Server)
 
 // NewServer creates mocked server.
 func NewServer(opts ...ServerOption) *Server {
+	srv := NewUnstartedServer(opts...)
+
+	srv.Serve()
+
+	return srv
+}
+
+// NewUnstartedServer returns a new Server but doesn't start it.
+func NewUnstartedServer(opts ...ServerOption) *Server {
 	s := Server{
 		test:     NoOpT(),
 		planner:  planner.Sequence(),
@@ -60,6 +74,8 @@ func NewServer(opts ...ServerOption) *Server {
 				grpcTags.StreamServerInterceptor(),
 			),
 		},
+		closeServer: closeNothing,
+		newListener: newListenerByAddr(":0"),
 	}
 
 	for _, o := range opts {
@@ -237,38 +253,40 @@ func (s *Server) ResetExpectations() {
 	s.planner.Reset()
 }
 
+// Address returns server address.
+func (s *Server) Address() string {
+	return s.listener.Addr().String()
+}
+
 // Serve runs the grpc server.
-func (s *Server) Serve(l net.Listener) error {
-	return s.buildGRPCServer().Serve(l)
+func (s *Server) Serve() {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	srv, closeServer := buildGRPCServer(s.services, s.handleRequest, s.serverOpts...)
+	l, closeListener := s.newListener()
+
+	s.closeServer = closeServer
+	s.listener = l
+
+	go func() {
+		//goland:noinspection GoUnhandledErrorResult
+		defer closeListener() // nolint: errcheck
+
+		must.NotFail(srv.Serve(l))
+	}()
 }
 
 // Close stops and closes all open connections and listeners.
-func (s *Server) Close(ctx context.Context) error {
+func (s *Server) Close() error {
 	s.mu.Lock()
-	srv := s.server
-	s.mu.Unlock()
+	defer s.mu.Unlock()
 
-	if srv == nil {
-		return nil
-	}
-
-	signal := make(chan struct{}, 1)
-
-	go func() {
-		defer func() {
-			signal <- struct{}{}
-		}()
-
-		srv.GracefulStop()
+	defer func() {
+		s.closeServer = closeNothing
 	}()
 
-	select {
-	case <-ctx.Done():
-		return ctx.Err()
-
-	case <-signal:
-		return nil
-	}
+	return s.closeServer()
 }
 
 func (s *Server) handleRequest(ctx context.Context, svc service.Method, in interface{}, out interface{}) error {
@@ -312,20 +330,41 @@ func (s *Server) registerService(id string, svc interface{}) {
 	}
 }
 
-func (s *Server) buildGRPCServer() *grpc.Server {
-	s.mu.Lock()
-	defer s.mu.Unlock()
+func buildGRPCServer(
+	services map[string]*service.Method,
+	handler func(ctx context.Context, svc service.Method, in interface{}, out interface{}) error,
+	opts ...grpc.ServerOption,
+) (*grpc.Server, func() error) {
+	srv := grpc.NewServer(opts...)
 
-	srv := grpc.NewServer(s.serverOpts...)
-	services := buildServiceDescriptions(s.services, s.handleRequest)
-
-	for _, desc := range services {
+	for _, desc := range buildServiceDescriptions(services, handler) {
 		srv.RegisterService(desc, nil)
 	}
 
-	s.server = srv
+	return srv, func() error {
+		return closeGRPCServer(srv, time.Second*30)
+	}
+}
 
-	return srv
+func closeGRPCServer(srv *grpc.Server, timeout time.Duration) error {
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+
+	signal := make(chan struct{}, 1)
+
+	go func() {
+		srv.GracefulStop()
+
+		signal <- struct{}{}
+	}()
+
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+
+	case <-signal:
+		return nil
+	}
 }
 
 func buildServiceDescriptions(
@@ -442,6 +481,15 @@ func newStreamHandler(
 	}
 }
 
+func newListenerByAddr(addr string) func() (net.Listener, func() error) {
+	return func() (net.Listener, func() error) {
+		l, err := net.Listen("tcp", addr)
+		must.NotFail(err)
+
+		return l, l.Close
+	}
+}
+
 // WithPlanner sets the expectations' planner.
 //
 //    grpcmock.MockServer(
@@ -460,7 +508,7 @@ func WithPlanner(p planner.Planner) ServerOption {
 
 // RegisterService registers a new service using the generated register function.
 //
-//    grpcmock.MockServer(
+//    grpcmock.MockUnstartedServer(
 //    	grpcmock.RegisterService(grpctest.RegisterItemServiceServer),
 //    	func(s *grpcmock.Server) {
 //    		s.ExpectUnary("grpctest.ItemService/GetItem").UnlimitedTimes().
@@ -479,7 +527,7 @@ func RegisterService(registerFunc interface{}) ServerOption {
 
 // RegisterServiceFromInstance registers a new service using the generated server interface.
 //
-//    grpcmock.MockServer(
+//    grpcmock.MockUnstartedServer(
 //    	grpcmock.RegisterServiceFromInstance("grpctest.ItemService", (*grpctest.ItemServiceServer)(nil)),
 //    	func(s *grpcmock.Server) {
 //    		s.ExpectUnary("grpctest.ItemService/GetItem").UnlimitedTimes().
@@ -496,7 +544,7 @@ func RegisterServiceFromInstance(id string, svc interface{}) ServerOption {
 
 // RegisterServiceFromMethods registers a new service using service.Method definition.
 //
-//    grpcmock.MockServer(
+//    grpcmock.MockUnstartedServer(
 //    	grpcmock.RegisterServiceFromMethods(service.Method{
 //			ServiceName: "grpctest.ItemService",
 //			MethodName:  "GetItem",
@@ -515,6 +563,29 @@ func RegisterServiceFromMethods(serviceMethods ...service.Method) ServerOption {
 	return func(s *Server) {
 		for _, svc := range serviceMethods {
 			s.registerServiceMethod(svc)
+		}
+	}
+}
+
+// WithAddress sets server address.
+func WithAddress(addr string) ServerOption {
+	return func(srv *Server) {
+		srv.newListener = newListenerByAddr(addr)
+	}
+}
+
+// WithPort sets server address port.
+func WithPort(port int) ServerOption {
+	return WithAddress(fmt.Sprintf(":%d", port))
+}
+
+// WithListener sets the listener. Server does not need to start a new one.
+func WithListener(l net.Listener) ServerOption {
+	return func(srv *Server) {
+		srv.newListener = func() (net.Listener, func() error) {
+			return l, func() error {
+				return nil
+			}
 		}
 	}
 }

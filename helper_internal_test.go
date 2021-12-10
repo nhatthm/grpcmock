@@ -29,3 +29,9 @@ func TestServiceSorter(t *testing.T) {
 
 	assert.Equal(t, expected, actual)
 }
+
+func TestCloseNothing(t *testing.T) {
+	t.Parallel()
+
+	assert.NoError(t, closeNothing())
+}

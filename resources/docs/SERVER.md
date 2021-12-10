@@ -50,37 +50,27 @@
 
 ### Create a new gRPC Server
 
-Use the constructor `NewServer(opts ...ServerOption)` to create a new gRPC server, and you need to [register your service](#register-a-service) before mocking
-it. After mocking the server, you need to start it, for example:
+Use the constructor `NewServer(opts ...ServerOption)` to create and start a new gRPC server, and you need to [register your service](#register-a-service) before
+mocking it. For example:
 
 ```go
 package main
 
 import (
 	"context"
-	"net"
 	"testing"
 
 	"github.com/nhatthm/grpcmock"
 )
 
 func TestServer(t *testing.T) {
-	s := grpcmock.NewServer(grpcmock.RegisterService(RegisterItemServiceServer))
-
-	// Mock the server.
-	s.ExpectUnary("grpctest.Service/GetItem")
-
-	// Start the server.
-	l, err := net.Listen("tcp", ":9090")
-	if err != nil {
-		panic(err)
-	}
-
-	go func() {
-		defer l.Close() // nolint: errcheck
-
-		_ = s.Serve(l) // nolint: errcheck
-	}()
+	s := grpcmock.NewServer(
+		grpcmock.RegisterService(RegisterItemServiceServer),
+		func(s *grpcmock.Server) {
+			// Mock the server.
+			s.ExpectUnary("grpctest.Service/GetItem")
+		},
+	)
 
 	// Close the server on exit.
 	defer s.Close(context.Background()) // nolint: errcheck
@@ -111,9 +101,9 @@ After [creating a new gRPC Server](#create-a-new-grpc-server), you see it's a bi
 your expectation. Furthermore, you may want to stop the test right away when the server receives an unexpected request. You can do that by specifying the test
 that you're running with `Server.WithTest(t *testing.T)`. However, it still does not simplify your setup.
 
-Therefore, for testing with a mocked gRPC server, you could use the `MockServer()` constructor, it does all the jobs for you except the start and stop a running
-server. You need to do that yourself, or just use the `MockAndStartServer()` which starts a new server
-with [`bufconn`](https://pkg.go.dev/google.golang.org/grpc/test/bufconn). This is the recommended way to test your application with a mocked gRPC server.
+Therefore, for testing with a mocked gRPC server, you could use the `MockServer()` constructor, it does all the jobs for you. You could also
+use `MockServerWithBufConn()` which starts a new server with [`bufconn`](https://pkg.go.dev/google.golang.org/grpc/test/bufconn). This is the recommended way to
+test your application with a mocked gRPC server.
 
 For example:
 
@@ -133,7 +123,7 @@ func mockItemServiceServer(m ...grpcmock.ServerOption) grpcmock.ServerMockerWith
 	opts := []grpcmock.ServerOption{grpcmock.RegisterService(RegisterItemServiceServer)}
 	opts = append(opts, m...)
 
-	return grpcmock.MockAndStartServer(opts...)
+	return grpcmock.MockServerWithBufConn(opts...)
 }
 
 func TestServer(t *testing.T) {
@@ -230,7 +220,7 @@ import (
 )
 
 func TestServer(t *testing.T) {
-	s, d := grpcmock.MockAndStartServer(
+	s, d := grpcmock.MockServerWithBufConn(
 		grpcmock.RegisterService(RegisterItemServiceServer),
 		func(s *grpcmock.Server) {
 			// Mock your server here.
@@ -274,7 +264,7 @@ import (
 )
 
 func TestServer(t *testing.T) {
-	s, d := grpcmock.MockAndStartServer(
+	s, d := grpcmock.MockServerWithBufConn(
 		grpcmock.RegisterServiceFromInstance("grpctest.ItemService", (*ItemServiceServer)(nil)),
 		func(s *grpcmock.Server) {
 			// Mock your server here.
@@ -297,7 +287,7 @@ import (
 )
 
 func TestServer(t *testing.T) {
-	s, d := grpcmock.MockAndStartServer(
+	s, d := grpcmock.MockServerWithBufConn(
 		grpcmock.RegisterServiceFromInstance("grpctest.ItemService", (*ItemServiceServer)(nil)),
 		func(s *grpcmock.Server) {
 			s.ExpectUnary("grpctest.Service/GetItem")
@@ -328,7 +318,7 @@ import (
 )
 
 func TestServer(t *testing.T) {
-	s, d := grpcmock.MockAndStartServer(
+	s, d := grpcmock.MockServerWithBufConn(
 		grpcmock.RegisterServiceFromMethods(service.Method{
 			// Provide a service definition with request and response type.
 			ServiceName: "grpctest.ItemService",
@@ -437,7 +427,7 @@ import (
 )
 
 func TestServer(t *testing.T) {
-	s, d := grpcmock.MockAndStartServer(
+	s, d := grpcmock.MockServerWithBufConn(
 		grpcmock.RegisterService(RegisterItemServiceServer),
 		func(s *grpcmock.Server) {
 			s.ExpectUnary("grpctest.Service/GetItem").
@@ -467,7 +457,7 @@ import (
 )
 
 func TestServer(t *testing.T) {
-	s, d := grpcmock.MockAndStartServer(
+	s, d := grpcmock.MockServerWithBufConn(
 		grpcmock.RegisterService(RegisterItemServiceServer),
 		func(s *grpcmock.Server) {
 			s.ExpectUnary("grpctest.Service/GetItem").
@@ -495,7 +485,7 @@ There are 2 methods for matching the request payload:
 
 | `in` Type | Matcher | Explanation |
 | :--- | :--- | :--- |
-| `string`, `[]byte` | [`matcher.JSON`](#json) | Match the payload with a json string.
+| `string`, `[]byte` | [`matcher.JSON`](#json) | Match the payload with a json string. |
 | `*regexp.Regexp` | [`matcher.Regex`](#regexp) | Match the payload using Regular Expressions. |
 | [`matcher.Matcher`](#match-a-value) | The same matcher | Match the payload using the provided matcher. |
 | `func(interface{}) (bool, error)` | The same matcher | Match the payload using a custom matcher. |
@@ -513,7 +503,7 @@ import (
 )
 
 func TestServer(t *testing.T) {
-	s, d := grpcmock.MockAndStartServer(
+	s, d := grpcmock.MockServerWithBufConn(
 		grpcmock.RegisterService(RegisterItemServiceServer),
 		func(s *grpcmock.Server) {
 			s.ExpectUnary("grpctest.Service/GetItem").
@@ -574,7 +564,7 @@ import (
 )
 
 func TestServer(t *testing.T) {
-	s, d := grpcmock.MockAndStartServer(
+	s, d := grpcmock.MockServerWithBufConn(
 		grpcmock.RegisterService(RegisterItemServiceServer),
 		func(s *grpcmock.Server) {
 			s.ExpectUnary("grpctest.Service/GetItem").
@@ -609,7 +599,7 @@ import (
 )
 
 func TestServer(t *testing.T) {
-	s, d := grpcmock.MockAndStartServer(
+	s, d := grpcmock.MockServerWithBufConn(
 		grpcmock.RegisterService(RegisterItemServiceServer),
 		func(s *grpcmock.Server) {
 			// string,[]byte --json.Unmarshal()--> &Item{}
@@ -655,7 +645,7 @@ import (
 )
 
 func TestServer(t *testing.T) {
-	s, d := grpcmock.MockAndStartServer(
+	s, d := grpcmock.MockServerWithBufConn(
 		grpcmock.RegisterService(RegisterItemServiceServer),
 		func(s *grpcmock.Server) {
 			s.ExpectUnary("grpctest.Service/GetItem").
@@ -709,7 +699,7 @@ import (
 )
 
 func TestServer(t *testing.T) {
-	s, d := grpcmock.MockAndStartServer(
+	s, d := grpcmock.MockServerWithBufConn(
 		grpcmock.RegisterService(RegisterItemServiceServer),
 		func(s *grpcmock.Server) {
 			s.ExpectClientStream("grpctest.Service/CreateItems").
@@ -739,7 +729,7 @@ import (
 )
 
 func TestServer(t *testing.T) {
-	s, d := grpcmock.MockAndStartServer(
+	s, d := grpcmock.MockServerWithBufConn(
 		grpcmock.RegisterService(RegisterItemServiceServer),
 		func(s *grpcmock.Server) {
 			s.ExpectClientStream("grpctest.Service/CreateItems").
@@ -769,7 +759,7 @@ _* The incoming `payload` is tee from the stream until `io.EOF`._
 
 | `in` Type | Matcher | Explanation |
 | :--- | :--- | :--- |
-| `string`, `[]byte` | [`matcher.JSON`](#json) | Match the payload with a json string.
+| `string`, `[]byte` | [`matcher.JSON`](#json) | Match the payload with a json string. |
 | `*regexp.Regexp` | [`matcher.Regex`](#regexp) | Match the payload using Regular Expressions. |
 | [`matcher.Matcher`](#match-a-value) | The same matcher | Match the payload using the provided matcher. |
 | `func(in interface{}) (bool, error)` | The same matcher | Match the payload using a custom matcher. |
@@ -787,7 +777,7 @@ import (
 )
 
 func TestServer(t *testing.T) {
-	s, d := grpcmock.MockAndStartServer(
+	s, d := grpcmock.MockServerWithBufConn(
 		grpcmock.RegisterService(RegisterItemServiceServer),
 		func(s *grpcmock.Server) {
 			s.ExpectClientStream("grpctest.Service/CreateItems").
@@ -848,7 +838,7 @@ import (
 )
 
 func TestServer(t *testing.T) {
-	s, d := grpcmock.MockAndStartServer(
+	s, d := grpcmock.MockServerWithBufConn(
 		grpcmock.RegisterService(RegisterItemServiceServer),
 		func(s *grpcmock.Server) {
 			s.ExpectClientStream("grpctest.Service/CreateItems").
@@ -883,7 +873,7 @@ import (
 )
 
 func TestServer(t *testing.T) {
-	s, d := grpcmock.MockAndStartServer(
+	s, d := grpcmock.MockServerWithBufConn(
 		grpcmock.RegisterService(RegisterItemServiceServer),
 		func(s *grpcmock.Server) {
 			// string,[]byte --json.Unmarshal()--> &CreateItemsResponse{}
@@ -931,7 +921,7 @@ import (
 )
 
 func TestServer(t *testing.T) {
-	s, d := grpcmock.MockAndStartServer(
+	s, d := grpcmock.MockServerWithBufConn(
 		grpcmock.RegisterService(RegisterItemServiceServer),
 		func(s *grpcmock.Server) {
 			s.ExpectClientStream("grpctest.Service/CreateItems").
@@ -986,7 +976,7 @@ import (
 )
 
 func TestServer(t *testing.T) {
-	s, d := grpcmock.MockAndStartServer(
+	s, d := grpcmock.MockServerWithBufConn(
 		grpcmock.RegisterService(RegisterItemServiceServer),
 		func(s *grpcmock.Server) {
 			s.ExpectServerStream("grpctest.Service/ListItems").
@@ -1016,7 +1006,7 @@ import (
 )
 
 func TestServer(t *testing.T) {
-	s, d := grpcmock.MockAndStartServer(
+	s, d := grpcmock.MockServerWithBufConn(
 		grpcmock.RegisterService(RegisterItemServiceServer),
 		func(s *grpcmock.Server) {
 			s.ExpectServerStream("grpctest.Service/ListItems").
@@ -1039,13 +1029,12 @@ There are 2 methods for matching the request payload:
 
 | Method | Explanation |
 | :--- | :--- |
-| `WithPayload(in interface{})` | Match the incoming payload with an expectation. See the table below for the supported types. |
-| `WithPayloadf(format string, args ...interface{})` | An old school `fmt.Sprintf()` call will be made with `format` and `args`. The result
-will be passed to `WithPayload()` |
+| `WithPayload(in interface{})` | Match the incoming payload with an expectation. See the table below for the supported types.                           |
+| `WithPayloadf(format string, args ...interface{})` | An old school `fmt.Sprintf()` call will be made with `format` and `args`. The result will be passed to `WithPayload()` |
 
 | `in` Type | Matcher | Explanation |
 | :--- | :--- | :--- |
-| `string`, `[]byte` | [`matcher.JSON`](#json) | Match the payload with a json string.
+| `string`, `[]byte` | [`matcher.JSON`](#json) | Match the payload with a json string. |
 | `*regexp.Regexp` | [`matcher.Regex`](#regexp) | Match the payload using Regular Expressions. |
 | [`matcher.Matcher`](#match-a-value) | The same matcher | Match the payload using the provided matcher. |
 | `func(interface{}) (bool, error)` | The same matcher | Match the payload using a custom matcher. |
@@ -1064,7 +1053,7 @@ import (
 )
 
 func TestServer(t *testing.T) {
-	s, d := grpcmock.MockAndStartServer(
+	s, d := grpcmock.MockServerWithBufConn(
 		grpcmock.RegisterService(RegisterItemServiceServer),
 		func(s *grpcmock.Server) {
 			s.ExpectServerStream("grpctest.Service/ListItems").
@@ -1124,7 +1113,7 @@ import (
 )
 
 func TestServer(t *testing.T) {
-	s, d := grpcmock.MockAndStartServer(
+	s, d := grpcmock.MockServerWithBufConn(
 		grpcmock.RegisterService(RegisterItemServiceServer),
 		func(s *grpcmock.Server) {
 			s.ExpectServerStream("grpctest.Service/ListItems").
@@ -1142,7 +1131,7 @@ func TestServer(t *testing.T) {
 
 There are 4 methods:
 
-| Method | Explanation
+| Method | Explanation |
 | :--- | :--- |
 | `Return(v interface{})` | The response is a `string`, a `[]byte` or a slice of objects of the same type of the method. If it's a `string` or `[]byte`, the response will be unmarshalled to a slice. |
 | `Returnf(format string, args ...interface{})` | Same as `Return()`, but with support for formatting using `fmt.Sprintf()` |
@@ -1159,7 +1148,7 @@ import (
 )
 
 func TestServer(t *testing.T) {
-	s, d := grpcmock.MockAndStartServer(
+	s, d := grpcmock.MockServerWithBufConn(
 		grpcmock.RegisterService(RegisterItemServiceServer),
 		func(s *grpcmock.Server) {
 			// string,[]byte --json.Unmarshal()--> []*Item{}
@@ -1193,7 +1182,7 @@ func TestServer(t *testing.T) {
 
 With `ServerStreamRequest.ReturnStream()`, you can customize the behaviors of the stream. There are several step helpers:
 
-| Step | Explanation
+| Step | Explanation |
 | :--- | :--- |
 | `AddHeader(key, value string)`<br/>`SetHeader(header map[string]string)`| Set one or many header without sending to client. |
 | `SendHeader()` | Send all set header to client. |
@@ -1216,7 +1205,7 @@ import (
 )
 
 func TestServer(t *testing.T) {
-	s, d := grpcmock.MockAndStartServer(
+	s, d := grpcmock.MockServerWithBufConn(
 		grpcmock.RegisterService(RegisterItemServiceServer),
 		func(s *grpcmock.Server) {
 			s.ExpectServerStream("grpctest.Service/ListItems").
@@ -1251,7 +1240,7 @@ import (
 )
 
 func TestServer(t *testing.T) {
-	s, d := grpcmock.MockAndStartServer(
+	s, d := grpcmock.MockServerWithBufConn(
 		grpcmock.RegisterService(RegisterItemServiceServer),
 		func(s *grpcmock.Server) {
 			s.ExpectServerStream("grpctest.Service/ListItems").
@@ -1294,7 +1283,7 @@ import (
 )
 
 func TestServer(t *testing.T) {
-	s, d := grpcmock.MockAndStartServer(
+	s, d := grpcmock.MockServerWithBufConn(
 		grpcmock.RegisterService(RegisterItemServiceServer),
 		func(s *grpcmock.Server) {
 			s.ExpectBidirectionalStream("grpctest.Service/TransformItems").
@@ -1324,7 +1313,7 @@ import (
 )
 
 func TestServer(t *testing.T) {
-	s, d := grpcmock.MockAndStartServer(
+	s, d := grpcmock.MockServerWithBufConn(
 		grpcmock.RegisterService(RegisterItemServiceServer),
 		func(s *grpcmock.Server) {
 			s.ExpectBidirectionalStream("grpctest.Service/TransformItems").
@@ -1372,7 +1361,7 @@ import (
 )
 
 func TestServer(t *testing.T) {
-	s, d := grpcmock.MockAndStartServer(
+	s, d := grpcmock.MockServerWithBufConn(
 		grpcmock.RegisterService(RegisterItemServiceServer),
 		func(s *grpcmock.Server) {
 			s.ExpectBidirectionalStream("grpctest.Service/TransformItems").
@@ -1406,7 +1395,7 @@ import (
 )
 
 func TestServer(t *testing.T) {
-	s, d := grpcmock.MockAndStartServer(
+	s, d := grpcmock.MockServerWithBufConn(
 		grpcmock.RegisterService(RegisterItemServiceServer),
 		func(s *grpcmock.Server) {
 			s.ExpectBidirectionalStream("grpctest.Service/TransformItems").
@@ -1468,7 +1457,7 @@ type Planner interface {
 }
 ```
 
-Then use it with `Server.WithPlanner(newPlanner)` (see the [`ExampleServer_WithPlanner`](server_example_test.go#L27))
+Then use it with `Server.WithPlanner(newPlanner)` (see the [`ExampleServer_WithPlanner`](../../server_example_test.go#L27))
 
 When the `Server.Expect[METHOD]()` is called, the mocked server will prepare a request and sends it to the planner. If there is an incoming request, the server
 will call `Planner.PLan()` to find the expectation that matches the request and executes it.
@@ -1490,8 +1479,8 @@ Server.ExpectUnary("grpctest.Service/GetItem").WithPayload(&Item{Id: 41}).
 Server.ExpectUnary("grpctest.Service/GetItem").WithPayload(&Item{Id: 42})
 ```
 
-When the server receives a request with payload `{"id": 41}`, the `planner.FirstMatch` looks up and finds the second expectation which is the first
-expectation that matches all the criteria. After that, there are only 3 expectations left:
+When the server receives a request with payload `{"id": 41}`, the `planner.FirstMatch` looks up and finds the second expectation which is the first expectation
+that matches all the criteria. After that, there are only 3 expectations left:
 
 ```
 Server.ExpectUnary("grpctest.Service/GetItem").WithPayload(&Item{Id: 40})
@@ -1529,7 +1518,7 @@ The 2nd expectation is never taken in account because with the same criteria, th
 
 See:
 
-- [mock_example_test.go](mock_example_test.go)
-- [server_example_test.go](server_example_test.go)
+- [mock_example_test.go](../../mock_example_test.go)
+- [server_example_test.go](../../server_example_test.go)
 
 [<sub><sup>[table of contents]</sup></sub>](#table-of-contents)

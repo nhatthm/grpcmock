@@ -16,3 +16,7 @@ func serviceSorter(services []*grpc.ServiceDesc) ([]*grpc.ServiceDesc, func(i, j
 		return services[i].ServiceName < services[j].ServiceName
 	}
 }
+
+func closeNothing() error {
+	return nil
+}
