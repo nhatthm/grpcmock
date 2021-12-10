@@ -43,13 +43,13 @@ go get github.com/nhatthm/grpcmock
 
 ### Mock a gRPC server
 
-Read more about [mocking a gRPC server](SERVER.md)
+Read more about [mocking a gRPC server](resources/docs/SERVER.md)
 
 [<sub><sup>[table of contents]</sup></sub>](#table-of-contents)
 
 #### Unary Method
 
-Read more about [mocking a Unary Method](SERVER.md#mock-a-unary-method)
+Read more about [mocking a Unary Method](resources/docs/SERVER.md#mock-a-unary-method)
 
 ```go
 package main
@@ -69,7 +69,7 @@ func TestGetItems(t *testing.T) {
 
 	expected := &Item{Id: 42, Name: "Item 42"}
 
-	_, d := grpcmock.MockAndStartServer(
+	_, d := grpcmock.MockServerWithBufConn(
 		grpcmock.RegisterService(RegisterItemServiceServer),
 		func(s *grpcmock.Server) {
 			s.ExpectUnary("myservice/GetItem").
@@ -101,7 +101,7 @@ func TestGetItems(t *testing.T) {
 
 #### Client-Stream Method
 
-Read more about [mocking a Client-Stream Method](SERVER.md#mock-a-client-stream-method)
+Read more about [mocking a Client-Stream Method](resources/docs/SERVER.md#mock-a-client-stream-method)
 
 ```go
 package main
@@ -121,7 +121,7 @@ func TestCreateItems(t *testing.T) {
 
 	expected := &CreateItemsResponse{NumItems: 1}
 
-	_, d := grpcmock.MockAndStartServer(
+	_, d := grpcmock.MockServerWithBufConn(
 		grpcmock.RegisterService(RegisterItemServiceServer),
 		func(s *grpcmock.Server) {
 			s.ExpectClientStream("myservice/CreateItems").
@@ -149,7 +149,7 @@ func TestCreateItems(t *testing.T) {
 
 #### Server-Stream Method
 
-Read more about [mocking a Server-Stream Method](SERVER.md#mock-a-server-stream-method)
+Read more about [mocking a Server-Stream Method](resources/docs/SERVER.md#mock-a-server-stream-method)
 
 ```go
 package main
@@ -172,7 +172,7 @@ func TestListItems(t *testing.T) {
 		{Id: 42, Name: "Item 42"},
 	}
 
-	_, d := grpcmock.MockAndStartServer(
+	_, d := grpcmock.MockServerWithBufConn(
 		grpcmock.RegisterService(RegisterItemServiceServer),
 		func(s *grpcmock.Server) {
 			s.ExpectServerStream("myservice/ListItems").
@@ -207,7 +207,7 @@ func TestListItems(t *testing.T) {
 
 #### Bidirectional-Stream Method
 
-Read more about [mocking a Bidirectional-Stream Method](SERVER.md#mock-a-bidirectional-stream-method)
+Read more about [mocking a Bidirectional-Stream Method](resources/docs/SERVER.md#mock-a-bidirectional-stream-method)
 
 ```go
 package main
@@ -234,7 +234,7 @@ func TestTransformItems(t *testing.T) {
 		{Id: 42, Name: "Item 42"},
 	}
 
-	_, d := grpcmock.MockAndStartServer(
+	_, d := grpcmock.MockServerWithBufConn(
 		grpcmock.RegisterService(RegisterItemServiceServer),
 		func(s *grpcmock.Server) {
 			s.ExpectBidirectionalStream("myservice/TransformItems").

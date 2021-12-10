@@ -4,11 +4,13 @@ import (
 	"context"
 	"errors"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/grpc/test/bufconn"
 
 	"github.com/nhatthm/grpcmock/internal/grpctest"
 	grpcMock "github.com/nhatthm/grpcmock/mock/grpc"
@@ -53,6 +55,49 @@ func TestServer_HandleRequest_Unexpected(t *testing.T) {
 			assert.EqualError(t, err, tc.expectedError)
 		})
 	}
+}
+
+func TestCloseGRPCServer_Error(t *testing.T) {
+	t.Parallel()
+
+	s := NewUnstartedServer(
+		RegisterService(grpctest.RegisterItemServiceServer),
+		func(s *Server) {
+			s.ExpectUnary("grpctest.ItemService/GetItem").
+				After(time.Millisecond * 300).
+				Return(&grpctest.GetItemRequest{Id: 42})
+		},
+	)
+
+	buf := bufconn.Listen(1024 * 1024)
+	srv, _ := buildGRPCServer(s.services, s.handleRequest, s.serverOpts...)
+
+	go func() {
+		defer buf.Close() // nolint: errcheck
+
+		_ = srv.Serve(buf) // nolint: errcheck
+	}()
+
+	go func() {
+		// Wait until server is up.
+		time.Sleep(time.Millisecond * 20)
+
+		// nolint: errcheck
+		_ = InvokeUnary(context.Background(),
+			"grpctest.ItemService/GetItem",
+			&grpctest.GetItemRequest{Id: 42}, &grpctest.Item{},
+			WithBufConnDialer(buf),
+			WithInsecure(),
+		)
+	}()
+
+	// Wait until invoker runs.
+	time.Sleep(time.Millisecond * 100)
+
+	// Invoker and Server are running, now close it.
+	err := closeGRPCServer(srv, time.Millisecond*100)
+
+	assert.ErrorIs(t, err, context.DeadlineExceeded)
 }
 
 func TestNewUnaryHandler(t *testing.T) {
