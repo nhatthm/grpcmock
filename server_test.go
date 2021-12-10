@@ -20,6 +20,7 @@ import (
 	"github.com/nhatthm/grpcmock/internal/grpctest"
 	testSrv "github.com/nhatthm/grpcmock/internal/test"
 	"github.com/nhatthm/grpcmock/mock/planner"
+	"github.com/nhatthm/grpcmock/service"
 )
 
 const (
@@ -688,6 +689,43 @@ func TestServer_ResetExpectations(t *testing.T) {
 	s.ResetExpectations()
 
 	assert.NoError(t, s.ExpectationsWereMet())
+}
+
+func TestFindServerMethod(t *testing.T) {
+	t.Parallel()
+
+	testCases := []struct {
+		scenario   string
+		mockServer grpcmock.ServerOption
+		expected   *service.Method
+	}{
+		{
+			scenario:   "not found",
+			mockServer: func(s *grpcmock.Server) {},
+		},
+		{
+			scenario:   "found",
+			mockServer: grpcmock.RegisterService(grpctest.RegisterItemServiceServer),
+			expected: &service.Method{
+				ServiceName: "grpctest.ItemService",
+				MethodName:  "GetItem",
+				MethodType:  service.TypeUnary,
+				Input:       &grpctest.GetItemRequest{},
+				Output:      &grpctest.Item{},
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		tc := tc
+		t.Run(tc.scenario, func(t *testing.T) {
+			t.Parallel()
+
+			actual := grpcmock.FindServerMethod(grpcmock.NewUnstartedServer(tc.mockServer), grpcTestServiceGetItem)
+
+			assert.Equal(t, tc.expected, actual)
+		})
+	}
 }
 
 func mockItemServiceServer(t grpcmock.T, m ...grpcmock.ServerOption) (*grpcmock.Server, grpcmock.ContextDialer) {
