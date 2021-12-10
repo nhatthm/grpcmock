@@ -77,16 +77,12 @@ func stepSendMany(msgType reflect.Type, msg interface{}) streamStepFunc {
 			}
 
 			for i := 0; i < valueOf.Len(); i++ {
-				if err := s.SendMsg(valueOf.Index(i).Interface()); err != nil {
+				if err := s.SendMsg(grpcReflect.PtrValue(valueOf.Index(i).Interface())); err != nil {
 					return err
 				}
 			}
 
 			return nil
-		}
-
-		if grpcReflect.UnwrapType(msg) == expectedType {
-			return sendMany(msg)
 		}
 
 		// item -> []*item.
@@ -97,9 +93,15 @@ func stepSendMany(msgType reflect.Type, msg interface{}) streamStepFunc {
 			return sendMany(msg)
 		}
 
+		// item -> []item.
+		// *item -> []*item.
+		if grpcReflect.UnwrapType(msg) == expectedType {
+			return sendMany(msg)
+		}
+
 		switch resp := msg.(type) {
 		case []byte, string:
-			out := grpcReflect.New(expectedType)
+			out := grpcReflect.New(expectedPtrType)
 
 			if err := json.Unmarshal([]byte(value.String(resp)), out); err != nil {
 				return status.Error(codes.Internal, err.Error())

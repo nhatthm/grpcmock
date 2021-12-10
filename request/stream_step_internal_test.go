@@ -168,7 +168,7 @@ func TestStepSendMany(t *testing.T) {
 		{
 			scenario: "exact type success",
 			mockServerStream: grpcMock.MockServerStream(func(s *grpcMock.ServerStream) {
-				s.On("SendMsg", grpctest.Item{Id: 42}).
+				s.On("SendMsg", &grpctest.Item{Id: 42}).
 					Return(nil)
 			}),
 			msg: []grpctest.Item{{Id: 42}},
@@ -184,13 +184,13 @@ func TestStepSendMany(t *testing.T) {
 		{
 			scenario: "exact type many success",
 			mockServerStream: grpcMock.MockServerStream(func(s *grpcMock.ServerStream) {
-				s.On("SendMsg", grpctest.Item{Id: 42}).
+				s.On("SendMsg", &grpctest.Item{Id: 42}).
 					Return(nil)
 
-				s.On("SendMsg", grpctest.Item{Id: 43}).
+				s.On("SendMsg", &grpctest.Item{Id: 43}).
 					Return(nil)
 
-				s.On("SendMsg", grpctest.Item{Id: 44}).
+				s.On("SendMsg", &grpctest.Item{Id: 44}).
 					Return(nil)
 			}),
 			msg: []grpctest.Item{{Id: 42}, {Id: 43}, {Id: 44}},
@@ -204,7 +204,7 @@ func TestStepSendMany(t *testing.T) {
 		{
 			scenario: "byte",
 			mockServerStream: grpcMock.MockServerStream(func(s *grpcMock.ServerStream) {
-				s.On("SendMsg", grpctest.Item{Id: 42}).
+				s.On("SendMsg", &grpctest.Item{Id: 42}).
 					Return(nil)
 			}),
 			msg: []byte(validPayload),
@@ -212,7 +212,7 @@ func TestStepSendMany(t *testing.T) {
 		{
 			scenario: "string",
 			mockServerStream: grpcMock.MockServerStream(func(s *grpcMock.ServerStream) {
-				s.On("SendMsg", grpctest.Item{Id: 42}).
+				s.On("SendMsg", &grpctest.Item{Id: 42}).
 					Return(nil)
 			}),
 			msg: validPayload,
