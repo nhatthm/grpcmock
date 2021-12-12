@@ -8,8 +8,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
 
-	"github.com/nhatthm/grpcmock/internal/grpctest"
 	grpcReflect "github.com/nhatthm/grpcmock/reflect"
+	"github.com/nhatthm/grpcmock/test/grpctest"
 )
 
 type testServer interface {

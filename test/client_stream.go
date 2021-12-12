@@ -8,9 +8,9 @@ import (
 	"github.com/stretchr/testify/mock"
 	"google.golang.org/protobuf/proto"
 
-	"github.com/nhatthm/grpcmock/internal/grpctest"
 	grpcMock "github.com/nhatthm/grpcmock/mock/grpc"
 	"github.com/nhatthm/grpcmock/streamer"
+	"github.com/nhatthm/grpcmock/test/grpctest"
 )
 
 // NoMockClientStreamer creates an empty mocked stream.

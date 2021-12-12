@@ -5,7 +5,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/nhatthm/grpcmock/internal/grpctest"
+	"github.com/nhatthm/grpcmock/test/grpctest"
 )
 
 func TestMatchClientStreamMsgCount(t *testing.T) {

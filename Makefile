@@ -25,5 +25,5 @@ test-unit:
 #	@$(GO) test ./features/... -gcflags=-l -coverprofile=features.coverprofile -coverpkg ./... -race --godog
 
 gen:
-	@rm -rf internal/grpctest
+	@rm -rf test/grpctest
 	@protoc --go_out=. --go-grpc_out=. resources/protobuf/service.proto

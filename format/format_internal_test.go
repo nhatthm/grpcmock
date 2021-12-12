@@ -6,8 +6,8 @@ import (
 	"github.com/nhatthm/go-matcher"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/nhatthm/grpcmock/internal/grpctest"
 	grpcMatcher "github.com/nhatthm/grpcmock/matcher"
+	"github.com/nhatthm/grpcmock/test/grpctest"
 )
 
 func TestFormatValueInline(t *testing.T) {

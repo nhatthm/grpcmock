@@ -12,10 +12,10 @@ import (
 	"google.golang.org/grpc/status"
 	"google.golang.org/grpc/test/bufconn"
 
-	"github.com/nhatthm/grpcmock/internal/grpctest"
 	grpcMock "github.com/nhatthm/grpcmock/mock/grpc"
 	"github.com/nhatthm/grpcmock/planner"
 	"github.com/nhatthm/grpcmock/service"
+	"github.com/nhatthm/grpcmock/test/grpctest"
 )
 
 func TestServer_HandleRequest_Unexpected(t *testing.T) {

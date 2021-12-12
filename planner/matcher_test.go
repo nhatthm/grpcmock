@@ -11,14 +11,14 @@ import (
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/proto"
 
-	"github.com/nhatthm/grpcmock/internal/grpctest"
-	"github.com/nhatthm/grpcmock/internal/test"
 	"github.com/nhatthm/grpcmock/matcher"
 	grpcMock "github.com/nhatthm/grpcmock/mock/grpc"
 	"github.com/nhatthm/grpcmock/planner"
 	"github.com/nhatthm/grpcmock/request"
 	"github.com/nhatthm/grpcmock/service"
 	"github.com/nhatthm/grpcmock/streamer"
+	"github.com/nhatthm/grpcmock/test"
+	"github.com/nhatthm/grpcmock/test/grpctest"
 )
 
 func TestMatchService(t *testing.T) {

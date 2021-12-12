@@ -9,9 +9,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
-	"github.com/nhatthm/grpcmock/internal/grpctest"
 	grpcMock "github.com/nhatthm/grpcmock/mock/grpc"
 	"github.com/nhatthm/grpcmock/streamer"
+	"github.com/nhatthm/grpcmock/test/grpctest"
 	"github.com/nhatthm/grpcmock/value"
 )
 

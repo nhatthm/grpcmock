@@ -16,12 +16,12 @@ import (
 	"google.golang.org/grpc/test/bufconn"
 
 	"github.com/nhatthm/grpcmock"
-	"github.com/nhatthm/grpcmock/internal/grpctest"
 	plannerMock "github.com/nhatthm/grpcmock/mock/planner"
 	"github.com/nhatthm/grpcmock/must"
 	"github.com/nhatthm/grpcmock/planner"
 	"github.com/nhatthm/grpcmock/service"
 	"github.com/nhatthm/grpcmock/stream"
+	"github.com/nhatthm/grpcmock/test/grpctest"
 )
 
 func ExampleServer_WithPlanner() {

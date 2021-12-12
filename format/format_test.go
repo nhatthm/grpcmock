@@ -9,8 +9,8 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/nhatthm/grpcmock/format"
-	"github.com/nhatthm/grpcmock/internal/test"
 	grpcMatcher "github.com/nhatthm/grpcmock/matcher"
+	"github.com/nhatthm/grpcmock/test"
 )
 
 func TestExpectedRequest(t *testing.T) {
