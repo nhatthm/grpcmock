@@ -4,7 +4,7 @@ go 1.17
 
 require (
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0
-	github.com/nhatthm/aferomock v0.3.0
+	github.com/nhatthm/aferomock v0.3.1
 	github.com/nhatthm/go-matcher v1.3.1
 	github.com/spf13/afero v1.6.0
 	github.com/stretchr/testify v1.7.0
