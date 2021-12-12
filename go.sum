@@ -84,8 +84,8 @@ github.com/mattn/go-colorable v0.1.8 h1:c1ghPdyEDarC70ftn0y+A/Ee++9zz8ljHG1b13eJ
 github.com/mattn/go-colorable v0.1.8/go.mod h1:u6P/XSegPjTcexA+o6vUJrdnUu04hMope9wVRipJSqc=
 github.com/mattn/go-isatty v0.0.12 h1:wuysRhFDzyxgEmMf5xjvJ2M9dZoWAXNNr5LSBS7uHXY=
 github.com/mattn/go-isatty v0.0.12/go.mod h1:cbi8OIDigv2wuxKPP5vlRcQ1OAZbq2CE4Kysco4FUpU=
-github.com/nhatthm/aferomock v0.3.0 h1:VaQORa7jawxeTi7yAAayE8ZUo7lYp5yyDn9j3wwKJNA=
-github.com/nhatthm/aferomock v0.3.0/go.mod h1:/oTcy0NDM+qQJEEOWiuiKuogilXvv/KZcdaXaP/rX3g=
+github.com/nhatthm/aferomock v0.3.1 h1:L6oGPOdm+GoJ0HDoo2XZpVq++JieZs5PBUdM/8hO8aY=
+github.com/nhatthm/aferomock v0.3.1/go.mod h1:mev14Kms7DBCX/djc5zmf57EgLgmA6k2654EzvRq1vM=
 github.com/nhatthm/go-matcher v1.3.1 h1:UQ3TuoYEzt7CBad94cOCgJ07jQO54KUWXqNbFUhlT54=
 github.com/nhatthm/go-matcher v1.3.1/go.mod h1:tkXI3EdQrowQ2I9CZMmC7wJYqGqMWhb4hv4YdVpuKCo=
 github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e h1:fD57ERR4JtEqsWbfPhv4DMiApHyliiK5xCTNVSPiaAs=
