@@ -6,10 +6,10 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/nhatthm/grpcmock/internal/grpctest"
-	"github.com/nhatthm/grpcmock/internal/test"
 	"github.com/nhatthm/grpcmock/planner"
 	"github.com/nhatthm/grpcmock/request"
+	"github.com/nhatthm/grpcmock/test"
+	"github.com/nhatthm/grpcmock/test/grpctest"
 )
 
 func TestFirstMatch_Plan_Unary_Error(t *testing.T) {

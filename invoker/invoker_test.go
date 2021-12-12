@@ -17,10 +17,10 @@ import (
 
 	"github.com/nhatthm/grpcmock"
 	grpcAssert "github.com/nhatthm/grpcmock/assert"
-	"github.com/nhatthm/grpcmock/internal/grpctest"
-	"github.com/nhatthm/grpcmock/internal/test"
 	"github.com/nhatthm/grpcmock/invoker"
 	"github.com/nhatthm/grpcmock/service"
+	"github.com/nhatthm/grpcmock/test"
+	"github.com/nhatthm/grpcmock/test/grpctest"
 )
 
 func TestInvoker_Invoke_Unary_Unimplemented(t *testing.T) {

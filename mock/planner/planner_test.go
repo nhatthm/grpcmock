@@ -8,10 +8,10 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
-	"github.com/nhatthm/grpcmock/internal/test"
 	"github.com/nhatthm/grpcmock/mock/planner"
 	"github.com/nhatthm/grpcmock/request"
 	"github.com/nhatthm/grpcmock/service"
+	"github.com/nhatthm/grpcmock/test"
 )
 
 func TestPlanner_IsEmpty(t *testing.T) {

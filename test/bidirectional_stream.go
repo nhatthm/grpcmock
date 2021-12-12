@@ -4,9 +4,9 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/nhatthm/grpcmock/internal/grpctest"
 	grpcMock "github.com/nhatthm/grpcmock/mock/grpc"
 	"github.com/nhatthm/grpcmock/streamer"
+	"github.com/nhatthm/grpcmock/test/grpctest"
 )
 
 // NoMockBidirectionalStreamer creates an empty mocked stream.

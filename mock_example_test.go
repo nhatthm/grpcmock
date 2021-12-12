@@ -9,7 +9,7 @@ import (
 
 	"github.com/nhatthm/grpcmock"
 	grpcAssert "github.com/nhatthm/grpcmock/assert"
-	"github.com/nhatthm/grpcmock/internal/grpctest"
+	"github.com/nhatthm/grpcmock/test/grpctest"
 )
 
 func ExampleMockServer() {

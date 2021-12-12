@@ -6,8 +6,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/nhatthm/grpcmock/internal/grpctest"
 	"github.com/nhatthm/grpcmock/stream"
+	"github.com/nhatthm/grpcmock/test/grpctest"
 )
 
 func TestBuffer_SendMsg_Error(t *testing.T) {

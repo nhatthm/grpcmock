@@ -15,12 +15,12 @@ import (
 	"google.golang.org/grpc/status"
 
 	grpcAssert "github.com/nhatthm/grpcmock/assert"
-	"github.com/nhatthm/grpcmock/internal/grpctest"
-	"github.com/nhatthm/grpcmock/internal/test"
 	grpcMatcher "github.com/nhatthm/grpcmock/matcher"
 	grpcMock "github.com/nhatthm/grpcmock/mock/grpc"
 	"github.com/nhatthm/grpcmock/stream"
 	"github.com/nhatthm/grpcmock/streamer"
+	"github.com/nhatthm/grpcmock/test"
+	"github.com/nhatthm/grpcmock/test/grpctest"
 )
 
 func TestClientStreamRequest_WithHeader(t *testing.T) {

@@ -5,9 +5,9 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/nhatthm/grpcmock/internal/grpctest"
-	"github.com/nhatthm/grpcmock/internal/test"
 	"github.com/nhatthm/grpcmock/planner"
+	"github.com/nhatthm/grpcmock/test"
+	"github.com/nhatthm/grpcmock/test/grpctest"
 )
 
 func TestUnexpectedRequestError_Unary(t *testing.T) {

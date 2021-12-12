@@ -17,10 +17,10 @@ import (
 
 	"github.com/nhatthm/grpcmock"
 	grpcAssert "github.com/nhatthm/grpcmock/assert"
-	"github.com/nhatthm/grpcmock/internal/grpctest"
-	testSrv "github.com/nhatthm/grpcmock/internal/test"
 	"github.com/nhatthm/grpcmock/mock/planner"
 	"github.com/nhatthm/grpcmock/service"
+	testSrv "github.com/nhatthm/grpcmock/test"
+	"github.com/nhatthm/grpcmock/test/grpctest"
 )
 
 const (

@@ -8,8 +8,8 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/test/bufconn"
 
-	"github.com/nhatthm/grpcmock/internal/grpctest"
 	"github.com/nhatthm/grpcmock/service"
+	"github.com/nhatthm/grpcmock/test/grpctest"
 )
 
 var _ grpctest.ItemServiceServer = (*Service)(nil)

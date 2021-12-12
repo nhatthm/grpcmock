@@ -7,10 +7,10 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
-	"github.com/nhatthm/grpcmock/internal/grpctest"
-	"github.com/nhatthm/grpcmock/internal/test"
 	grpcMock "github.com/nhatthm/grpcmock/mock/grpc"
 	"github.com/nhatthm/grpcmock/stream"
+	"github.com/nhatthm/grpcmock/test"
+	"github.com/nhatthm/grpcmock/test/grpctest"
 )
 
 func TestSendAll(t *testing.T) {

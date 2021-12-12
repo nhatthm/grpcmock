@@ -6,9 +6,9 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/nhatthm/grpcmock/internal/grpctest"
 	grpcMock "github.com/nhatthm/grpcmock/mock/grpc"
 	"github.com/nhatthm/grpcmock/stream"
+	"github.com/nhatthm/grpcmock/test/grpctest"
 )
 
 func TestWrappedStream_SendMsg_Upstream(t *testing.T) {
