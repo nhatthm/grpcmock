@@ -309,7 +309,7 @@ func (r *ClientStreamRequest) Twice() *ClientStreamRequest {
 //
 // See: ClientStreamRequest.Once(), ClientStreamRequest.Twice(), ClientStreamRequest.Times().
 func (r *ClientStreamRequest) UnlimitedTimes() *ClientStreamRequest {
-	return r.Times(0)
+	return r.Times(UnlimitedTimes)
 }
 
 // Times indicates that the mock should only return the indicated number of times.
@@ -319,7 +319,7 @@ func (r *ClientStreamRequest) UnlimitedTimes() *ClientStreamRequest {
 //    	Times(5)
 //
 // See: ClientStreamRequest.Once(), ClientStreamRequest.Twice(), ClientStreamRequest.UnlimitedTimes().
-func (r *ClientStreamRequest) Times(i int) *ClientStreamRequest {
+func (r *ClientStreamRequest) Times(i RepeatedTime) *ClientStreamRequest {
 	r.lock()
 	defer r.unlock()
 

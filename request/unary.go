@@ -295,7 +295,7 @@ func (r *UnaryRequest) Twice() *UnaryRequest {
 //    	Return("hello world!").
 //    	UnlimitedTimes()
 func (r *UnaryRequest) UnlimitedTimes() *UnaryRequest {
-	return r.Times(0)
+	return r.Times(UnlimitedTimes)
 }
 
 // Times indicates that the mock should only return the indicated number of times.
@@ -303,7 +303,7 @@ func (r *UnaryRequest) UnlimitedTimes() *UnaryRequest {
 //    Server.ExpectUnary("grpctest.Service/GetItem").
 //    	Return("hello world!").
 //    	Times(5)
-func (r *UnaryRequest) Times(i int) *UnaryRequest {
+func (r *UnaryRequest) Times(i RepeatedTime) *UnaryRequest {
 	r.lock()
 	defer r.unlock()
 

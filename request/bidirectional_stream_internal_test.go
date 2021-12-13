@@ -318,7 +318,7 @@ func TestBidirectionalStreamRequest_Once(t *testing.T) {
 	r := newTransformItemsRequest()
 	r.Once()
 
-	assert.Equal(t, 1, r.repeatability)
+	assert.Equal(t, RepeatedTime(1), r.repeatability)
 }
 
 func TestBidirectionalStreamRequest_Twice(t *testing.T) {
@@ -327,7 +327,7 @@ func TestBidirectionalStreamRequest_Twice(t *testing.T) {
 	r := newTransformItemsRequest()
 	r.Twice()
 
-	assert.Equal(t, 2, r.repeatability)
+	assert.Equal(t, RepeatedTime(2), r.repeatability)
 }
 
 func TestBidirectionalStreamRequest_UnlimitedTimes(t *testing.T) {
@@ -336,7 +336,7 @@ func TestBidirectionalStreamRequest_UnlimitedTimes(t *testing.T) {
 	r := newTransformItemsRequest()
 	r.UnlimitedTimes()
 
-	assert.Equal(t, 0, r.repeatability)
+	assert.Equal(t, UnlimitedTimes, r.repeatability)
 }
 
 func TestBidirectionalStreamRequest_Times(t *testing.T) {
@@ -345,7 +345,7 @@ func TestBidirectionalStreamRequest_Times(t *testing.T) {
 	r := newTransformItemsRequest()
 	r.Times(20)
 
-	assert.Equal(t, 20, r.repeatability)
+	assert.Equal(t, RepeatedTime(20), r.repeatability)
 }
 
 func TestBidirectionalStreamRequest_WaitUntil(t *testing.T) {
@@ -419,11 +419,11 @@ func TestBidirectionalStreamRequest_Repeatability(t *testing.T) {
 
 	r := newTransformItemsRequest()
 
-	assert.Equal(t, 0, Repeatability(r))
+	assert.Equal(t, UnlimitedTimes, Repeatability(r))
 
 	SetRepeatability(r, 1)
 
-	assert.Equal(t, 1, Repeatability(r))
+	assert.Equal(t, RepeatedTime(1), Repeatability(r))
 }
 
 func TestBidirectionalStreamRequest_Calls(t *testing.T) {

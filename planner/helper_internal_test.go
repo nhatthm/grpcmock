@@ -53,13 +53,13 @@ func TestTrackRepeatable(t *testing.T) {
 		scenario       string
 		request        request.Request
 		expectedResult bool
-		expectedTimes  int
+		expectedTimes  request.RepeatedTime
 	}{
 		{
 			scenario:       "unlimited request",
-			request:        newUnaryRequestWithTimes(0),
+			request:        newUnaryRequestWithTimes(request.UnlimitedTimes),
 			expectedResult: true,
-			expectedTimes:  0,
+			expectedTimes:  request.UnlimitedTimes,
 		},
 		{
 			scenario:       "twice",

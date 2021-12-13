@@ -611,7 +611,7 @@ func TestUnaryRequest_Once(t *testing.T) {
 	r := newGetItemRequest()
 	r.Once()
 
-	assert.Equal(t, 1, r.repeatability)
+	assert.Equal(t, RepeatedTime(1), r.repeatability)
 }
 
 func TestUnaryRequest_Twice(t *testing.T) {
@@ -620,7 +620,7 @@ func TestUnaryRequest_Twice(t *testing.T) {
 	r := newGetItemRequest()
 	r.Twice()
 
-	assert.Equal(t, 2, r.repeatability)
+	assert.Equal(t, RepeatedTime(2), r.repeatability)
 }
 
 func TestUnaryRequest_UnlimitedTimes(t *testing.T) {
@@ -629,7 +629,7 @@ func TestUnaryRequest_UnlimitedTimes(t *testing.T) {
 	r := newGetItemRequest()
 	r.UnlimitedTimes()
 
-	assert.Equal(t, 0, r.repeatability)
+	assert.Equal(t, UnlimitedTimes, r.repeatability)
 }
 
 func TestUnaryRequest_Times(t *testing.T) {
@@ -638,7 +638,7 @@ func TestUnaryRequest_Times(t *testing.T) {
 	r := newGetItemRequest()
 	r.Times(20)
 
-	assert.Equal(t, 20, r.repeatability)
+	assert.Equal(t, RepeatedTime(20), r.repeatability)
 }
 
 func TestUnaryRequest_WaitUntil(t *testing.T) {
@@ -719,11 +719,11 @@ func TestUnaryRequest_Repeatability(t *testing.T) {
 	r := newGetItemRequest()
 	r.repeatability = 2
 
-	assert.Equal(t, 2, Repeatability(r))
+	assert.Equal(t, RepeatedTime(2), Repeatability(r))
 
 	SetRepeatability(r, 1)
 
-	assert.Equal(t, 1, Repeatability(r))
+	assert.Equal(t, RepeatedTime(1), Repeatability(r))
 }
 
 func TestUnaryRequest_Calls(t *testing.T) {

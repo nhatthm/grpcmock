@@ -206,7 +206,7 @@ func (r *BidirectionalStreamRequest) Twice() *BidirectionalStreamRequest {
 //
 // See: BidirectionalStreamRequest.Once(), BidirectionalStreamRequest.Twice(), BidirectionalStreamRequest.Times().
 func (r *BidirectionalStreamRequest) UnlimitedTimes() *BidirectionalStreamRequest {
-	return r.Times(0)
+	return r.Times(UnlimitedTimes)
 }
 
 // Times indicates that the mock should only return the indicated number of times.
@@ -218,7 +218,7 @@ func (r *BidirectionalStreamRequest) UnlimitedTimes() *BidirectionalStreamReques
 //    	})
 //
 // See: BidirectionalStreamRequest.Once(), BidirectionalStreamRequest.Twice(), BidirectionalStreamRequest.UnlimitedTimes().
-func (r *BidirectionalStreamRequest) Times(i int) *BidirectionalStreamRequest {
+func (r *BidirectionalStreamRequest) Times(i RepeatedTime) *BidirectionalStreamRequest {
 	r.lock()
 	defer r.unlock()
 
