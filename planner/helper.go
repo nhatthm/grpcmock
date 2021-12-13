@@ -21,7 +21,7 @@ func recovered(v interface{}) string {
 func trackRepeatable(r request.Request) bool {
 	t := request.Repeatability(r)
 
-	if t == 0 {
+	if t == request.UnlimitedTimes {
 		return true
 	}
 

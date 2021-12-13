@@ -17,7 +17,7 @@ type baseRequest struct {
 
 	// The number of times to return the return arguments when setting
 	// expectations. 0 means to always return the value.
-	repeatability int
+	repeatability RepeatedTime
 
 	fs afero.Fs
 }
@@ -41,11 +41,11 @@ func (r *baseRequest) service() service.Method {
 	return *r.serviceDesc
 }
 
-func (r *baseRequest) getRepeatability() int {
+func (r *baseRequest) getRepeatability() RepeatedTime {
 	return r.repeatability
 }
 
-func (r *baseRequest) setRepeatability(i int) {
+func (r *baseRequest) setRepeatability(i RepeatedTime) {
 	r.repeatability = i
 }
 

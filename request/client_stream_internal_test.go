@@ -851,7 +851,7 @@ func TestClientStreamRequest_Once(t *testing.T) {
 	r := newCreateItemsRequest()
 	r.Once()
 
-	assert.Equal(t, 1, r.repeatability)
+	assert.Equal(t, RepeatedTime(1), r.repeatability)
 }
 
 func TestClientStreamRequest_Twice(t *testing.T) {
@@ -860,7 +860,7 @@ func TestClientStreamRequest_Twice(t *testing.T) {
 	r := newCreateItemsRequest()
 	r.Twice()
 
-	assert.Equal(t, 2, r.repeatability)
+	assert.Equal(t, RepeatedTime(2), r.repeatability)
 }
 
 func TestClientStreamRequest_UnlimitedTimes(t *testing.T) {
@@ -869,7 +869,7 @@ func TestClientStreamRequest_UnlimitedTimes(t *testing.T) {
 	r := newCreateItemsRequest()
 	r.UnlimitedTimes()
 
-	assert.Equal(t, 0, r.repeatability)
+	assert.Equal(t, UnlimitedTimes, r.repeatability)
 }
 
 func TestClientStreamRequest_Times(t *testing.T) {
@@ -878,7 +878,7 @@ func TestClientStreamRequest_Times(t *testing.T) {
 	r := newCreateItemsRequest()
 	r.Times(20)
 
-	assert.Equal(t, 20, r.repeatability)
+	assert.Equal(t, RepeatedTime(20), r.repeatability)
 }
 
 func TestClientStreamRequest_WaitUntil(t *testing.T) {
@@ -963,11 +963,11 @@ func TestClientStreamRequest_Repeatability(t *testing.T) {
 
 	r := newCreateItemsRequest()
 
-	assert.Equal(t, 0, Repeatability(r))
+	assert.Equal(t, UnlimitedTimes, Repeatability(r))
 
 	SetRepeatability(r, 1)
 
-	assert.Equal(t, 1, Repeatability(r))
+	assert.Equal(t, RepeatedTime(1), Repeatability(r))
 }
 
 func TestClientStreamRequest_Calls(t *testing.T) {

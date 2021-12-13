@@ -229,7 +229,7 @@ func (s *Server) ExpectationsWereMet() error {
 			request.HeaderMatcher(expected),
 			request.PayloadMatcher(expected),
 			calls,
-			repeat,
+			int(repeat),
 		)
 
 		count++
