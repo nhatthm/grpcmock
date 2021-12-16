@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/test/bufconn"
 
@@ -225,7 +226,7 @@ func WithBufConnDialer(l *bufconn.Listener) InvokeOption {
 
 // WithInsecure disables transport security for the connections.
 func WithInsecure() InvokeOption {
-	return WithDialOptions(grpc.WithInsecure())
+	return WithDialOptions(grpc.WithTransportCredentials(insecure.NewCredentials()))
 }
 
 // WithDialOptions sets dial options.
