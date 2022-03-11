@@ -53,7 +53,7 @@ func TestInvokeUnary_WithoutInsecure(t *testing.T) {
 	t.Parallel()
 
 	err := grpcmock.InvokeUnary(context.Background(), "Service/NotFound", nil, nil)
-	expected := "grpc: no transport security set (use grpc.WithInsecure() explicitly or set credentials)"
+	expected := "grpc: no transport security set (use grpc.WithTransportCredentials(insecure.NewCredentials()) explicitly or set credentials)"
 
 	assert.EqualError(t, err, expected)
 }
@@ -144,7 +144,7 @@ func TestInvokeServerStream_WithoutInsecure(t *testing.T) {
 	t.Parallel()
 
 	err := grpcmock.InvokeServerStream(context.Background(), "Service/NotFound", nil, nil)
-	expected := "grpc: no transport security set (use grpc.WithInsecure() explicitly or set credentials)"
+	expected := "grpc: no transport security set (use grpc.WithTransportCredentials(insecure.NewCredentials()) explicitly or set credentials)"
 
 	assert.EqualError(t, err, expected)
 }
@@ -270,7 +270,7 @@ func TestInvokeClientStream_WithoutInsecure(t *testing.T) {
 	t.Parallel()
 
 	err := grpcmock.InvokeClientStream(context.Background(), "Service/NotFound", nil, nil)
-	expected := "grpc: no transport security set (use grpc.WithInsecure() explicitly or set credentials)"
+	expected := "grpc: no transport security set (use grpc.WithTransportCredentials(insecure.NewCredentials()) explicitly or set credentials)"
 
 	assert.EqualError(t, err, expected)
 }
@@ -378,7 +378,7 @@ func TestInvokeBidirectionalStream_WithoutInsecure(t *testing.T) {
 	t.Parallel()
 
 	err := grpcmock.InvokeBidirectionalStream(context.Background(), "Service/NotFound", nil)
-	expected := "grpc: no transport security set (use grpc.WithInsecure() explicitly or set credentials)"
+	expected := "grpc: no transport security set (use grpc.WithTransportCredentials(insecure.NewCredentials()) explicitly or set credentials)"
 
 	assert.EqualError(t, err, expected)
 }

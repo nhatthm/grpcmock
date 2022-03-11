@@ -96,7 +96,7 @@ func TestInvoker_Invoke_ServerStream_WithoutInsecure(t *testing.T) {
 	t.Parallel()
 
 	err := invoker.New(listItemsMethod()).Invoke(context.Background())
-	expected := "grpc: no transport security set (use grpc.WithInsecure() explicitly or set credentials)"
+	expected := "grpc: no transport security set (use grpc.WithTransportCredentials(insecure.NewCredentials()) explicitly or set credentials)"
 
 	assert.EqualError(t, err, expected)
 }
@@ -159,7 +159,7 @@ func TestInvoker_Invoke_ClientStream_WithoutInsecure(t *testing.T) {
 	t.Parallel()
 
 	err := invoker.New(createItemsMethod()).Invoke(context.Background())
-	expected := "grpc: no transport security set (use grpc.WithInsecure() explicitly or set credentials)"
+	expected := "grpc: no transport security set (use grpc.WithTransportCredentials(insecure.NewCredentials()) explicitly or set credentials)"
 
 	assert.EqualError(t, err, expected)
 }
@@ -214,7 +214,7 @@ func TestInvoker_Invoke_BidirectionalStream_WithoutInsecure(t *testing.T) {
 	t.Parallel()
 
 	err := invoker.New(transformItemsMethod()).Invoke(context.Background())
-	expected := "grpc: no transport security set (use grpc.WithInsecure() explicitly or set credentials)"
+	expected := "grpc: no transport security set (use grpc.WithTransportCredentials(insecure.NewCredentials()) explicitly or set credentials)"
 
 	assert.EqualError(t, err, expected)
 }
