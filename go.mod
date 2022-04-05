@@ -23,9 +23,9 @@ require (
 	github.com/stretchr/objx v0.3.0 // indirect
 	github.com/yudai/gojsondiff v1.0.0 // indirect
 	github.com/yudai/golcs v0.0.0-20170316035057-ecda9a501e82 // indirect
-	golang.org/x/net v0.0.0-20220225172249-27dd8689420f // indirect
-	golang.org/x/sys v0.0.0-20220310020820-b874c991c1a5 // indirect
+	golang.org/x/net v0.0.0-20220403103023-749bd193bc2b // indirect
+	golang.org/x/sys v0.0.0-20220405052023-b1e9470b6e64 // indirect
 	golang.org/x/text v0.3.7 // indirect
-	google.golang.org/genproto v0.0.0-20220310185008-1973136f34c6 // indirect
+	google.golang.org/genproto v0.0.0-20220401170504-314d38edb7de // indirect
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
 )
