@@ -266,15 +266,23 @@ func (s *Server) Serve() {
 	srv, closeServer := buildGRPCServer(s.services, s.handleRequest, s.serverOpts...)
 	l, closeListener := s.newListener()
 
-	s.closeServer = closeServer
-	s.listener = l
+	var ready <-chan struct{}
 
-	go func() {
+	s.closeServer = closeServer
+	s.listener, ready = newListenerWithReadySignal(l)
+
+	go func(l net.Listener) {
 		//goland:noinspection GoUnhandledErrorResult
 		defer closeListener() // nolint: errcheck
 
 		must.NotFail(srv.Serve(l))
-	}()
+	}(s.listener)
+
+	select {
+	case <-ready:
+	case <-time.After(time.Second):
+		return
+	}
 }
 
 // Close stops and closes all open connections and listeners.
@@ -478,15 +486,6 @@ func newStreamHandler(
 		}
 
 		return handle(s.Context(), svc, in, out)
-	}
-}
-
-func newListenerByAddr(addr string) func() (net.Listener, func() error) {
-	return func() (net.Listener, func() error) {
-		l, err := net.Listen("tcp", addr)
-		must.NotFail(err)
-
-		return l, l.Close
 	}
 }
 
