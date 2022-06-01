@@ -9,7 +9,7 @@ require (
 	github.com/spf13/afero v1.8.2
 	github.com/stretchr/testify v1.7.1
 	github.com/swaggest/assertjson v1.7.0
-	google.golang.org/grpc v1.46.2
+	google.golang.org/grpc v1.47.0
 	google.golang.org/protobuf v1.28.0
 )
 
