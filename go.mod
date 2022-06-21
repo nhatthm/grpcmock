@@ -7,7 +7,7 @@ require (
 	github.com/nhatthm/aferomock v0.3.1
 	github.com/nhatthm/go-matcher v1.3.1
 	github.com/spf13/afero v1.8.2
-	github.com/stretchr/testify v1.7.2
+	github.com/stretchr/testify v1.7.4
 	github.com/swaggest/assertjson v1.7.0
 	google.golang.org/grpc v1.47.0
 	google.golang.org/protobuf v1.28.0
