@@ -6,6 +6,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
+	grpcAssert "github.com/nhatthm/grpcmock/assert"
 	"github.com/nhatthm/grpcmock/stream"
 	"github.com/nhatthm/grpcmock/test/grpctest"
 )
@@ -134,7 +135,7 @@ func TestBuffer(t *testing.T) {
 
 	expected := &grpctest.Item{Id: 42}
 
-	assert.Equal(t, expected, actual)
+	grpcAssert.EqualMessage(t, expected, actual)
 
 	assert.ErrorIs(t, buf.RecvMsg(actual), io.EOF)
 }
