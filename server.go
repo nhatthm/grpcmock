@@ -132,7 +132,7 @@ func (s *Server) method(method string) *service.Method {
 
 // ExpectUnary adds a new expected unary request.
 //
-//    Server.ExpectUnary("grpctest.Service/GetItem")
+//	Server.ExpectUnary("grpctest.Service/GetItem")
 func (s *Server) ExpectUnary(method string) *request.UnaryRequest {
 	svc := s.method(method)
 
@@ -149,7 +149,7 @@ func (s *Server) ExpectUnary(method string) *request.UnaryRequest {
 
 // ExpectClientStream adds a new expected client-stream request.
 //
-//    Server.ExpectClientStream("grpctest.Service/CreateItems")
+//	Server.ExpectClientStream("grpctest.Service/CreateItems")
 func (s *Server) ExpectClientStream(method string) *request.ClientStreamRequest {
 	svc := s.method(method)
 
@@ -166,7 +166,7 @@ func (s *Server) ExpectClientStream(method string) *request.ClientStreamRequest 
 
 // ExpectServerStream adds a new expected server-stream request.
 //
-//    Server.ExpectServerStream("grpctest.Service/ListItems")
+//	Server.ExpectServerStream("grpctest.Service/ListItems")
 func (s *Server) ExpectServerStream(method string) *request.ServerStreamRequest {
 	svc := s.method(method)
 
@@ -183,7 +183,7 @@ func (s *Server) ExpectServerStream(method string) *request.ServerStreamRequest 
 
 // ExpectBidirectionalStream adds a new expected bidirectional-stream request.
 //
-//    Server.ExpectBidirectionalStream("grpctest.Service/TransformItems")
+//	Server.ExpectBidirectionalStream("grpctest.Service/TransformItems")
 func (s *Server) ExpectBidirectionalStream(method string) *request.BidirectionalStreamRequest {
 	svc := s.method(method)
 
@@ -491,14 +491,14 @@ func newStreamHandler(
 
 // WithPlanner sets the expectations' planner.
 //
-//    grpcmock.MockServer(
-//    	grpcmock.RegisterService(grpctest.RegisterItemServiceServer),
-//    	grpcmock.WithPlanner(planner.FirstMatch()),
-//    	func(s *grpcmock.Server) {
-//    		s.ExpectUnary("grpctest.ItemService/GetItem").UnlimitedTimes().
-//    			Return(&grpctest.Item{})
-//    	},
-//    )(t)
+//	grpcmock.MockServer(
+//		grpcmock.RegisterService(grpctest.RegisterItemServiceServer),
+//		grpcmock.WithPlanner(planner.FirstMatch()),
+//		func(s *grpcmock.Server) {
+//			s.ExpectUnary("grpctest.ItemService/GetItem").UnlimitedTimes().
+//				Return(&grpctest.Item{})
+//		},
+//	)(t)
 func WithPlanner(p planner.Planner) ServerOption {
 	return func(s *Server) {
 		s.WithPlanner(p)
@@ -507,13 +507,13 @@ func WithPlanner(p planner.Planner) ServerOption {
 
 // RegisterService registers a new service using the generated register function.
 //
-//    grpcmock.MockUnstartedServer(
-//    	grpcmock.RegisterService(grpctest.RegisterItemServiceServer),
-//    	func(s *grpcmock.Server) {
-//    		s.ExpectUnary("grpctest.ItemService/GetItem").UnlimitedTimes().
-//    			Return(&grpctest.Item{})
-//    	},
-//    )(t)
+//	grpcmock.MockUnstartedServer(
+//		grpcmock.RegisterService(grpctest.RegisterItemServiceServer),
+//		func(s *grpcmock.Server) {
+//			s.ExpectUnary("grpctest.ItemService/GetItem").UnlimitedTimes().
+//				Return(&grpctest.Item{})
+//		},
+//	)(t)
 //
 // See: RegisterServiceFromInstance(), RegisterServiceFromMethods().
 func RegisterService(registerFunc interface{}) ServerOption {
@@ -526,13 +526,13 @@ func RegisterService(registerFunc interface{}) ServerOption {
 
 // RegisterServiceFromInstance registers a new service using the generated server interface.
 //
-//    grpcmock.MockUnstartedServer(
-//    	grpcmock.RegisterServiceFromInstance("grpctest.ItemService", (*grpctest.ItemServiceServer)(nil)),
-//    	func(s *grpcmock.Server) {
-//    		s.ExpectUnary("grpctest.ItemService/GetItem").UnlimitedTimes().
-//    			Return(&grpctest.Item{})
-//    	},
-//    )(t)
+//	grpcmock.MockUnstartedServer(
+//		grpcmock.RegisterServiceFromInstance("grpctest.ItemService", (*grpctest.ItemServiceServer)(nil)),
+//		func(s *grpcmock.Server) {
+//			s.ExpectUnary("grpctest.ItemService/GetItem").UnlimitedTimes().
+//				Return(&grpctest.Item{})
+//		},
+//	)(t)
 //
 // See: RegisterService(), RegisterServiceFromMethods().
 func RegisterServiceFromInstance(id string, svc interface{}) ServerOption {
@@ -543,19 +543,19 @@ func RegisterServiceFromInstance(id string, svc interface{}) ServerOption {
 
 // RegisterServiceFromMethods registers a new service using service.Method definition.
 //
-//    grpcmock.MockUnstartedServer(
-//    	grpcmock.RegisterServiceFromMethods(service.Method{
-//			ServiceName: "grpctest.ItemService",
-//			MethodName:  "GetItem",
-//			MethodType:  service.TypeUnary,
-//			Input:       &grpctest.GetItemRequest{},
-//			Output:      &grpctest.Item{},
-//    	}),
-//    	func(s *grpcmock.Server) {
-//    		s.ExpectUnary("grpctest.ItemService/GetItem").UnlimitedTimes().
-//    			Return(&grpctest.Item{})
-//    	},
-//    )(t)
+//	   grpcmock.MockUnstartedServer(
+//	   	grpcmock.RegisterServiceFromMethods(service.Method{
+//				ServiceName: "grpctest.ItemService",
+//				MethodName:  "GetItem",
+//				MethodType:  service.TypeUnary,
+//				Input:       &grpctest.GetItemRequest{},
+//				Output:      &grpctest.Item{},
+//	   	}),
+//	   	func(s *grpcmock.Server) {
+//	   		s.ExpectUnary("grpctest.ItemService/GetItem").UnlimitedTimes().
+//	   			Return(&grpctest.Item{})
+//	   	},
+//	   )(t)
 //
 // See: RegisterService(), RegisterServiceFromInstance().
 func RegisterServiceFromMethods(serviceMethods ...service.Method) ServerOption {

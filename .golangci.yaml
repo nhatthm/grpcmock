@@ -21,6 +21,7 @@ linters:
   enable-all: true
   disable:
     - exhaustivestruct
+    - exhaustruct
     - forbidigo
     - forcetypeassert
     - gci
@@ -32,8 +33,12 @@ linters:
     - ireturn
     - lll
     - maligned
+    - nolintlint # https://github.com/golangci/golangci-lint/issues/3063
+    - nonamedreturns
+    - nosnakecase
     - paralleltest
     - scopelint
+    - tagliatelle
     - testpackage
     - varnamelen
     - wrapcheck
@@ -42,6 +47,7 @@ issues:
   exclude-use-default: false
   exclude-rules:
     - linters:
+        - containedctx
         - dupl
         - funlen
         - goconst

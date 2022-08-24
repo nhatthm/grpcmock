@@ -33,5 +33,5 @@ func JSONEq(t assert.TestingT, expected, actual interface{}, msgAndArgs ...inter
 		return false
 	}
 
-	return assertjson.Equal(t, expectedBytes, actualBytes, msgAndArgs)
+	return assertjson.Equal(t, expectedBytes, actualBytes, msgAndArgs...)
 }

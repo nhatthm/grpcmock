@@ -9,8 +9,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/nhatthm/go-matcher"
 	"github.com/stretchr/testify/assert"
+	"go.nhat.io/matcher/v2"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"

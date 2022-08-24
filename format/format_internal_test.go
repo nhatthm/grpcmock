@@ -3,8 +3,8 @@ package format
 import (
 	"testing"
 
-	"github.com/nhatthm/go-matcher"
 	"github.com/stretchr/testify/assert"
+	"go.nhat.io/matcher/v2"
 
 	grpcMatcher "github.com/nhatthm/grpcmock/matcher"
 	"github.com/nhatthm/grpcmock/test/grpctest"

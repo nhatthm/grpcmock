@@ -340,17 +340,17 @@ func TestServer(t *testing.T) {
 
 ## Match a value
 
-`grpcmock` is using [`nhatthm/go-matcher`](https://github.com/nhatthm/go-matcher) for matching values and that makes `grpcmock` more powerful and convenient
+`grpcmock` is using [`go.nhat.io/matcher/v2`](https://github.com/nhatthm/go-matcher) for matching values and that makes `grpcmock` more powerful and convenient
 than ever. When writing expectations for the header or the payload, you can use any kind of matchers for your needs.
 
 For example, the `UnaryRequest.WithHeader(header string, value interface{})` means you expect a header that matches a value, you can put any of these into
 the `value`
 
-| Type | Explanation | Example |
-| :---: | :--- | :--- |
-| `string`<br/>`[]byte` | Match the exact string, case-sensitive | `.WithHeader("locale", "en-US")` |
-| `*regexp.Regexp` | Match using `regexp.Regex.MatchString` | `.WithHeader("locale", regexp.MustCompile("^en-"))` |
-| `matcher.RegexPattern` |  Match using `regexp.Regex.MatchString` | `.WithHeader("locale", matcher.RegexPattern("^en-"))` |
+|          Type          | Explanation                            | Example                                               |
+|:----------------------:|:---------------------------------------|:------------------------------------------------------|
+| `string`<br/>`[]byte`  | Match the exact string, case-sensitive | `.WithHeader("locale", "en-US")`                      |
+|    `*regexp.Regexp`    | Match using `regexp.Regex.MatchString` | `.WithHeader("locale", regexp.MustCompile("^en-"))`   |
+| `matcher.RegexPattern` | Match using `regexp.Regex.MatchString` | `.WithHeader("locale", matcher.RegexPattern("^en-"))` |
 
 [<sub><sup>[table of contents]</sup></sub>](#table-of-contents)
 
@@ -358,12 +358,12 @@ the `value`
 
 `matcher.Exact` matches a value by using [`testify/assert.ObjectsAreEqual()`](https://github.com/stretchr/testify/assert).
 
-| Matcher | Actual | Result |
-| :---: | :---: | :---: |
-| `matcher.Exact("en-US")` | `"en-US"` | `true` |
-| `matcher.Exact("en-US")` | `"en-us"` | `false` |
-| `matcher.Exact([]byte("en-US))` | `[]byte("en-US")` | `true` |
-| `matcher.Exact([]byte("en-US))` | `"en-US"` | `false` |
+|             Matcher             |      Actual       | Result  |
+|:-------------------------------:|:-----------------:|:-------:|
+|    `matcher.Exact("en-US")`     |     `"en-US"`     | `true`  |
+|    `matcher.Exact("en-US")`     |     `"en-us"`     | `false` |
+| `matcher.Exact([]byte("en-US))` | `[]byte("en-US")` | `true`  |
+| `matcher.Exact([]byte("en-US))` |     `"en-US"`     | `false` |
 
 [<sub><sup>[table of contents]</sup></sub>](#table-of-contents)
 
@@ -478,18 +478,18 @@ func TestServer(t *testing.T) {
 
 There are 2 methods for matching the request payload:
 
-| Method | Explanation |
-| :--- | :--- |
-| `WithPayload(in interface{})` | Match the incoming payload with an expectation. See the table below for the supported types. |
+| Method                                             | Explanation                                                                                                            |
+|:---------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------|
+| `WithPayload(in interface{})`                      | Match the incoming payload with an expectation. See the table below for the supported types.                           |
 | `WithPayloadf(format string, args ...interface{})` | An old school `fmt.Sprintf()` call will be made with `format` and `args`. The result will be passed to `WithPayload()` |
 
-| `in` Type | Matcher | Explanation |
-| :--- | :--- | :--- |
-| `string`, `[]byte` | [`matcher.JSON`](#json) | Match the payload with a json string. |
-| `*regexp.Regexp` | [`matcher.Regex`](#regexp) | Match the payload using Regular Expressions. |
-| [`matcher.Matcher`](#match-a-value) | The same matcher | Match the payload using the provided matcher. |
-| `func(interface{}) (bool, error)` | The same matcher | Match the payload using a custom matcher. |
-| Others | [`matcher.JSON`](#json) | `in` is marshaled to `string` and matched using `matcher.JSON`. |
+| `in` Type                           | Matcher                    | Explanation                                                     |
+|:------------------------------------|:---------------------------|:----------------------------------------------------------------|
+| `string`, `[]byte`                  | [`matcher.JSON`](#json)    | Match the payload with a json string.                           |
+| `*regexp.Regexp`                    | [`matcher.Regex`](#regexp) | Match the payload using Regular Expressions.                    |
+| [`matcher.Matcher`](#match-a-value) | The same matcher           | Match the payload using the provided matcher.                   |
+| `func(interface{}) (bool, error)`   | The same matcher           | Match the payload using a custom matcher.                       |
+| Others                              | [`matcher.JSON`](#json)    | `in` is marshaled to `string` and matched using `matcher.JSON`. |
 
 For example:
 
@@ -544,12 +544,12 @@ custom handler to feed the test scenario.
 
 There are 4 methods, they are straightforward:
 
-| Method | Explanation |
-| :--- | :--- |
-| `ReturnCode(code codes.Code)` | Change status code. If it is `codes.OK`, the error message is removed. |
-| `ReturnErrorMessage(msg string)` | Change error message. Tf the current status code is `codes.OK`, it's changed to `codes.Internal` |
-| `ReturnError(code codes.Code, msg string)` | Change status code and error message. If the code is `codes.OK`, the error message is removed. |
-| `ReturnErrorf(code codes.Code, format string, args ...interface{})` | Same as `ReturnError` but with the support of `fmt.Sprintf() |
+| Method                                                              | Explanation                                                                                      |
+|:--------------------------------------------------------------------|:-------------------------------------------------------------------------------------------------|
+| `ReturnCode(code codes.Code)`                                       | Change status code. If it is `codes.OK`, the error message is removed.                           |
+| `ReturnErrorMessage(msg string)`                                    | Change error message. Tf the current status code is `codes.OK`, it's changed to `codes.Internal` |
+| `ReturnError(code codes.Code, msg string)`                          | Change status code and error message. If the code is `codes.OK`, the error message is removed.   |
+| `ReturnErrorf(code codes.Code, format string, args ...interface{})` | Same as `ReturnError` but with the support of `fmt.Sprintf()                                     |
 
 For example:
 
@@ -582,12 +582,12 @@ func TestServer(t *testing.T) {
 
 There are 4 methods:
 
-| Method | Explanation |
-| :--- | :--- |
-| `Return(v interface{})` | The response is a `string`, a `[]byte` or an object of the same type of the method. If it's a `string` or `[]byte`, the response will be unmarshalled to the object. |
-| `Returnf(format string, args ...interface{})` | Same as `Return()`, but with support for formatting using `fmt.Sprintf()` |
-| `ReturnFile(filePath string)` | The response is the content of given file, read by `io.ReadFile()` |
-| `ReturnJSON(v interface{})` | The input is marshalled by `json.Marshal(v)` and then unmarshalled to an object of the same type of the method. |
+| Method                                        | Explanation                                                                                                                                                          |
+|:----------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `Return(v interface{})`                       | The response is a `string`, a `[]byte` or an object of the same type of the method. If it's a `string` or `[]byte`, the response will be unmarshalled to the object. |
+| `Returnf(format string, args ...interface{})` | Same as `Return()`, but with support for formatting using `fmt.Sprintf()`                                                                                            |
+| `ReturnFile(filePath string)`                 | The response is the content of given file, read by `io.ReadFile()`                                                                                                   |
+| `ReturnJSON(v interface{})`                   | The input is marshalled by `json.Marshal(v)` and then unmarshalled to an object of the same type of the method.                                                      |
 
 ```go
 package main
@@ -750,20 +750,20 @@ func TestServer(t *testing.T) {
 
 There are 2 methods for matching the request payload:
 
-| Method | Explanation |
-| :--- | :--- |
-|`WithPayload(in interface{})` | Match the incoming payload with an expectation. See the table below for the supported types. |
-|`WithPayloadf(format string, args ...interface{})` | An old school `fmt.Sprintf()` call will be made with `format` and `args`. The result will be passed to `WithPayload()` |
+| Method                                             | Explanation                                                                                                            |
+|:---------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------|
+| `WithPayload(in interface{})`                      | Match the incoming payload with an expectation. See the table below for the supported types.                           |
+| `WithPayloadf(format string, args ...interface{})` | An old school `fmt.Sprintf()` call will be made with `format` and `args`. The result will be passed to `WithPayload()` |
 
 _* The incoming `payload` is tee from the stream until `io.EOF`._
 
-| `in` Type | Matcher | Explanation |
-| :--- | :--- | :--- |
-| `string`, `[]byte` | [`matcher.JSON`](#json) | Match the payload with a json string. |
-| `*regexp.Regexp` | [`matcher.Regex`](#regexp) | Match the payload using Regular Expressions. |
-| [`matcher.Matcher`](#match-a-value) | The same matcher | Match the payload using the provided matcher. |
-| `func(in interface{}) (bool, error)` | The same matcher | Match the payload using a custom matcher. |
-| Others | [`matcher.JSON`](#json) | `in` is marshaled to `string` and matched with the payload using `matcher.JSON`. |
+| `in` Type                            | Matcher                    | Explanation                                                                      |
+|:-------------------------------------|:---------------------------|:---------------------------------------------------------------------------------|
+| `string`, `[]byte`                   | [`matcher.JSON`](#json)    | Match the payload with a json string.                                            |
+| `*regexp.Regexp`                     | [`matcher.Regex`](#regexp) | Match the payload using Regular Expressions.                                     |
+| [`matcher.Matcher`](#match-a-value)  | The same matcher           | Match the payload using the provided matcher.                                    |
+| `func(in interface{}) (bool, error)` | The same matcher           | Match the payload using a custom matcher.                                        |
+| Others                               | [`matcher.JSON`](#json)    | `in` is marshaled to `string` and matched with the payload using `matcher.JSON`. |
 
 For example:
 
@@ -818,12 +818,12 @@ custom handler to feed the test scenario.
 
 There are 4 methods, they are straightforward:
 
-| Method | Explanation |
-| :--- | :--- |
-| `ReturnCode(code codes.Code)` | Change status code. If it is `codes.OK`, the error message is removed. |
-| `ReturnErrorMessage(msg string)` | Change error message. Tf the current status code is `codes.OK`, it's changed to `codes.Internal` |
-| `ReturnError(code codes.Code, msg string)` | Change status code and error message. If the code is `codes.OK`, the error message is removed. |
-| `ReturnErrorf(code codes.Code, format string, args ...interface{})` | Same as `ReturnError` but with the support of `fmt.Sprintf() |
+| Method                                                              | Explanation                                                                                      |
+|:--------------------------------------------------------------------|:-------------------------------------------------------------------------------------------------|
+| `ReturnCode(code codes.Code)`                                       | Change status code. If it is `codes.OK`, the error message is removed.                           |
+| `ReturnErrorMessage(msg string)`                                    | Change error message. Tf the current status code is `codes.OK`, it's changed to `codes.Internal` |
+| `ReturnError(code codes.Code, msg string)`                          | Change status code and error message. If the code is `codes.OK`, the error message is removed.   |
+| `ReturnErrorf(code codes.Code, format string, args ...interface{})` | Same as `ReturnError` but with the support of `fmt.Sprintf()                                     |
 
 For example:
 
@@ -856,12 +856,12 @@ func TestServer(t *testing.T) {
 
 There are 4 methods:
 
-| Method | Explanation |
-| :--- | :--- |
-| `Return(v interface{})` | The response is a `string`, a `[]byte` or an object of the same type of the method. If it's a `string` or `[]byte`, the response will be unmarshalled to the object. |
-| `Returnf(format string, args ...interface{})` | Same as `Return()`, but with support for formatting using `fmt.Sprintf()` |
-| `ReturnFile(filePath string)` | The response is the content of given file, read by `io.ReadFile()` |
-| `ReturnJSON(v interface{})` | The input is marshalled by `json.Marshal(v)` and then unmarshalled to an object of the same type of the method. |
+| Method                                        | Explanation                                                                                                                                                          |
+|:----------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `Return(v interface{})`                       | The response is a `string`, a `[]byte` or an object of the same type of the method. If it's a `string` or `[]byte`, the response will be unmarshalled to the object. |
+| `Returnf(format string, args ...interface{})` | Same as `Return()`, but with support for formatting using `fmt.Sprintf()`                                                                                            |
+| `ReturnFile(filePath string)`                 | The response is the content of given file, read by `io.ReadFile()`                                                                                                   |
+| `ReturnJSON(v interface{})`                   | The input is marshalled by `json.Marshal(v)` and then unmarshalled to an object of the same type of the method.                                                      |
 
 ```go
 package main
@@ -1027,18 +1027,18 @@ func TestServer(t *testing.T) {
 
 There are 2 methods for matching the request payload:
 
-| Method | Explanation |
-| :--- | :--- |
-| `WithPayload(in interface{})` | Match the incoming payload with an expectation. See the table below for the supported types.                           |
+| Method                                             | Explanation                                                                                                            |
+|:---------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------|
+| `WithPayload(in interface{})`                      | Match the incoming payload with an expectation. See the table below for the supported types.                           |
 | `WithPayloadf(format string, args ...interface{})` | An old school `fmt.Sprintf()` call will be made with `format` and `args`. The result will be passed to `WithPayload()` |
 
-| `in` Type | Matcher | Explanation |
-| :--- | :--- | :--- |
-| `string`, `[]byte` | [`matcher.JSON`](#json) | Match the payload with a json string. |
-| `*regexp.Regexp` | [`matcher.Regex`](#regexp) | Match the payload using Regular Expressions. |
-| [`matcher.Matcher`](#match-a-value) | The same matcher | Match the payload using the provided matcher. |
-| `func(interface{}) (bool, error)` | The same matcher | Match the payload using a custom matcher. |
-| Others | [`matcher.JSON`](#json) | `in` is marshaled to `string` and matched using `matcher.JSON`. |
+| `in` Type                           | Matcher                    | Explanation                                                     |
+|:------------------------------------|:---------------------------|:----------------------------------------------------------------|
+| `string`, `[]byte`                  | [`matcher.JSON`](#json)    | Match the payload with a json string.                           |
+| `*regexp.Regexp`                    | [`matcher.Regex`](#regexp) | Match the payload using Regular Expressions.                    |
+| [`matcher.Matcher`](#match-a-value) | The same matcher           | Match the payload using the provided matcher.                   |
+| `func(interface{}) (bool, error)`   | The same matcher           | Match the payload using a custom matcher.                       |
+| Others                              | [`matcher.JSON`](#json)    | `in` is marshaled to `string` and matched using `matcher.JSON`. |
 
 For example:
 
@@ -1048,7 +1048,7 @@ package main
 import (
 	"testing"
 
-	"github.com/nhatthm/go-matcher"
+	"go.nhat.io/matcher/v2"
 	"github.com/nhatthm/grpcmock"
 )
 
@@ -1093,12 +1093,12 @@ custom handler to feed the test scenario.
 
 There are 4 methods, they are straightforward:
 
-| Method | Explanation |
-| :--- | :--- |
-| `ReturnCode(code codes.Code)` | Change status code. If it is `codes.OK`, the error message is removed. |
-| `ReturnErrorMessage(msg string)` | Change error message. Tf the current status code is `codes.OK`, it's changed to `codes.Internal` |
-| `ReturnError(code codes.Code, msg string)` | Change status code and error message. If the code is `codes.OK`, the error message is removed. |
-| `ReturnErrorf(code codes.Code, format string, args ...interface{})` | Same as `ReturnError` but with the support of `fmt.Sprintf() |
+| Method                                                              | Explanation                                                                                      |
+|:--------------------------------------------------------------------|:-------------------------------------------------------------------------------------------------|
+| `ReturnCode(code codes.Code)`                                       | Change status code. If it is `codes.OK`, the error message is removed.                           |
+| `ReturnErrorMessage(msg string)`                                    | Change error message. Tf the current status code is `codes.OK`, it's changed to `codes.Internal` |
+| `ReturnError(code codes.Code, msg string)`                          | Change status code and error message. If the code is `codes.OK`, the error message is removed.   |
+| `ReturnErrorf(code codes.Code, format string, args ...interface{})` | Same as `ReturnError` but with the support of `fmt.Sprintf()                                     |
 
 For example:
 
@@ -1131,12 +1131,12 @@ func TestServer(t *testing.T) {
 
 There are 4 methods:
 
-| Method | Explanation |
-| :--- | :--- |
-| `Return(v interface{})` | The response is a `string`, a `[]byte` or a slice of objects of the same type of the method. If it's a `string` or `[]byte`, the response will be unmarshalled to a slice. |
-| `Returnf(format string, args ...interface{})` | Same as `Return()`, but with support for formatting using `fmt.Sprintf()` |
-| `ReturnFile(filePath string)` | The response is the content of given file, read by `io.ReadFile()` |
-| `ReturnJSON(v interface{})` | The input is marshalled by `json.Marshal(v)` and then unmarshalled to a slice of objects of the same type of the method. |
+| Method                                        | Explanation                                                                                                                                                                |
+|:----------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `Return(v interface{})`                       | The response is a `string`, a `[]byte` or a slice of objects of the same type of the method. If it's a `string` or `[]byte`, the response will be unmarshalled to a slice. |
+| `Returnf(format string, args ...interface{})` | Same as `Return()`, but with support for formatting using `fmt.Sprintf()`                                                                                                  |
+| `ReturnFile(filePath string)`                 | The response is the content of given file, read by `io.ReadFile()`                                                                                                         |
+| `ReturnJSON(v interface{})`                   | The input is marshalled by `json.Marshal(v)` and then unmarshalled to a slice of objects of the same type of the method.                                                   |
 
 ```go
 package main
@@ -1182,13 +1182,13 @@ func TestServer(t *testing.T) {
 
 With `ServerStreamRequest.ReturnStream()`, you can customize the behaviors of the stream. There are several step helpers:
 
-| Step | Explanation |
-| :--- | :--- |
-| `AddHeader(key, value string)`<br/>`SetHeader(header map[string]string)`| Set one or many header without sending to client. |
-| `SendHeader()` | Send all set header to client. |
-| `Send(v interface{})` | Send a single message to client. |
-| `SendMany(v interface{})` | Send multiple messages to client. |
-| `ReturnError(code codes.Code, msg string)`<br/>`ReturnErrorf(code codes.Code, msg string, args ...interface{})` | Return an error to client |
+| Step                                                                                                            | Explanation                                       |
+|:----------------------------------------------------------------------------------------------------------------|:--------------------------------------------------|
+| `AddHeader(key, value string)`<br/>`SetHeader(header map[string]string)`                                        | Set one or many header without sending to client. |
+| `SendHeader()`                                                                                                  | Send all set header to client.                    |
+| `Send(v interface{})`                                                                                           | Send a single message to client.                  |
+| `SendMany(v interface{})`                                                                                       | Send multiple messages to client.                 |
+| `ReturnError(code codes.Code, msg string)`<br/>`ReturnErrorf(code codes.Code, msg string, args ...interface{})` | Return an error to client                         |
 
 _* All the steps executes sequentially._
 
@@ -1341,12 +1341,12 @@ custom handler to feed the test scenario.
 
 There are 4 methods, they are straightforward:
 
-| Method | Explanation |
-| :--- | :--- |
-| `ReturnCode(code codes.Code)` | Change status code. If it is `codes.OK`, the error message is removed. |
-| `ReturnErrorMessage(msg string)` | Change error message. Tf the current status code is `codes.OK`, it's changed to `codes.Internal` |
-| `ReturnError(code codes.Code, msg string)` | Change status code and error message. If the code is `codes.OK`, the error message is removed. |
-| `ReturnErrorf(code codes.Code, format string, args ...interface{})` | Same as `ReturnError` but with the support of `fmt.Sprintf() |
+| Method                                                              | Explanation                                                                                      |
+|:--------------------------------------------------------------------|:-------------------------------------------------------------------------------------------------|
+| `ReturnCode(code codes.Code)`                                       | Change status code. If it is `codes.OK`, the error message is removed.                           |
+| `ReturnErrorMessage(msg string)`                                    | Change error message. Tf the current status code is `codes.OK`, it's changed to `codes.Internal` |
+| `ReturnError(code codes.Code, msg string)`                          | Change status code and error message. If the code is `codes.OK`, the error message is removed.   |
+| `ReturnErrorf(code codes.Code, format string, args ...interface{})` | Same as `ReturnError` but with the support of `fmt.Sprintf()                                     |
 
 For example:
 

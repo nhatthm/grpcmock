@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/nhatthm/go-matcher"
+	"go.nhat.io/matcher/v2"
 	"google.golang.org/grpc/metadata"
 )
 

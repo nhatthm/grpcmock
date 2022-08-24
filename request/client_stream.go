@@ -8,8 +8,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/nhatthm/go-matcher"
 	"github.com/spf13/afero"
+	"go.nhat.io/matcher/v2"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -64,8 +64,8 @@ func NewClientStreamRequest(locker sync.Locker, svc *service.Method) *ClientStre
 
 // WithHeader sets an expected header of the given request.
 //
-//    Server.ExpectClientStream("grpctest.Service/CreateItems").
-//    	WithHeader("Locale", "en-US")
+//	Server.ExpectClientStream("grpctest.Service/CreateItems").
+//		WithHeader("Locale", "en-US")
 func (r *ClientStreamRequest) WithHeader(header string, value interface{}) *ClientStreamRequest {
 	r.lock()
 	defer r.unlock()
@@ -81,8 +81,8 @@ func (r *ClientStreamRequest) WithHeader(header string, value interface{}) *Clie
 
 // WithHeaders sets a list of expected headers of the given request.
 //
-//    Server.ExpectClientStream("grpctest.Service/CreateItems").
-//    	WithHeaders(map[string]interface{}{"Locale": "en-US"})
+//	Server.ExpectClientStream("grpctest.Service/CreateItems").
+//		WithHeaders(map[string]interface{}{"Locale": "en-US"})
 func (r *ClientStreamRequest) WithHeaders(headers map[string]interface{}) *ClientStreamRequest {
 	for header, value := range headers {
 		r.WithHeader(header, value)
@@ -94,8 +94,8 @@ func (r *ClientStreamRequest) WithHeaders(headers map[string]interface{}) *Clien
 // WithPayload sets the expected payload of the given request. It could be a JSON []byte, JSON string, an object (that will be marshaled),
 // or a custom matcher.
 //
-//    Server.ExpectClientStream("grpctest.Service/CreateItems").
-//    	WithPayload(`[{"name": "Foobar"}]`)
+//	Server.ExpectClientStream("grpctest.Service/CreateItems").
+//		WithPayload(`[{"name": "Foobar"}]`)
 //
 // See: ClientStreamRequest.WithPayloadf().
 func (r *ClientStreamRequest) WithPayload(in interface{}) *ClientStreamRequest {
@@ -109,8 +109,8 @@ func (r *ClientStreamRequest) WithPayload(in interface{}) *ClientStreamRequest {
 
 // WithPayloadf formats according to a format specifier and use it as the expected payload of the given request.
 //
-//    Server.ExpectClientStream("grpctest.Service/CreateItems").
-//    	WithPayloadf(`[{"name": %q}]`, "Foobar")
+//	Server.ExpectClientStream("grpctest.Service/CreateItems").
+//		WithPayloadf(`[{"name": %q}]`, "Foobar")
 //
 // See: ClientStreamRequest.WithPayload().
 func (r *ClientStreamRequest) WithPayloadf(format string, args ...interface{}) *ClientStreamRequest {
@@ -119,8 +119,8 @@ func (r *ClientStreamRequest) WithPayloadf(format string, args ...interface{}) *
 
 // ReturnCode sets the response code.
 //
-//    Server.ExpectClientStream("grpc.Service/CreateItems").
-//    	ReturnCode(codes.OK)
+//	Server.ExpectClientStream("grpc.Service/CreateItems").
+//		ReturnCode(codes.OK)
 //
 // See: ClientStreamRequest.ReturnErrorMessage(), ClientStreamRequest.ReturnError(), ClientStreamRequest.ReturnErrorf().
 func (r *ClientStreamRequest) ReturnCode(code codes.Code) {
@@ -136,8 +136,8 @@ func (r *ClientStreamRequest) ReturnCode(code codes.Code) {
 
 // ReturnErrorMessage sets the response error message.
 //
-//    Server.ExpectClientStream("grpc.Service/CreateItems").
-//    	ReturnErrorMessage("Internal Server Error")
+//	Server.ExpectClientStream("grpc.Service/CreateItems").
+//		ReturnErrorMessage("Internal Server Error")
 //
 // See: ClientStreamRequest.ReturnCode(), ClientStreamRequest.ReturnError(), ClientStreamRequest.ReturnErrorf().
 func (r *ClientStreamRequest) ReturnErrorMessage(msg string) {
@@ -153,8 +153,8 @@ func (r *ClientStreamRequest) ReturnErrorMessage(msg string) {
 
 // ReturnError sets the response error.
 //
-//    Server.ExpectClientStream("grpc.Service/CreateItems").
-//    	ReturnError(codes.Internal, "Internal Server Error")
+//	Server.ExpectClientStream("grpc.Service/CreateItems").
+//		ReturnError(codes.Internal, "Internal Server Error")
 //
 // See: ClientStreamRequest.ReturnCode(), ClientStreamRequest.ReturnErrorMessage(), ClientStreamRequest.ReturnErrorf().
 func (r *ClientStreamRequest) ReturnError(code codes.Code, msg string) {
@@ -164,8 +164,8 @@ func (r *ClientStreamRequest) ReturnError(code codes.Code, msg string) {
 
 // ReturnErrorf sets the response error.
 //
-//    Server.ExpectClientStream("grpc.Service/CreateItems").
-//    	ReturnErrorf(codes.NotFound, "Item %d not found", 42)
+//	Server.ExpectClientStream("grpc.Service/CreateItems").
+//		ReturnErrorf(codes.NotFound, "Item %d not found", 42)
 //
 // See: ClientStreamRequest.ReturnCode(), ClientStreamRequest.ReturnErrorMessage(), ClientStreamRequest.ReturnError().
 func (r *ClientStreamRequest) ReturnErrorf(code codes.Code, format string, args ...interface{}) {
@@ -175,8 +175,8 @@ func (r *ClientStreamRequest) ReturnErrorf(code codes.Code, format string, args 
 
 // Return sets the result to return to client.
 //
-//    Server.ExpectClientStream("grpc.Service/CreateItems").
-//    	Return(`{"num_items": 1}`)
+//	Server.ExpectClientStream("grpc.Service/CreateItems").
+//		Return(`{"num_items": 1}`)
 //
 // See: ClientStreamRequest.Returnf(), ClientStreamRequest.ReturnJSON(), ClientStreamRequest.ReturnFile().
 func (r *ClientStreamRequest) Return(v interface{}) {
@@ -188,8 +188,8 @@ func (r *ClientStreamRequest) Return(v interface{}) {
 
 // Returnf formats according to a format specifier and use it as the result to return to client.
 //
-//    Server.ExpectClientStream("grpc.Service/CreateItems").
-//    	Returnf(`{"num_items": %d}`, 1)
+//	Server.ExpectClientStream("grpc.Service/CreateItems").
+//		Returnf(`{"num_items": %d}`, 1)
 //
 // See: ClientStreamRequest.Return(), ClientStreamRequest.ReturnJSON(), ClientStreamRequest.ReturnFile().
 func (r *ClientStreamRequest) Returnf(format string, args ...interface{}) {
@@ -198,8 +198,8 @@ func (r *ClientStreamRequest) Returnf(format string, args ...interface{}) {
 
 // ReturnJSON marshals the object using json.Marshal and uses it as the result to return to client.
 //
-//    Server.ExpectClientStream("grpc.Service/CreateItems").
-//    	ReturnJSON(map[string]interface{}{"num_items": 1})
+//	Server.ExpectClientStream("grpc.Service/CreateItems").
+//		ReturnJSON(map[string]interface{}{"num_items": 1})
 //
 // See: ClientStreamRequest.Return(), ClientStreamRequest.Returnf(), ClientStreamRequest.ReturnFile().
 func (r *ClientStreamRequest) ReturnJSON(v interface{}) {
@@ -211,8 +211,8 @@ func (r *ClientStreamRequest) ReturnJSON(v interface{}) {
 
 // ReturnFile reads the file and uses its content as the result to return to client.
 //
-//    Server.ExpectUnary("grpctest.Service/CreateItems").
-//    	ReturnFile("resources/fixtures/response.json")
+//	Server.ExpectUnary("grpctest.Service/CreateItems").
+//		ReturnFile("resources/fixtures/response.json")
 //
 // See: ClientStreamRequest.Return(), ClientStreamRequest.Returnf(), ClientStreamRequest.ReturnJSON().
 func (r *ClientStreamRequest) ReturnFile(filePath string) {
@@ -229,10 +229,10 @@ func (r *ClientStreamRequest) ReturnFile(filePath string) {
 
 // Run sets a custom handler to handle the given request.
 //
-//    Server.ExpectClientStream("grpc.Service/CreateItems").
-//		Run(func(context.Context, grpc.ServerStreamer) (interface{}, error) {
-//			return &grpctest.CreateItemsResponse{NumItems: 1}, nil
-//		})
+//	   Server.ExpectClientStream("grpc.Service/CreateItems").
+//			Run(func(context.Context, grpc.ServerStreamer) (interface{}, error) {
+//				return &grpctest.CreateItemsResponse{NumItems: 1}, nil
+//			})
 func (r *ClientStreamRequest) Run(handler func(ctx context.Context, s grpc.ServerStream) (interface{}, error)) {
 	r.lock()
 	defer r.unlock()
@@ -280,9 +280,9 @@ func (r *ClientStreamRequest) handle(ctx context.Context, in interface{}, out in
 
 // Once indicates that the mock should only return the value once.
 //
-//    Server.ExpectClientStream("grpctest.Service/CreateItems").
-//    	Return(`{"num_items": 1}`)
-//    	Once()
+//	Server.ExpectClientStream("grpctest.Service/CreateItems").
+//		Return(`{"num_items": 1}`)
+//		Once()
 //
 // See: ClientStreamRequest.Twice(), ClientStreamRequest.UnlimitedTimes(), ClientStreamRequest.Times().
 func (r *ClientStreamRequest) Once() *ClientStreamRequest {
@@ -291,9 +291,9 @@ func (r *ClientStreamRequest) Once() *ClientStreamRequest {
 
 // Twice indicates that the mock should only return the value twice.
 //
-//    Server.ExpectClientStream("grpctest.Service/CreateItems").
-//    	Return(`{"num_items": 1}`)
-//    	Twice()
+//	Server.ExpectClientStream("grpctest.Service/CreateItems").
+//		Return(`{"num_items": 1}`)
+//		Twice()
 //
 // See: ClientStreamRequest.Once(), ClientStreamRequest.UnlimitedTimes(), ClientStreamRequest.Times().
 func (r *ClientStreamRequest) Twice() *ClientStreamRequest {
@@ -303,9 +303,9 @@ func (r *ClientStreamRequest) Twice() *ClientStreamRequest {
 // UnlimitedTimes indicates that the mock should return the value at least once and there is no max limit in the number
 // of return.
 //
-//    Server.ExpectClientStream("grpctest.Service/CreateItems").
-//    	Return(`{"num_items": 1}`)
-//    	UnlimitedTimes()
+//	Server.ExpectClientStream("grpctest.Service/CreateItems").
+//		Return(`{"num_items": 1}`)
+//		UnlimitedTimes()
 //
 // See: ClientStreamRequest.Once(), ClientStreamRequest.Twice(), ClientStreamRequest.Times().
 func (r *ClientStreamRequest) UnlimitedTimes() *ClientStreamRequest {
@@ -314,9 +314,9 @@ func (r *ClientStreamRequest) UnlimitedTimes() *ClientStreamRequest {
 
 // Times indicates that the mock should only return the indicated number of times.
 //
-//    Server.ExpectClientStream("grpctest.Service/CreateItems").
-//    	Return(`{"num_items": 1}`)
-//    	Times(5)
+//	Server.ExpectClientStream("grpctest.Service/CreateItems").
+//		Return(`{"num_items": 1}`)
+//		Times(5)
 //
 // See: ClientStreamRequest.Once(), ClientStreamRequest.Twice(), ClientStreamRequest.UnlimitedTimes().
 func (r *ClientStreamRequest) Times(i RepeatedTime) *ClientStreamRequest {
@@ -331,9 +331,9 @@ func (r *ClientStreamRequest) Times(i RepeatedTime) *ClientStreamRequest {
 // WaitUntil sets the channel that will block the mocked return until its closed
 // or a message is received.
 //
-//    Server.ExpectClientStream("grpctest.Service/CreateItems").
-//    	WaitUntil(time.After(time.Second)).
-//    	Return(`{"num_items": 1}`)
+//	Server.ExpectClientStream("grpctest.Service/CreateItems").
+//		WaitUntil(time.After(time.Second)).
+//		Return(`{"num_items": 1}`)
 func (r *ClientStreamRequest) WaitUntil(w <-chan time.Time) *ClientStreamRequest {
 	r.lock()
 	defer r.unlock()
@@ -345,9 +345,9 @@ func (r *ClientStreamRequest) WaitUntil(w <-chan time.Time) *ClientStreamRequest
 
 // After sets how long to block until the call returns.
 //
-//    Server.ExpectClientStream("grpctest.Service/CreateItems").
-//    	After(time.Second).
-//    	Return(`{"num_items": 1}`)
+//	Server.ExpectClientStream("grpctest.Service/CreateItems").
+//		After(time.Second).
+//		Return(`{"num_items": 1}`)
 func (r *ClientStreamRequest) After(d time.Duration) *ClientStreamRequest {
 	r.lock()
 	defer r.unlock()

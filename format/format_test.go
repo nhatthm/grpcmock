@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/nhatthm/go-matcher"
 	"github.com/stretchr/testify/assert"
+	"go.nhat.io/matcher/v2"
 
 	"github.com/nhatthm/grpcmock/format"
 	grpcMatcher "github.com/nhatthm/grpcmock/matcher"

@@ -5,7 +5,7 @@ import (
 	"io"
 	"sort"
 
-	"github.com/nhatthm/go-matcher"
+	"go.nhat.io/matcher/v2"
 
 	grpcMatcher "github.com/nhatthm/grpcmock/matcher"
 	"github.com/nhatthm/grpcmock/must"

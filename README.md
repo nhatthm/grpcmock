@@ -1,3 +1,5 @@
+> ⚠️ From `v0.20.0`, the project will be rebranded to `go.nhat.io/grpcmock`. `v.19.x` is the last version with `github.com/nhatthm/grpcmock`.
+
 # gRPC Test Utilities for Golang
 
 [![GitHub Releases](https://img.shields.io/github/v/release/nhatthm/grpcmock)](https://github.com/nhatthm/grpcmock/releases/latest)
