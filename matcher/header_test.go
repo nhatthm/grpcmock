@@ -6,8 +6,8 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/nhatthm/go-matcher"
 	"github.com/stretchr/testify/assert"
+	"go.nhat.io/matcher/v2"
 	"google.golang.org/grpc/metadata"
 
 	grpcMatcher "github.com/nhatthm/grpcmock/matcher"

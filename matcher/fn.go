@@ -1,6 +1,6 @@
 package matcher
 
-import "github.com/nhatthm/go-matcher"
+import "go.nhat.io/matcher/v2"
 
 var _ matcher.Matcher = (*FnMatcher)(nil)
 

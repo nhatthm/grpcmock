@@ -8,10 +8,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/nhatthm/aferomock"
-	"github.com/nhatthm/go-matcher"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"go.nhat.io/aferomock"
+	"go.nhat.io/matcher/v2"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"

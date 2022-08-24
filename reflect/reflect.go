@@ -58,7 +58,7 @@ func (f serviceRegistrarFunc) RegisterService(desc *grpc.ServiceDesc, impl inter
 
 // FindServiceMethods finds all the service methods using reflection on the server.
 //
-//    reflect.FindServiceMethods((*grpctest.ItemServiceServer)(nil))
+//	reflect.FindServiceMethods((*grpctest.ItemServiceServer)(nil))
 func FindServiceMethods(svc interface{}) []ServiceMethod {
 	typeOf := UnwrapType(svc)
 	numMethods := typeOf.NumMethod()

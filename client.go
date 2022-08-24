@@ -209,7 +209,7 @@ func WithHeaders(header map[string]string) InvokeOption {
 // WithContextDialer sets a context dialer to create connections.
 //
 // See:
-// 	- grpcmock.WithBufConnDialer()
+//   - grpcmock.WithBufConnDialer()
 func WithContextDialer(d ContextDialer) InvokeOption {
 	return WithDialOptions(grpc.WithContextDialer(d))
 }
@@ -217,7 +217,7 @@ func WithContextDialer(d ContextDialer) InvokeOption {
 // WithBufConnDialer sets a *bufconn.Listener as the context dialer.
 //
 // See:
-// 	- grpcmock.WithContextDialer()
+//   - grpcmock.WithContextDialer()
 func WithBufConnDialer(l *bufconn.Listener) InvokeOption {
 	return WithContextDialer(func(context.Context, string) (net.Conn, error) {
 		return l.Dial()

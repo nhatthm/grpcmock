@@ -6,8 +6,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/nhatthm/go-matcher"
 	"github.com/stretchr/testify/assert"
+	"go.nhat.io/matcher/v2"
 
 	srvMatcher "github.com/nhatthm/grpcmock/matcher"
 )

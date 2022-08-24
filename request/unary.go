@@ -8,8 +8,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/nhatthm/go-matcher"
 	"github.com/spf13/afero"
+	"go.nhat.io/matcher/v2"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
@@ -62,8 +62,9 @@ func NewUnaryRequest(locker sync.Locker, svc *service.Method) *UnaryRequest {
 
 // WithHeader sets an expected header of the given request.
 //
-//    Server.ExpectUnary("grpctest.Service/GetItem").
-//    	WithHeader("Locale", "en-US")
+//	Server.ExpectUnary("grpctest.Service/GetItem").
+//		WithHeader("Locale", "en-US")
+//
 // nolint: unparam
 func (r *UnaryRequest) WithHeader(header string, value interface{}) *UnaryRequest {
 	r.lock()
@@ -80,8 +81,8 @@ func (r *UnaryRequest) WithHeader(header string, value interface{}) *UnaryReques
 
 // WithHeaders sets a list of expected headers of the given request.
 //
-//    Server.ExpectUnary("grpctest.Service/GetItem").
-//    	WithHeaders(map[string]interface{}{"Locale": "en-US"})
+//	Server.ExpectUnary("grpctest.Service/GetItem").
+//		WithHeaders(map[string]interface{}{"Locale": "en-US"})
 func (r *UnaryRequest) WithHeaders(headers map[string]interface{}) *UnaryRequest {
 	for header, val := range headers {
 		r.WithHeader(header, val)
@@ -92,24 +93,24 @@ func (r *UnaryRequest) WithHeaders(headers map[string]interface{}) *UnaryRequest
 
 // WithPayload sets the expected payload of the given request. It could be []byte, string, or a matcher.Matcher.
 //
-// 	Server.ExpectUnary("grpctest.Service/GetItem").
-// 		WithPayload(`{"id": 41}`)
+//	Server.ExpectUnary("grpctest.Service/GetItem").
+//		WithPayload(`{"id": 41}`)
 //
-// 	Server.ExpectUnary("grpctest.Service/GetItem").
-// 		WithPayload(&Item{Id: 41})
+//	Server.ExpectUnary("grpctest.Service/GetItem").
+//		WithPayload(&Item{Id: 41})
 //
-// 	Server.ExpectUnary("grpctest.Service/GetItem").
-// 		WithPayload(func(actual interface{}) (bool, error) {
-// 			in, ok := actual.(*Item)
-// 			if !ok {
-// 				return false, nil
-// 			}
+//	Server.ExpectUnary("grpctest.Service/GetItem").
+//		WithPayload(func(actual interface{}) (bool, error) {
+//			in, ok := actual.(*Item)
+//			if !ok {
+//				return false, nil
+//			}
 //
-// 			return in.Id == 42, nil
-// 		})
+//			return in.Id == 42, nil
+//		})
 //
-// 	Server.ExpectUnary("grpctest.Service/GetItem").
-// 		WithPayload(&Item{Id: 41})
+//	Server.ExpectUnary("grpctest.Service/GetItem").
+//		WithPayload(&Item{Id: 41})
 func (r *UnaryRequest) WithPayload(in interface{}) *UnaryRequest {
 	r.lock()
 	defer r.unlock()
@@ -121,16 +122,16 @@ func (r *UnaryRequest) WithPayload(in interface{}) *UnaryRequest {
 
 // WithPayloadf formats according to a format specifier and use it as the expected payload of the given request.
 //
-//    Server.ExpectUnary("grpctest.Service/GetItem").
-//    	WithPayloadf(`{"message": "hello %s"}`, "john")
+//	Server.ExpectUnary("grpctest.Service/GetItem").
+//		WithPayloadf(`{"message": "hello %s"}`, "john")
 func (r *UnaryRequest) WithPayloadf(format string, args ...interface{}) *UnaryRequest {
 	return r.WithPayload(fmt.Sprintf(format, args...))
 }
 
 // ReturnCode sets the response code.
 //
-//    Server.ExpectUnary("grpctest.Service/GetItem").
-//    	ReturnCode(codes.OK)
+//	Server.ExpectUnary("grpctest.Service/GetItem").
+//		ReturnCode(codes.OK)
 func (r *UnaryRequest) ReturnCode(code codes.Code) {
 	r.lock()
 	defer r.unlock()
@@ -144,8 +145,8 @@ func (r *UnaryRequest) ReturnCode(code codes.Code) {
 
 // ReturnErrorMessage sets the response error message.
 //
-//    Server.ExpectUnary("grpctest.Service/GetItem").
-//    	ReturnErrorMessage("Internal Server Error")
+//	Server.ExpectUnary("grpctest.Service/GetItem").
+//		ReturnErrorMessage("Internal Server Error")
 func (r *UnaryRequest) ReturnErrorMessage(msg string) {
 	r.lock()
 	defer r.unlock()
@@ -159,8 +160,8 @@ func (r *UnaryRequest) ReturnErrorMessage(msg string) {
 
 // ReturnError sets the response error.
 //
-//    Server.ExpectUnary("grpctest.Service/GetItem").
-//    	ReturnError(codes.Internal, "Internal Server Error")
+//	Server.ExpectUnary("grpctest.Service/GetItem").
+//		ReturnError(codes.Internal, "Internal Server Error")
 func (r *UnaryRequest) ReturnError(code codes.Code, msg string) {
 	r.ReturnErrorMessage(msg)
 	r.ReturnCode(code)
@@ -168,8 +169,8 @@ func (r *UnaryRequest) ReturnError(code codes.Code, msg string) {
 
 // ReturnErrorf sets the response error.
 //
-//    Server.ExpectUnary("grpctest.Service/GetItem").
-//    	ReturnErrorf(codes.NotFound, "Item %d not found", 42)
+//	Server.ExpectUnary("grpctest.Service/GetItem").
+//		ReturnErrorf(codes.NotFound, "Item %d not found", 42)
 func (r *UnaryRequest) ReturnErrorf(code codes.Code, format string, args ...interface{}) {
 	r.ReturnErrorMessage(fmt.Sprintf(format, args...))
 	r.ReturnCode(code)
@@ -177,8 +178,8 @@ func (r *UnaryRequest) ReturnErrorf(code codes.Code, format string, args ...inte
 
 // Return sets the result to return to client.
 //
-//    Server.ExpectUnary("grpctest.Service/GetItem").
-//    	Return(`{"message": "hello world!"}`)
+//	Server.ExpectUnary("grpctest.Service/GetItem").
+//		Return(`{"message": "hello world!"}`)
 func (r *UnaryRequest) Return(v interface{}) {
 	r.ReturnCode(codes.OK)
 	r.Run(func(context.Context, interface{}) (interface{}, error) {
@@ -188,16 +189,16 @@ func (r *UnaryRequest) Return(v interface{}) {
 
 // Returnf formats according to a format specifier and use it as the result to return to client.
 //
-//    Server.ExpectUnary("grpctest.Service/GetItem").
-//    	Returnf(`{"message": %q}`, "hello")
+//	Server.ExpectUnary("grpctest.Service/GetItem").
+//		Returnf(`{"message": %q}`, "hello")
 func (r *UnaryRequest) Returnf(format string, args ...interface{}) {
 	r.Return(fmt.Sprintf(format, args...))
 }
 
 // ReturnJSON marshals the object using json.Marshal and uses it as the result to return to client.
 //
-//    Server.ExpectUnary("grpctest.Service/GetItem").
-//    	ReturnJSON(map[string]string{"foo": "bar"})
+//	Server.ExpectUnary("grpctest.Service/GetItem").
+//		ReturnJSON(map[string]string{"foo": "bar"})
 func (r *UnaryRequest) ReturnJSON(v interface{}) {
 	r.ReturnCode(codes.OK)
 	r.Run(func(context.Context, interface{}) (interface{}, error) {
@@ -207,8 +208,8 @@ func (r *UnaryRequest) ReturnJSON(v interface{}) {
 
 // ReturnFile reads the file and uses its content as the result to return to client.
 //
-//    Server.ExpectUnary("grpctest.Service/GetItem").
-//    	ReturnFile("resources/fixtures/response.json")
+//	Server.ExpectUnary("grpctest.Service/GetItem").
+//		ReturnFile("resources/fixtures/response.json")
 func (r *UnaryRequest) ReturnFile(filePath string) {
 	filePath = filepath.Join(".", filepath.Clean(filePath))
 
@@ -223,10 +224,10 @@ func (r *UnaryRequest) ReturnFile(filePath string) {
 
 // Run sets a custom handler to handle the given request.
 //
-//    Server.ExpectUnary("grpctest.Service/GetItem").
-//		Run(func(ctx context.Context, in interface{}) (interface{}, error) {
-//			return &Item{}, nil
-//		})
+//	   Server.ExpectUnary("grpctest.Service/GetItem").
+//			Run(func(ctx context.Context, in interface{}) (interface{}, error) {
+//				return &Item{}, nil
+//			})
 func (r *UnaryRequest) Run(handler func(ctx context.Context, in interface{}) (interface{}, error)) {
 	r.lock()
 	defer r.unlock()
@@ -272,18 +273,18 @@ func (r *UnaryRequest) handle(ctx context.Context, in interface{}, out interface
 
 // Once indicates that the mock should only return the value once.
 //
-//    Server.ExpectUnary("grpctest.Service/GetItem").
-//    	Return("hello world!").
-//    	Once()
+//	Server.ExpectUnary("grpctest.Service/GetItem").
+//		Return("hello world!").
+//		Once()
 func (r *UnaryRequest) Once() *UnaryRequest {
 	return r.Times(1)
 }
 
 // Twice indicates that the mock should only return the value twice.
 //
-//    Server.ExpectUnary("grpctest.Service/GetItem").
-//    	Return("hello world!").
-//    	Twice()
+//	Server.ExpectUnary("grpctest.Service/GetItem").
+//		Return("hello world!").
+//		Twice()
 func (r *UnaryRequest) Twice() *UnaryRequest {
 	return r.Times(2)
 }
@@ -291,18 +292,18 @@ func (r *UnaryRequest) Twice() *UnaryRequest {
 // UnlimitedTimes indicates that the mock should return the value at least once and there is no max limit in the number
 // of return.
 //
-//    Server.ExpectUnary("grpctest.Service/GetItem").
-//    	Return("hello world!").
-//    	UnlimitedTimes()
+//	Server.ExpectUnary("grpctest.Service/GetItem").
+//		Return("hello world!").
+//		UnlimitedTimes()
 func (r *UnaryRequest) UnlimitedTimes() *UnaryRequest {
 	return r.Times(UnlimitedTimes)
 }
 
 // Times indicates that the mock should only return the indicated number of times.
 //
-//    Server.ExpectUnary("grpctest.Service/GetItem").
-//    	Return("hello world!").
-//    	Times(5)
+//	Server.ExpectUnary("grpctest.Service/GetItem").
+//		Return("hello world!").
+//		Times(5)
 func (r *UnaryRequest) Times(i RepeatedTime) *UnaryRequest {
 	r.lock()
 	defer r.unlock()
@@ -315,9 +316,9 @@ func (r *UnaryRequest) Times(i RepeatedTime) *UnaryRequest {
 // WaitUntil sets the channel that will block the mocked return until its closed
 // or a message is received.
 //
-//    Server.ExpectUnary("grpctest.Service/GetItem").
-//    	WaitUntil(time.After(time.Second)).
-//    	Return("hello world!")
+//	Server.ExpectUnary("grpctest.Service/GetItem").
+//		WaitUntil(time.After(time.Second)).
+//		Return("hello world!")
 func (r *UnaryRequest) WaitUntil(w <-chan time.Time) *UnaryRequest {
 	r.lock()
 	defer r.unlock()
@@ -329,9 +330,9 @@ func (r *UnaryRequest) WaitUntil(w <-chan time.Time) *UnaryRequest {
 
 // After sets how long to block until the call returns.
 //
-//    Server.ExpectUnary("grpctest.Service/GetItem").
-//    	After(time.Second).
-//    	Return("hello world!")
+//	Server.ExpectUnary("grpctest.Service/GetItem").
+//		After(time.Second).
+//		Return("hello world!")
 func (r *UnaryRequest) After(d time.Duration) *UnaryRequest {
 	r.lock()
 	defer r.unlock()

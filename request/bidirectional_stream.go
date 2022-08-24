@@ -6,8 +6,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/nhatthm/go-matcher"
 	"github.com/spf13/afero"
+	"go.nhat.io/matcher/v2"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -57,8 +57,8 @@ func NewBidirectionalStreamRequest(locker sync.Locker, svc *service.Method) *Bid
 
 // WithHeader sets an expected header of the given request.
 //
-//    Server.ExpectBidirectionalStream("grpctest.Service/TransformItems").
-//    	WithHeader("Locale", "en-US")
+//	Server.ExpectBidirectionalStream("grpctest.Service/TransformItems").
+//		WithHeader("Locale", "en-US")
 func (r *BidirectionalStreamRequest) WithHeader(header string, value interface{}) *BidirectionalStreamRequest {
 	r.lock()
 	defer r.unlock()
@@ -74,8 +74,8 @@ func (r *BidirectionalStreamRequest) WithHeader(header string, value interface{}
 
 // WithHeaders sets a list of expected headers of the given request.
 //
-//    Server.ExpectBidirectionalStream("grpctest.Service/TransformItems").
-//    	WithHeaders(map[string]interface{}{"Locale": "en-US"})
+//	Server.ExpectBidirectionalStream("grpctest.Service/TransformItems").
+//		WithHeaders(map[string]interface{}{"Locale": "en-US"})
 func (r *BidirectionalStreamRequest) WithHeaders(headers map[string]interface{}) *BidirectionalStreamRequest {
 	for header, value := range headers {
 		r.WithHeader(header, value)
@@ -86,8 +86,8 @@ func (r *BidirectionalStreamRequest) WithHeaders(headers map[string]interface{})
 
 // ReturnCode sets the response code.
 //
-//    Server.ExpectBidirectionalStream("grpc.Service/TransformItems").
-//    	ReturnCode(codes.OK)
+//	Server.ExpectBidirectionalStream("grpc.Service/TransformItems").
+//		ReturnCode(codes.OK)
 //
 // See: BidirectionalStreamRequest.ReturnErrorMessage(), BidirectionalStreamRequest.ReturnError(), BidirectionalStreamRequest.ReturnErrorf().
 func (r *BidirectionalStreamRequest) ReturnCode(code codes.Code) {
@@ -103,8 +103,8 @@ func (r *BidirectionalStreamRequest) ReturnCode(code codes.Code) {
 
 // ReturnErrorMessage sets the response error message.
 //
-//    Server.ExpectBidirectionalStream("grpc.Service/TransformItems").
-//    	ReturnErrorMessage("Internal Server Error")
+//	Server.ExpectBidirectionalStream("grpc.Service/TransformItems").
+//		ReturnErrorMessage("Internal Server Error")
 //
 // See: BidirectionalStreamRequest.ReturnCode(), BidirectionalStreamRequest.ReturnError(), BidirectionalStreamRequest.ReturnErrorf().
 func (r *BidirectionalStreamRequest) ReturnErrorMessage(msg string) {
@@ -120,8 +120,8 @@ func (r *BidirectionalStreamRequest) ReturnErrorMessage(msg string) {
 
 // ReturnError sets the response error.
 //
-//    Server.ExpectBidirectionalStream("grpc.Service/TransformItems").
-//    	ReturnError(codes.Internal, "Internal Server Error")
+//	Server.ExpectBidirectionalStream("grpc.Service/TransformItems").
+//		ReturnError(codes.Internal, "Internal Server Error")
 //
 // See: BidirectionalStreamRequest.ReturnCode(), BidirectionalStreamRequest.ReturnErrorMessage(), BidirectionalStreamRequest.ReturnErrorf().
 func (r *BidirectionalStreamRequest) ReturnError(code codes.Code, msg string) {
@@ -131,8 +131,8 @@ func (r *BidirectionalStreamRequest) ReturnError(code codes.Code, msg string) {
 
 // ReturnErrorf sets the response error.
 //
-//    Server.ExpectBidirectionalStream("grpc.Service/TransformItems").
-//    	ReturnErrorf(codes.NotFound, "Item %d not found", 42)
+//	Server.ExpectBidirectionalStream("grpc.Service/TransformItems").
+//		ReturnErrorf(codes.NotFound, "Item %d not found", 42)
 //
 // See: BidirectionalStreamRequest.ReturnCode(), BidirectionalStreamRequest.ReturnErrorMessage(), BidirectionalStreamRequest.ReturnError().
 func (r *BidirectionalStreamRequest) ReturnErrorf(code codes.Code, format string, args ...interface{}) {
@@ -142,10 +142,10 @@ func (r *BidirectionalStreamRequest) ReturnErrorf(code codes.Code, format string
 
 // Run sets a custom handler to handle the given request.
 //
-//    Server.ExpectBidirectionalStream("grpc.Service/TransformItems").
-//    	Run(func(context.Context, grpc.ServerStream) error {
-//    		return nil
-//    	})
+//	Server.ExpectBidirectionalStream("grpc.Service/TransformItems").
+//		Run(func(context.Context, grpc.ServerStream) error {
+//			return nil
+//		})
 func (r *BidirectionalStreamRequest) Run(handler func(ctx context.Context, s grpc.ServerStream) error) {
 	r.lock()
 	defer r.unlock()
@@ -171,11 +171,11 @@ func (r *BidirectionalStreamRequest) handle(ctx context.Context, in interface{},
 
 // Once indicates that the mock should only return the value once.
 //
-//    Server.ExpectBidirectionalStream("grpctest.Service/TransformItems").
-//    	Once().
-//    	Run(func(context.Context, grpc.ServerStream) error {
-//    		return nil
-//    	})
+//	Server.ExpectBidirectionalStream("grpctest.Service/TransformItems").
+//		Once().
+//		Run(func(context.Context, grpc.ServerStream) error {
+//			return nil
+//		})
 //
 // See: BidirectionalStreamRequest.Twice(), BidirectionalStreamRequest.UnlimitedTimes(), BidirectionalStreamRequest.Times().
 func (r *BidirectionalStreamRequest) Once() *BidirectionalStreamRequest {
@@ -184,11 +184,11 @@ func (r *BidirectionalStreamRequest) Once() *BidirectionalStreamRequest {
 
 // Twice indicates that the mock should only return the value twice.
 //
-//    Server.ExpectBidirectionalStream("grpctest.Service/TransformItems").
-//    	Twice().
-//    	Run(func(context.Context, grpc.ServerStream) error {
-//    		return nil
-//    	})
+//	Server.ExpectBidirectionalStream("grpctest.Service/TransformItems").
+//		Twice().
+//		Run(func(context.Context, grpc.ServerStream) error {
+//			return nil
+//		})
 //
 // See: BidirectionalStreamRequest.Once(), BidirectionalStreamRequest.UnlimitedTimes(), BidirectionalStreamRequest.Times().
 func (r *BidirectionalStreamRequest) Twice() *BidirectionalStreamRequest {
@@ -198,11 +198,11 @@ func (r *BidirectionalStreamRequest) Twice() *BidirectionalStreamRequest {
 // UnlimitedTimes indicates that the mock should return the value at least once and there is no max limit in the number
 // of return.
 //
-//    Server.ExpectBidirectionalStream("grpctest.Service/TransformItems").
-//    	UnlimitedTimes().
-//    	Run(func(context.Context, grpc.ServerStream) error {
-//    		return nil
-//    	})
+//	Server.ExpectBidirectionalStream("grpctest.Service/TransformItems").
+//		UnlimitedTimes().
+//		Run(func(context.Context, grpc.ServerStream) error {
+//			return nil
+//		})
 //
 // See: BidirectionalStreamRequest.Once(), BidirectionalStreamRequest.Twice(), BidirectionalStreamRequest.Times().
 func (r *BidirectionalStreamRequest) UnlimitedTimes() *BidirectionalStreamRequest {
@@ -211,11 +211,11 @@ func (r *BidirectionalStreamRequest) UnlimitedTimes() *BidirectionalStreamReques
 
 // Times indicates that the mock should only return the indicated number of times.
 //
-//    Server.ExpectBidirectionalStream("grpctest.Service/TransformItems").
-//    	Times(5).
-//    	Run(func(context.Context, grpc.ServerStream) error {
-//    		return nil
-//    	})
+//	Server.ExpectBidirectionalStream("grpctest.Service/TransformItems").
+//		Times(5).
+//		Run(func(context.Context, grpc.ServerStream) error {
+//			return nil
+//		})
 //
 // See: BidirectionalStreamRequest.Once(), BidirectionalStreamRequest.Twice(), BidirectionalStreamRequest.UnlimitedTimes().
 func (r *BidirectionalStreamRequest) Times(i RepeatedTime) *BidirectionalStreamRequest {
@@ -230,11 +230,11 @@ func (r *BidirectionalStreamRequest) Times(i RepeatedTime) *BidirectionalStreamR
 // WaitUntil sets the channel that will block the mocked return until its closed
 // or a message is received.
 //
-//    Server.ExpectBidirectionalStream("grpctest.Service/TransformItems").
-//    	WaitUntil(time.After(time.Second)).
-//    	Run(func(context.Context, grpc.ServerStream) error {
-//    		return nil
-//    	})
+//	Server.ExpectBidirectionalStream("grpctest.Service/TransformItems").
+//		WaitUntil(time.After(time.Second)).
+//		Run(func(context.Context, grpc.ServerStream) error {
+//			return nil
+//		})
 func (r *BidirectionalStreamRequest) WaitUntil(w <-chan time.Time) *BidirectionalStreamRequest {
 	r.lock()
 	defer r.unlock()
@@ -246,11 +246,11 @@ func (r *BidirectionalStreamRequest) WaitUntil(w <-chan time.Time) *Bidirectiona
 
 // After sets how long to block until the call returns.
 //
-//    Server.ExpectBidirectionalStream("grpctest.Service/TransformItems").
-//    	After(time.Second).
-//    	Run(func(context.Context, grpc.ServerStream) error {
-//    		return nil
-//    	})
+//	Server.ExpectBidirectionalStream("grpctest.Service/TransformItems").
+//		After(time.Second).
+//		Run(func(context.Context, grpc.ServerStream) error {
+//			return nil
+//		})
 func (r *BidirectionalStreamRequest) After(d time.Duration) *BidirectionalStreamRequest {
 	r.lock()
 	defer r.unlock()
