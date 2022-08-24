@@ -7,7 +7,6 @@ on:
   pull_request:
 
 env:
-    GO111MODULE: "on"
     GO_VERSION: "1.19.x"
 
 jobs:
@@ -22,11 +21,15 @@ jobs:
         with:
             go-version: ${{ env.GO_VERSION }}
 
-      - name: golangci-lint
+      - id: get-lint-version
+        run: |
+          make golangci-lint-version
+
+      - name: lint
         uses: golangci/golangci-lint-action@v3
         with:
           # Required: the version of golangci-lint is required and must be specified without patch version: we always use the latest patch version.
-          version: v1.48.0
+          version: ${{ steps.get-lint-version.outputs.GOLANGCI_LINT_VERSION }}
 
           # Optional: working directory, useful for monorepos
           # working-directory: somedir
