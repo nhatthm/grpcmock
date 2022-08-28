@@ -8,9 +8,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"go.nhat.io/matcher/v2"
 
-	"github.com/nhatthm/grpcmock/format"
-	grpcMatcher "github.com/nhatthm/grpcmock/matcher"
-	"github.com/nhatthm/grpcmock/test"
+	"go.nhat.io/grpcmock/format"
+	xmatcher "go.nhat.io/grpcmock/matcher"
+	"go.nhat.io/grpcmock/test"
 )
 
 func TestExpectedRequest(t *testing.T) {
@@ -18,11 +18,11 @@ func TestExpectedRequest(t *testing.T) {
 
 	buf := new(bytes.Buffer)
 
-	header := grpcMatcher.HeaderMatcher{
+	header := xmatcher.HeaderMatcher{
 		"Authorization": matcher.Match(`Bearer token`),
 	}
 
-	payload := grpcMatcher.Payload(matcher.JSON(`{"id": 42}`), nil)
+	payload := xmatcher.Payload(matcher.JSON(`{"id": 42}`), nil)
 
 	format.ExpectedRequest(buf, test.GetItemsSvc(), header, payload)
 
@@ -101,11 +101,11 @@ func TestExpectedRequestTimes(t *testing.T) {
 
 			buf := new(bytes.Buffer)
 
-			header := grpcMatcher.HeaderMatcher{
+			header := xmatcher.HeaderMatcher{
 				"Authorization": matcher.Match(`Bearer token`),
 			}
 
-			payload := grpcMatcher.Payload(matcher.JSON(`{"id": 42}`), nil)
+			payload := xmatcher.Payload(matcher.JSON(`{"id": 42}`), nil)
 
 			format.ExpectedRequestTimes(buf, test.GetItemsSvc(), header, payload, tc.totalCalls, tc.remainingCalls)
 

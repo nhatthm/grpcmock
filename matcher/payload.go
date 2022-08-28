@@ -3,7 +3,7 @@ package matcher
 import (
 	"go.nhat.io/matcher/v2"
 
-	"github.com/nhatthm/grpcmock/value"
+	"go.nhat.io/grpcmock/value"
 )
 
 const initActual = "<could not decode>"

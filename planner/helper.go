@@ -3,7 +3,7 @@ package planner
 import (
 	"fmt"
 
-	"github.com/nhatthm/grpcmock/request"
+	"go.nhat.io/grpcmock/request"
 )
 
 func recovered(v interface{}) string {

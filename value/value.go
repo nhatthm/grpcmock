@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/nhatthm/grpcmock/errors"
-	"github.com/nhatthm/grpcmock/must"
-	"github.com/nhatthm/grpcmock/streamer"
+	"go.nhat.io/grpcmock/errors"
+	"go.nhat.io/grpcmock/must"
+	"go.nhat.io/grpcmock/streamer"
 )
 
 // String returns the string value of the given object.

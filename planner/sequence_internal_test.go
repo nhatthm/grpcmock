@@ -5,7 +5,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/nhatthm/grpcmock/request"
+	"go.nhat.io/grpcmock/request"
 )
 
 func TestNextExpectations(t *testing.T) {

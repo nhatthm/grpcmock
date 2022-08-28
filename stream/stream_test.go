@@ -6,9 +6,9 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	grpcMock "github.com/nhatthm/grpcmock/mock/grpc"
-	"github.com/nhatthm/grpcmock/stream"
-	"github.com/nhatthm/grpcmock/test/grpctest"
+	xmock "go.nhat.io/grpcmock/mock/grpc"
+	"go.nhat.io/grpcmock/stream"
+	"go.nhat.io/grpcmock/test/grpctest"
 )
 
 func TestWrappedStream_SendMsg_Upstream(t *testing.T) {
@@ -18,13 +18,13 @@ func TestWrappedStream_SendMsg_Upstream(t *testing.T) {
 
 	testCases := []struct {
 		scenario      string
-		mockUpstream  grpcMock.ServerStreamMocker
-		mockSender    grpcMock.ServerStreamMocker
+		mockUpstream  xmock.ServerStreamMocker
+		mockSender    xmock.ServerStreamMocker
 		expectedError error
 	}{
 		{
 			scenario: "upstream error",
-			mockUpstream: grpcMock.MockServerStream(func(s *grpcMock.ServerStream) {
+			mockUpstream: xmock.MockServerStream(func(s *xmock.ServerStream) {
 				s.On("SendMsg", msg).
 					Return(errors.New("upstream error"))
 			}),
@@ -32,15 +32,15 @@ func TestWrappedStream_SendMsg_Upstream(t *testing.T) {
 		},
 		{
 			scenario: "upstream no error",
-			mockUpstream: grpcMock.MockServerStream(func(s *grpcMock.ServerStream) {
+			mockUpstream: xmock.MockServerStream(func(s *xmock.ServerStream) {
 				s.On("SendMsg", msg).
 					Return(nil)
 			}),
 		},
 		{
 			scenario:     "sender error",
-			mockUpstream: grpcMock.NoMockServerStream,
-			mockSender: grpcMock.MockServerStream(func(s *grpcMock.ServerStream) {
+			mockUpstream: xmock.NoMockServerStream,
+			mockSender: xmock.MockServerStream(func(s *xmock.ServerStream) {
 				s.On("SendMsg", msg).
 					Return(errors.New("sender error"))
 			}),
@@ -48,8 +48,8 @@ func TestWrappedStream_SendMsg_Upstream(t *testing.T) {
 		},
 		{
 			scenario:     "sender no error",
-			mockUpstream: grpcMock.NoMockServerStream,
-			mockSender: grpcMock.MockServerStream(func(s *grpcMock.ServerStream) {
+			mockUpstream: xmock.NoMockServerStream,
+			mockSender: xmock.MockServerStream(func(s *xmock.ServerStream) {
 				s.On("SendMsg", msg).
 					Return(nil)
 			}),
@@ -81,13 +81,13 @@ func TestWrappedStream_RecvMsg_Upstream(t *testing.T) {
 
 	testCases := []struct {
 		scenario      string
-		mockUpstream  grpcMock.ServerStreamMocker
-		mockReceiver  grpcMock.ServerStreamMocker
+		mockUpstream  xmock.ServerStreamMocker
+		mockReceiver  xmock.ServerStreamMocker
 		expectedError error
 	}{
 		{
 			scenario: "upstream error",
-			mockUpstream: grpcMock.MockServerStream(func(s *grpcMock.ServerStream) {
+			mockUpstream: xmock.MockServerStream(func(s *xmock.ServerStream) {
 				s.On("RecvMsg", msg).
 					Return(errors.New("upstream error"))
 			}),
@@ -95,15 +95,15 @@ func TestWrappedStream_RecvMsg_Upstream(t *testing.T) {
 		},
 		{
 			scenario: "upstream no error",
-			mockUpstream: grpcMock.MockServerStream(func(s *grpcMock.ServerStream) {
+			mockUpstream: xmock.MockServerStream(func(s *xmock.ServerStream) {
 				s.On("RecvMsg", msg).
 					Return(nil)
 			}),
 		},
 		{
 			scenario:     "receiver error",
-			mockUpstream: grpcMock.NoMockServerStream,
-			mockReceiver: grpcMock.MockServerStream(func(s *grpcMock.ServerStream) {
+			mockUpstream: xmock.NoMockServerStream,
+			mockReceiver: xmock.MockServerStream(func(s *xmock.ServerStream) {
 				s.On("RecvMsg", msg).
 					Return(errors.New("receiver error"))
 			}),
@@ -111,8 +111,8 @@ func TestWrappedStream_RecvMsg_Upstream(t *testing.T) {
 		},
 		{
 			scenario:     "receiver no error",
-			mockUpstream: grpcMock.NoMockServerStream,
-			mockReceiver: grpcMock.MockServerStream(func(s *grpcMock.ServerStream) {
+			mockUpstream: xmock.NoMockServerStream,
+			mockReceiver: xmock.MockServerStream(func(s *xmock.ServerStream) {
 				s.On("RecvMsg", msg).
 					Return(nil)
 			}),

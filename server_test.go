@@ -15,12 +15,12 @@ import (
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 
-	"github.com/nhatthm/grpcmock"
-	grpcAssert "github.com/nhatthm/grpcmock/assert"
-	"github.com/nhatthm/grpcmock/mock/planner"
-	"github.com/nhatthm/grpcmock/service"
-	testSrv "github.com/nhatthm/grpcmock/test"
-	"github.com/nhatthm/grpcmock/test/grpctest"
+	"go.nhat.io/grpcmock"
+	xassert "go.nhat.io/grpcmock/assert"
+	"go.nhat.io/grpcmock/mock/planner"
+	"go.nhat.io/grpcmock/service"
+	testSrv "go.nhat.io/grpcmock/test"
+	"go.nhat.io/grpcmock/test/grpctest"
 )
 
 const (
@@ -201,7 +201,7 @@ func TestServer_ExpectUnary_Success(t *testing.T) {
 		Name:   "Foobar",
 	}
 
-	grpcAssert.EqualMessage(t, expected, actual)
+	xassert.EqualMessage(t, expected, actual)
 	assert.NoError(t, err)
 }
 
@@ -307,7 +307,7 @@ func TestServer_ExpectServerStream_Success(t *testing.T) {
 	assert.Len(t, actual, len(expected))
 
 	for i := 0; i < len(expected); i++ {
-		grpcAssert.EqualMessage(t, expected[i], actual[i])
+		xassert.EqualMessage(t, expected[i], actual[i])
 	}
 }
 
@@ -400,7 +400,7 @@ func TestServer_ExpectClientStream_Success(t *testing.T) {
 	expected := &grpctest.CreateItemsResponse{NumItems: 1}
 
 	assert.NoError(t, err)
-	grpcAssert.EqualMessage(t, expected, actual)
+	xassert.EqualMessage(t, expected, actual)
 }
 
 func TestServer_ExpectClientStream_CustomMatcher_Success(t *testing.T) {
@@ -435,7 +435,7 @@ func TestServer_ExpectClientStream_CustomMatcher_Success(t *testing.T) {
 	expected := &grpctest.CreateItemsResponse{NumItems: 1}
 
 	assert.NoError(t, err)
-	grpcAssert.EqualMessage(t, expected, actual)
+	xassert.EqualMessage(t, expected, actual)
 }
 
 func TestServer_ExpectClientStream_MatchMsgCount_Mismatched(t *testing.T) {
@@ -584,7 +584,7 @@ func TestServer_ExpectBidirectionalStream_Success(t *testing.T) {
 	assert.Len(t, actual, len(expected))
 
 	for i := 0; i < len(expected); i++ {
-		grpcAssert.EqualMessage(t, expected[i], actual[i])
+		xassert.EqualMessage(t, expected[i], actual[i])
 	}
 }
 

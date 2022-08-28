@@ -14,13 +14,13 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	grpcAssert "github.com/nhatthm/grpcmock/assert"
-	grpcMatcher "github.com/nhatthm/grpcmock/matcher"
-	grpcMock "github.com/nhatthm/grpcmock/mock/grpc"
-	"github.com/nhatthm/grpcmock/stream"
-	"github.com/nhatthm/grpcmock/streamer"
-	"github.com/nhatthm/grpcmock/test"
-	"github.com/nhatthm/grpcmock/test/grpctest"
+	xassert "go.nhat.io/grpcmock/assert"
+	xmatcher "go.nhat.io/grpcmock/matcher"
+	xmock "go.nhat.io/grpcmock/mock/grpc"
+	"go.nhat.io/grpcmock/stream"
+	"go.nhat.io/grpcmock/streamer"
+	"go.nhat.io/grpcmock/test"
+	"go.nhat.io/grpcmock/test/grpctest"
 )
 
 func TestClientStreamRequest_WithHeader(t *testing.T) {
@@ -29,11 +29,11 @@ func TestClientStreamRequest_WithHeader(t *testing.T) {
 	r := newCreateItemsRequest()
 	r.WithHeader("foo", "bar")
 
-	assert.Equal(t, grpcMatcher.HeaderMatcher{"foo": matcher.Exact("bar")}, r.requestHeader)
+	assert.Equal(t, xmatcher.HeaderMatcher{"foo": matcher.Exact("bar")}, r.requestHeader)
 
 	r.WithHeader("john", "doe")
 
-	assert.Equal(t, grpcMatcher.HeaderMatcher{"foo": matcher.Exact("bar"), "john": matcher.Exact("doe")}, r.requestHeader)
+	assert.Equal(t, xmatcher.HeaderMatcher{"foo": matcher.Exact("bar"), "john": matcher.Exact("doe")}, r.requestHeader)
 }
 
 func TestClientStreamRequest_WithHeaders(t *testing.T) {
@@ -42,11 +42,11 @@ func TestClientStreamRequest_WithHeaders(t *testing.T) {
 	r := newCreateItemsRequest()
 	r.WithHeaders(map[string]interface{}{"foo": "bar"})
 
-	assert.Equal(t, grpcMatcher.HeaderMatcher{"foo": matcher.Exact("bar")}, r.requestHeader)
+	assert.Equal(t, xmatcher.HeaderMatcher{"foo": matcher.Exact("bar")}, r.requestHeader)
 
 	r.WithHeader("john", "doe")
 
-	assert.Equal(t, grpcMatcher.HeaderMatcher{"foo": matcher.Exact("bar"), "john": matcher.Exact("doe")}, r.requestHeader)
+	assert.Equal(t, xmatcher.HeaderMatcher{"foo": matcher.Exact("bar"), "john": matcher.Exact("doe")}, r.requestHeader)
 }
 
 func TestClientStreamRequest_WithPayload(t *testing.T) {
@@ -293,7 +293,7 @@ func TestClientStreamRequest_WithPayload_CustomMatcher_Matched(t *testing.T) {
 		},
 		{
 			scenario: "with expectation",
-			matcher: func() (string, grpcMatcher.MatchFn) {
+			matcher: func() (string, xmatcher.MatchFn) {
 				return "2 messages", func(actual interface{}) (bool, error) {
 					return expectStreamMsgsCount(actual, 2)
 				}
@@ -335,7 +335,7 @@ func TestClientStreamRequest_WithPayload_CustomMatcher_Mismatched(t *testing.T) 
 		},
 		{
 			scenario: "with expectation",
-			matcher: func() (string, grpcMatcher.MatchFn) {
+			matcher: func() (string, xmatcher.MatchFn) {
 				return "always fail", func(interface{}) (bool, error) {
 					return false, nil
 				}
@@ -380,7 +380,7 @@ func TestClientStreamRequest_WithPayload_CustomMatcher_MatchError(t *testing.T) 
 		},
 		{
 			scenario: "with expectation",
-			matcher: func() (string, grpcMatcher.MatchFn) {
+			matcher: func() (string, xmatcher.MatchFn) {
 				return "always fail", func(interface{}) (bool, error) {
 					return false, errors.New("match error")
 				}
@@ -413,7 +413,7 @@ func TestClientStreamRequest_WithPayload_CustomMatcher_MatchError(t *testing.T) 
 func TestClientStreamRequest_WithPayload_CustomMatcher_RecvError(t *testing.T) {
 	t.Parallel()
 
-	in := test.MockCreateItemsStreamer(func(s *grpcMock.ServerStream) {
+	in := test.MockCreateItemsStreamer(func(s *xmock.ServerStream) {
 		s.On("RecvMsg", &grpctest.Item{}).
 			Return(errors.New("recv error"))
 	})(t)
@@ -433,7 +433,7 @@ func TestClientStreamRequest_WithPayload_CustomMatcher_RecvError(t *testing.T) {
 func TestClientStreamRequest_WithPayload_Match_CouldNotRecvMsg(t *testing.T) {
 	t.Parallel()
 
-	in := test.MockCreateItemsStreamer(func(s *grpcMock.ServerStream) {
+	in := test.MockCreateItemsStreamer(func(s *xmock.ServerStream) {
 		s.On("RecvMsg", &grpctest.Item{}).
 			Return(errors.New("recv error"))
 	})(t)
@@ -656,7 +656,7 @@ func TestClientStreamRequest_Return(t *testing.T) {
 		},
 		{
 			scenario: "json string",
-			mockStreamer: test.MockCreateItemsStreamer(func(s *grpcMock.ServerStream) {
+			mockStreamer: test.MockCreateItemsStreamer(func(s *xmock.ServerStream) {
 				s.On("SendMsg", expected).Return(nil)
 			}),
 			output:         payload,
@@ -664,7 +664,7 @@ func TestClientStreamRequest_Return(t *testing.T) {
 		},
 		{
 			scenario: "json []byte",
-			mockStreamer: test.MockCreateItemsStreamer(func(s *grpcMock.ServerStream) {
+			mockStreamer: test.MockCreateItemsStreamer(func(s *xmock.ServerStream) {
 				s.On("SendMsg", expected).Return(nil)
 			}),
 			output:         []byte(payload),
@@ -672,7 +672,7 @@ func TestClientStreamRequest_Return(t *testing.T) {
 		},
 		{
 			scenario: "same type and a pointer",
-			mockStreamer: test.MockCreateItemsStreamer(func(s *grpcMock.ServerStream) {
+			mockStreamer: test.MockCreateItemsStreamer(func(s *xmock.ServerStream) {
 				s.On("SendMsg", expected).Return(nil)
 			}),
 			output:         &grpctest.CreateItemsResponse{NumItems: 1},
@@ -724,7 +724,7 @@ func TestClientStreamRequest_ReturnUnimplemented(t *testing.T) {
 func TestClientStreamRequest_Returnf(t *testing.T) {
 	t.Parallel()
 
-	in := test.MockCreateItemsStreamer(func(s *grpcMock.ServerStream) {
+	in := test.MockCreateItemsStreamer(func(s *xmock.ServerStream) {
 		s.On("SendMsg", &grpctest.CreateItemsResponse{NumItems: 1}).
 			Return(nil)
 	})(t)
@@ -739,7 +739,7 @@ func TestClientStreamRequest_Returnf(t *testing.T) {
 	expected := &grpctest.CreateItemsResponse{NumItems: 1}
 
 	assert.NoError(t, err)
-	grpcAssert.EqualMessage(t, expected, out)
+	xassert.EqualMessage(t, expected, out)
 }
 
 func TestClientStreamRequest_ReturnJSON(t *testing.T) {
@@ -759,7 +759,7 @@ func TestClientStreamRequest_ReturnJSON(t *testing.T) {
 	expected := &grpctest.CreateItemsResponse{NumItems: 1}
 
 	assert.NoError(t, err)
-	grpcAssert.EqualMessage(t, expected, out)
+	xassert.EqualMessage(t, expected, out)
 }
 
 func TestClientStreamRequest_ReturnJSON_Error(t *testing.T) {
@@ -791,7 +791,7 @@ func TestClientStreamRequest_ReturnFile_Success(t *testing.T) {
 	expected := &grpctest.CreateItemsResponse{NumItems: 1}
 
 	assert.NoError(t, err)
-	grpcAssert.EqualMessage(t, expected, out)
+	xassert.EqualMessage(t, expected, out)
 }
 
 func TestClientStreamRequest_ReturnFile_NotFound(t *testing.T) {
@@ -841,7 +841,7 @@ func TestClientStreamRequest_Run(t *testing.T) {
 
 	expected := &grpctest.CreateItemsResponse{NumItems: 2}
 
-	grpcAssert.EqualMessage(t, expected, out)
+	xassert.EqualMessage(t, expected, out)
 	assert.NoError(t, err)
 }
 
@@ -934,7 +934,7 @@ func TestClientStreamRequest_HeaderMatcher(t *testing.T) {
 	r := newCreateItemsRequest().WithHeader("locale", "en-US")
 
 	actual := HeaderMatcher(r)
-	expected := grpcMatcher.HeaderMatcher{"locale": matcher.Match("en-US")}
+	expected := xmatcher.HeaderMatcher{"locale": matcher.Match("en-US")}
 
 	assert.Equal(t, expected, actual)
 }

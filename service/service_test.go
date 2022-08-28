@@ -5,7 +5,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/nhatthm/grpcmock/service"
+	"go.nhat.io/grpcmock/service"
 )
 
 func TestServiceMethod_FullName(t *testing.T) {

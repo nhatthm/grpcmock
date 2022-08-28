@@ -12,10 +12,10 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	grpcErrors "github.com/nhatthm/grpcmock/errors"
-	grpcMatcher "github.com/nhatthm/grpcmock/matcher"
-	"github.com/nhatthm/grpcmock/service"
-	"github.com/nhatthm/grpcmock/streamer"
+	xerrors "go.nhat.io/grpcmock/errors"
+	xmatcher "go.nhat.io/grpcmock/matcher"
+	"go.nhat.io/grpcmock/service"
+	"go.nhat.io/grpcmock/streamer"
 )
 
 // BidirectionalStreamRequest represents the expectation for a client-stream request.
@@ -32,7 +32,7 @@ type BidirectionalStreamRequest struct {
 	run func(ctx context.Context, s grpc.ServerStream) error
 
 	// requestHeader is a list of expected headers of the given request.
-	requestHeader grpcMatcher.HeaderMatcher
+	requestHeader xmatcher.HeaderMatcher
 
 	// statusCode is the response code when the request is handled.
 	statusCode codes.Code
@@ -64,7 +64,7 @@ func (r *BidirectionalStreamRequest) WithHeader(header string, value interface{}
 	defer r.unlock()
 
 	if r.requestHeader == nil {
-		r.requestHeader = grpcMatcher.HeaderMatcher{}
+		r.requestHeader = xmatcher.HeaderMatcher{}
 	}
 
 	r.requestHeader[header] = matcher.Match(value)
@@ -166,7 +166,7 @@ func (r *BidirectionalStreamRequest) handle(ctx context.Context, in interface{},
 		return status.Error(r.statusCode, r.statusMessage)
 	}
 
-	return grpcErrors.StatusError(r.run(ctx, in.(*streamer.BidirectionalStreamer)))
+	return xerrors.StatusError(r.run(ctx, in.(*streamer.BidirectionalStreamer)))
 }
 
 // Once indicates that the mock should only return the value once.
@@ -260,10 +260,10 @@ func (r *BidirectionalStreamRequest) After(d time.Duration) *BidirectionalStream
 	return r
 }
 
-func (r *BidirectionalStreamRequest) headerMatcher() grpcMatcher.HeaderMatcher {
+func (r *BidirectionalStreamRequest) headerMatcher() xmatcher.HeaderMatcher {
 	return r.requestHeader
 }
 
-func (r *BidirectionalStreamRequest) payloadMatcher() *grpcMatcher.PayloadMatcher {
+func (r *BidirectionalStreamRequest) payloadMatcher() *xmatcher.PayloadMatcher {
 	return nil
 }

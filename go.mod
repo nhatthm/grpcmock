@@ -1,4 +1,4 @@
-module github.com/nhatthm/grpcmock
+module go.nhat.io/grpcmock
 
 go 1.17
 

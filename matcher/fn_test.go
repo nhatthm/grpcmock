@@ -6,7 +6,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/nhatthm/grpcmock/matcher"
+	"go.nhat.io/grpcmock/matcher"
 )
 
 func TestFn(t *testing.T) {

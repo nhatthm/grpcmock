@@ -11,9 +11,9 @@ import (
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 
-	"github.com/nhatthm/grpcmock/errors"
-	grpcReflect "github.com/nhatthm/grpcmock/reflect"
-	"github.com/nhatthm/grpcmock/value"
+	"go.nhat.io/grpcmock/errors"
+	xreflect "go.nhat.io/grpcmock/reflect"
+	"go.nhat.io/grpcmock/value"
 )
 
 type streamStep interface {
@@ -46,13 +46,13 @@ func stepSend(expectedType reflect.Type, msg interface{}) streamStepFunc {
 			return nil
 		}
 
-		if grpcReflect.UnwrapType(msg) == grpcReflect.UnwrapType(expectedType) {
+		if xreflect.UnwrapType(msg) == xreflect.UnwrapType(expectedType) {
 			return send(msg)
 		}
 
 		switch resp := msg.(type) {
 		case []byte, string:
-			out := grpcReflect.New(expectedType)
+			out := xreflect.New(expectedType)
 
 			if err := json.Unmarshal([]byte(value.String(resp)), out); err != nil {
 				return status.Error(codes.Internal, err.Error())
@@ -77,7 +77,7 @@ func stepSendMany(msgType reflect.Type, msg interface{}) streamStepFunc {
 			}
 
 			for i := 0; i < valueOf.Len(); i++ {
-				if err := s.SendMsg(grpcReflect.PtrValue(valueOf.Index(i).Interface())); err != nil {
+				if err := s.SendMsg(xreflect.PtrValue(valueOf.Index(i).Interface())); err != nil {
 					return err
 				}
 			}
@@ -87,21 +87,21 @@ func stepSendMany(msgType reflect.Type, msg interface{}) streamStepFunc {
 
 		// item -> []*item.
 		// *item -> []*item.
-		expectedPtrType := reflect.SliceOf(reflect.New(grpcReflect.UnwrapType(msgType)).Type())
+		expectedPtrType := reflect.SliceOf(reflect.New(xreflect.UnwrapType(msgType)).Type())
 
-		if grpcReflect.UnwrapType(msg) == expectedPtrType {
+		if xreflect.UnwrapType(msg) == expectedPtrType {
 			return sendMany(msg)
 		}
 
 		// item -> []item.
 		// *item -> []*item.
-		if grpcReflect.UnwrapType(msg) == expectedType {
+		if xreflect.UnwrapType(msg) == expectedType {
 			return sendMany(msg)
 		}
 
 		switch resp := msg.(type) {
 		case []byte, string:
-			out := grpcReflect.New(expectedPtrType)
+			out := xreflect.New(expectedPtrType)
 
 			if err := json.Unmarshal([]byte(value.String(resp)), out); err != nil {
 				return status.Error(codes.Internal, err.Error())

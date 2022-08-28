@@ -3,7 +3,7 @@ package test
 import (
 	"google.golang.org/protobuf/proto"
 
-	"github.com/nhatthm/grpcmock/test/grpctest"
+	"go.nhat.io/grpcmock/test/grpctest"
 )
 
 // ItemBuilder builds an item.

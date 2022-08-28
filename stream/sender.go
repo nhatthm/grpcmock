@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"reflect"
 
-	grpcReflect "github.com/nhatthm/grpcmock/reflect"
+	xreflect "go.nhat.io/grpcmock/reflect"
 )
 
 // Sender is an interface wrapper around grpc.ClientStream and grpc.ServerStream.
@@ -21,14 +21,14 @@ type SendCloser interface {
 
 // SendAll sends all the messages from a given input.
 func SendAll(s Sender, in interface{}) error {
-	if !grpcReflect.IsSlice(in) {
-		return fmt.Errorf("%w: %T", grpcReflect.ErrIsNotSlice, in)
+	if !xreflect.IsSlice(in) {
+		return fmt.Errorf("%w: %T", xreflect.ErrIsNotSlice, in)
 	}
 
 	valueOf := reflect.ValueOf(in)
 
 	for i := 0; i < valueOf.Len(); i++ {
-		msg := grpcReflect.NewValue(valueOf.Index(i).Interface())
+		msg := xreflect.NewValue(valueOf.Index(i).Interface())
 
 		if err := s.SendMsg(msg); err != nil {
 			return err

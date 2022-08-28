@@ -6,8 +6,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/nhatthm/grpcmock"
-	"github.com/nhatthm/grpcmock/service"
+	"go.nhat.io/grpcmock"
+	"go.nhat.io/grpcmock/service"
 )
 
 const noTimeout time.Duration = 0

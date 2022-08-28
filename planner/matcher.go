@@ -3,8 +3,8 @@ package planner
 import (
 	"context"
 
-	"github.com/nhatthm/grpcmock/request"
-	"github.com/nhatthm/grpcmock/service"
+	"go.nhat.io/grpcmock/request"
+	"go.nhat.io/grpcmock/service"
 )
 
 // MatchRequest checks whether a request is matched.

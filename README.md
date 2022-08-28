@@ -1,12 +1,12 @@
-> ⚠️ From `v0.20.0`, the project will be rebranded to `go.nhat.io/grpcmock`. `v.19.x` is the last version with `github.com/nhatthm/grpcmock`.
+> ⚠️ From `v0.20.0`, the project will be rebranded to `go.nhat.io/grpcmock`. `v.19.0` is the last version with `github.com/nhatthm/grpcmock`.
 
 # gRPC Test Utilities for Golang
 
 [![GitHub Releases](https://img.shields.io/github/v/release/nhatthm/grpcmock)](https://github.com/nhatthm/grpcmock/releases/latest)
 [![Build Status](https://github.com/nhatthm/grpcmock/actions/workflows/test.yaml/badge.svg)](https://github.com/nhatthm/grpcmock/actions/workflows/test.yaml)
 [![codecov](https://codecov.io/gh/nhatthm/grpcmock/branch/master/graph/badge.svg?token=eTdAgDE2vR)](https://codecov.io/gh/nhatthm/grpcmock)
-[![Go Report Card](https://goreportcard.com/badge/github.com/nhatthm/grpcmock)](https://goreportcard.com/report/github.com/nhatthm/grpcmock)
-[![GoDevDoc](https://img.shields.io/badge/dev-doc-00ADD8?logo=go)](https://pkg.go.dev/github.com/nhatthm/grpcmock)
+[![Go Report Card](https://goreportcard.com/badge/go.nhat.io/grpcmock)](https://goreportcard.com/report/go.nhat.io/grpcmock)
+[![GoDevDoc](https://img.shields.io/badge/dev-doc-00ADD8?logo=go)](https://pkg.go.dev/go.nhat.io/grpcmock)
 [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/donate/?hosted_button_id=PJZSGJN57TDJY)
 
 Test gRPC service and client like a pro.
@@ -36,7 +36,7 @@ Test gRPC service and client like a pro.
 ## Install
 
 ```bash
-go get github.com/nhatthm/grpcmock
+go get go.nhat.io/grpcmock
 ```
 
 [<sub><sup>[table of contents]</sup></sub>](#table-of-contents)
@@ -61,9 +61,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/nhatthm/grpcmock"
-	grpcAssert "github.com/nhatthm/grpcmock/assert"
 	"github.com/stretchr/testify/assert"
+	"go.nhat.io/grpcmock"
+	xassert "go.nhat.io/grpcmock/assert"
 )
 
 func TestGetItems(t *testing.T) {
@@ -94,7 +94,7 @@ func TestGetItems(t *testing.T) {
 		grpcmock.WithInsecure(),
 	)
 
-	grpcAssert.EqualMessage(t, expected, out)
+	xassert.EqualMessage(t, expected, out)
 	assert.NoError(t, err)
 }
 ```
@@ -113,9 +113,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/nhatthm/grpcmock"
-	grpcAssert "github.com/nhatthm/grpcmock/assert"
 	"github.com/stretchr/testify/assert"
+	"go.nhat.io/grpcmock"
+	xassert "go.nhat.io/grpcmock/assert"
 )
 
 func TestCreateItems(t *testing.T) {
@@ -142,7 +142,7 @@ func TestCreateItems(t *testing.T) {
 		grpcmock.WithInsecure(),
 	)
 
-	grpcAssert.EqualMessage(t, expected, out)
+	xassert.EqualMessage(t, expected, out)
 	assert.NoError(t, err)
 }
 ```
@@ -161,9 +161,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/nhatthm/grpcmock"
-	grpcAssert "github.com/nhatthm/grpcmock/assert"
 	"github.com/stretchr/testify/assert"
+	"go.nhat.io/grpcmock"
+	xassert "go.nhat.io/grpcmock/assert"
 )
 
 func TestListItems(t *testing.T) {
@@ -200,7 +200,7 @@ func TestListItems(t *testing.T) {
 	assert.Len(t, actual, len(expected))
 
 	for i := 0; i < len(expected); i++ {
-		grpcAssert.EqualMessage(t, expected[i], actual[i])
+		xassert.EqualMessage(t, expected[i], actual[i])
 	}
 }
 ```
@@ -222,9 +222,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/nhatthm/grpcmock"
-	grpcAssert "github.com/nhatthm/grpcmock/assert"
 	"github.com/stretchr/testify/assert"
+	"go.nhat.io/grpcmock"
+	xassert "go.nhat.io/grpcmock/assert"
 	"google.golang.org/grpc"
 )
 
@@ -284,7 +284,7 @@ func TestTransformItems(t *testing.T) {
 	assert.Len(t, actual, len(expected))
 
 	for i := 0; i < len(expected); i++ {
-		grpcAssert.EqualMessage(t, expected[i], actual[i])
+		xassert.EqualMessage(t, expected[i], actual[i])
 	}
 }
 ```
@@ -302,7 +302,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/nhatthm/grpcmock"
+	"go.nhat.io/grpcmock"
 	"google.golang.org/grpc/test/bufconn"
 )
 
@@ -333,7 +333,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/nhatthm/grpcmock"
+	"go.nhat.io/grpcmock"
 	"google.golang.org/grpc/test/bufconn"
 )
 
@@ -361,7 +361,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/nhatthm/grpcmock"
+	"go.nhat.io/grpcmock"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/test/bufconn"
 )
@@ -396,7 +396,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/nhatthm/grpcmock"
+	"go.nhat.io/grpcmock"
 	"google.golang.org/grpc/test/bufconn"
 )
 
@@ -425,7 +425,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/nhatthm/grpcmock"
+	"go.nhat.io/grpcmock"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/test/bufconn"
 )
@@ -460,7 +460,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/nhatthm/grpcmock"
+	"go.nhat.io/grpcmock"
 	"google.golang.org/grpc/test/bufconn"
 )
 
@@ -488,7 +488,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/nhatthm/grpcmock"
+	"go.nhat.io/grpcmock"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/test/bufconn"
 )

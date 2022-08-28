@@ -7,22 +7,22 @@ import (
 
 	"go.nhat.io/matcher/v2"
 
-	grpcMatcher "github.com/nhatthm/grpcmock/matcher"
-	"github.com/nhatthm/grpcmock/must"
-	grpcReflect "github.com/nhatthm/grpcmock/reflect"
-	"github.com/nhatthm/grpcmock/service"
-	"github.com/nhatthm/grpcmock/value"
+	xmatcher "go.nhat.io/grpcmock/matcher"
+	"go.nhat.io/grpcmock/must"
+	xreflect "go.nhat.io/grpcmock/reflect"
+	"go.nhat.io/grpcmock/service"
+	"go.nhat.io/grpcmock/value"
 )
 
 const indent = "    "
 
 // ExpectedRequest formats an expected request.
-func ExpectedRequest(w io.Writer, svc service.Method, header grpcMatcher.HeaderMatcher, payload matcher.Matcher) {
+func ExpectedRequest(w io.Writer, svc service.Method, header xmatcher.HeaderMatcher, payload matcher.Matcher) {
 	ExpectedRequestTimes(w, svc, header, payload, 0, 0)
 }
 
 // ExpectedRequestTimes formats an expected request with total and remaining calls.
-func ExpectedRequestTimes(w io.Writer, svc service.Method, header grpcMatcher.HeaderMatcher, payload matcher.Matcher, totalCalls, remainingCalls int) {
+func ExpectedRequestTimes(w io.Writer, svc service.Method, header xmatcher.HeaderMatcher, payload matcher.Matcher, totalCalls, remainingCalls int) {
 	expectedHeader := map[string]interface{}(nil)
 
 	if header != nil {
@@ -77,7 +77,7 @@ func formatRequestTimes(w io.Writer, svc service.Method, header map[string]inter
 		}
 	}
 
-	if !grpcReflect.IsNil(payload) {
+	if !xreflect.IsNil(payload) {
 		bodyStr := formatValue(payload)
 
 		if bodyStr != "" {
@@ -94,7 +94,7 @@ func formatValueInline(v interface{}) string {
 
 	switch m := v.(type) {
 	case matcher.ExactMatcher,
-		grpcMatcher.FnMatcher,
+		xmatcher.FnMatcher,
 		[]byte,
 		string:
 		return formatValue(v)
@@ -102,7 +102,7 @@ func formatValueInline(v interface{}) string {
 	case matcher.Callback:
 		return formatValueInline(m.Matcher())
 
-	case *grpcMatcher.PayloadMatcher:
+	case *xmatcher.PayloadMatcher:
 		if m == nil {
 			return ""
 		}
@@ -113,7 +113,7 @@ func formatValueInline(v interface{}) string {
 		return fmt.Sprintf("%T(%q)", v, m.Expected())
 
 	default:
-		if grpcReflect.IsNil(v) {
+		if xreflect.IsNil(v) {
 			return ""
 		}
 
@@ -122,13 +122,13 @@ func formatValueInline(v interface{}) string {
 }
 
 func formatType(v interface{}) string {
-	if grpcReflect.IsNil(v) {
+	if xreflect.IsNil(v) {
 		return ""
 	}
 
 	switch m := v.(type) {
 	case matcher.ExactMatcher,
-		grpcMatcher.FnMatcher,
+		xmatcher.FnMatcher,
 		[]byte,
 		string:
 		return ""
@@ -136,7 +136,7 @@ func formatType(v interface{}) string {
 	case matcher.Callback:
 		return formatType(m.Matcher())
 
-	case *grpcMatcher.PayloadMatcher:
+	case *xmatcher.PayloadMatcher:
 		return formatType(m.Matcher())
 
 	default:
@@ -160,14 +160,14 @@ func formatValue(v interface{}) string {
 	case matcher.Callback:
 		return formatValue(m.Matcher())
 
-	case grpcMatcher.FnMatcher:
+	case xmatcher.FnMatcher:
 		if e := m.Expected(); e != "" {
 			return e
 		}
 
 		return "matches custom expectation"
 
-	case *grpcMatcher.PayloadMatcher:
+	case *xmatcher.PayloadMatcher:
 		if m == nil {
 			return ""
 		}
@@ -178,7 +178,7 @@ func formatValue(v interface{}) string {
 		return m.Expected()
 
 	default:
-		if grpcReflect.IsNil(v) {
+		if xreflect.IsNil(v) {
 			return ""
 		}
 

@@ -7,7 +7,7 @@ import (
 
 	"google.golang.org/grpc"
 
-	"github.com/nhatthm/grpcmock/streamer"
+	"go.nhat.io/grpcmock/streamer"
 )
 
 type serverStreamHandler struct {

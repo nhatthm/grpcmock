@@ -6,7 +6,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/nhatthm/grpcmock/must"
+	"go.nhat.io/grpcmock/must"
 )
 
 func TestNotFail(t *testing.T) {

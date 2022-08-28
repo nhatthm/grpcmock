@@ -6,7 +6,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/test/bufconn"
 
-	"github.com/nhatthm/grpcmock"
+	"go.nhat.io/grpcmock"
 )
 
 // WithAddress sets server address.

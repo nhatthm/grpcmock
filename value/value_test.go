@@ -9,10 +9,10 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
-	grpcMock "github.com/nhatthm/grpcmock/mock/grpc"
-	"github.com/nhatthm/grpcmock/streamer"
-	"github.com/nhatthm/grpcmock/test/grpctest"
-	"github.com/nhatthm/grpcmock/value"
+	xmock "go.nhat.io/grpcmock/mock/grpc"
+	"go.nhat.io/grpcmock/streamer"
+	"go.nhat.io/grpcmock/test/grpctest"
+	"go.nhat.io/grpcmock/value"
 )
 
 func TestString_Success(t *testing.T) {
@@ -97,7 +97,7 @@ func TestMarshal(t *testing.T) {
 		},
 		{
 			scenario: "client stream error",
-			in: streamer.NewClientStreamer(grpcMock.MockServerStream(func(s *grpcMock.ServerStream) {
+			in: streamer.NewClientStreamer(xmock.MockServerStream(func(s *xmock.ServerStream) {
 				s.On("RecvMsg", &grpctest.Item{}).
 					Return(errors.New("recv error"))
 			})(t), reflect.TypeOf(&grpctest.Item{}), reflect.TypeOf(&grpctest.CreateItemsResponse{})),
@@ -105,7 +105,7 @@ func TestMarshal(t *testing.T) {
 		},
 		{
 			scenario: "client stream success",
-			in: streamer.NewClientStreamer(grpcMock.MockServerStream(func(s *grpcMock.ServerStream) {
+			in: streamer.NewClientStreamer(xmock.MockServerStream(func(s *xmock.ServerStream) {
 				s.On("RecvMsg", &grpctest.Item{}).
 					Once().
 					Run(func(args mock.Arguments) {

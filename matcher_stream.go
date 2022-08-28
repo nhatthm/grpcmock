@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/nhatthm/grpcmock/matcher"
+	"go.nhat.io/grpcmock/matcher"
 )
 
 // MatchClientStreamMsgCount matches a number of messages.

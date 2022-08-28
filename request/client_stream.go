@@ -14,13 +14,13 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	grpcErrors "github.com/nhatthm/grpcmock/errors"
-	grpcMatcher "github.com/nhatthm/grpcmock/matcher"
-	"github.com/nhatthm/grpcmock/must"
-	"github.com/nhatthm/grpcmock/reflect"
-	"github.com/nhatthm/grpcmock/service"
-	"github.com/nhatthm/grpcmock/streamer"
-	"github.com/nhatthm/grpcmock/value"
+	xerrors "go.nhat.io/grpcmock/errors"
+	xmatcher "go.nhat.io/grpcmock/matcher"
+	"go.nhat.io/grpcmock/must"
+	"go.nhat.io/grpcmock/reflect"
+	"go.nhat.io/grpcmock/service"
+	"go.nhat.io/grpcmock/streamer"
+	"go.nhat.io/grpcmock/value"
 )
 
 // ClientStreamRequest represents the expectation for a client-stream request.
@@ -37,9 +37,9 @@ type ClientStreamRequest struct {
 	run func(ctx context.Context, s grpc.ServerStream) (interface{}, error)
 
 	// requestHeader is a list of expected headers of the given request.
-	requestHeader grpcMatcher.HeaderMatcher
+	requestHeader xmatcher.HeaderMatcher
 	// requestPayload is the expected parameters of the given request.
-	requestPayload *grpcMatcher.PayloadMatcher
+	requestPayload *xmatcher.PayloadMatcher
 
 	// statusCode is the response code when the request is handled.
 	statusCode codes.Code
@@ -71,7 +71,7 @@ func (r *ClientStreamRequest) WithHeader(header string, value interface{}) *Clie
 	defer r.unlock()
 
 	if r.requestHeader == nil {
-		r.requestHeader = grpcMatcher.HeaderMatcher{}
+		r.requestHeader = xmatcher.HeaderMatcher{}
 	}
 
 	r.requestHeader[header] = matcher.Match(value)
@@ -257,13 +257,13 @@ func (r *ClientStreamRequest) handle(ctx context.Context, in interface{}, out in
 
 	resp, err := r.run(ctx, stream)
 	if err != nil {
-		return grpcErrors.StatusError(err)
+		return xerrors.StatusError(err)
 	}
 
 	if reflect.UnwrapType(out) == reflect.UnwrapType(resp) {
 		reflect.SetPtrValue(out, resp)
 
-		return grpcErrors.StatusError(stream.SendMsg(out))
+		return xerrors.StatusError(stream.SendMsg(out))
 	}
 
 	switch resp := resp.(type) {
@@ -272,7 +272,7 @@ func (r *ClientStreamRequest) handle(ctx context.Context, in interface{}, out in
 			return status.Error(codes.Internal, err.Error())
 		}
 
-		return grpcErrors.StatusError(stream.SendMsg(out))
+		return xerrors.StatusError(stream.SendMsg(out))
 	}
 
 	return status.Errorf(codes.Internal, "invalid response type, got %T, want %T", resp, out)
@@ -357,10 +357,10 @@ func (r *ClientStreamRequest) After(d time.Duration) *ClientStreamRequest {
 	return r
 }
 
-func (r *ClientStreamRequest) headerMatcher() grpcMatcher.HeaderMatcher {
+func (r *ClientStreamRequest) headerMatcher() xmatcher.HeaderMatcher {
 	return r.requestHeader
 }
 
-func (r *ClientStreamRequest) payloadMatcher() *grpcMatcher.PayloadMatcher {
+func (r *ClientStreamRequest) payloadMatcher() *xmatcher.PayloadMatcher {
 	return r.requestPayload
 }

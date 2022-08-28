@@ -15,13 +15,13 @@ import (
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/test/bufconn"
 
-	"github.com/nhatthm/grpcmock"
-	plannerMock "github.com/nhatthm/grpcmock/mock/planner"
-	"github.com/nhatthm/grpcmock/must"
-	"github.com/nhatthm/grpcmock/planner"
-	"github.com/nhatthm/grpcmock/service"
-	"github.com/nhatthm/grpcmock/stream"
-	"github.com/nhatthm/grpcmock/test/grpctest"
+	"go.nhat.io/grpcmock"
+	plannerMock "go.nhat.io/grpcmock/mock/planner"
+	"go.nhat.io/grpcmock/must"
+	"go.nhat.io/grpcmock/planner"
+	"go.nhat.io/grpcmock/service"
+	"go.nhat.io/grpcmock/stream"
+	"go.nhat.io/grpcmock/test/grpctest"
 )
 
 func ExampleServer_WithPlanner() {

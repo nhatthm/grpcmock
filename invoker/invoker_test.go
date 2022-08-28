@@ -15,12 +15,12 @@ import (
 	"google.golang.org/grpc/status"
 	"google.golang.org/grpc/test/bufconn"
 
-	"github.com/nhatthm/grpcmock"
-	grpcAssert "github.com/nhatthm/grpcmock/assert"
-	"github.com/nhatthm/grpcmock/invoker"
-	"github.com/nhatthm/grpcmock/service"
-	"github.com/nhatthm/grpcmock/test"
-	"github.com/nhatthm/grpcmock/test/grpctest"
+	"go.nhat.io/grpcmock"
+	xassert "go.nhat.io/grpcmock/assert"
+	"go.nhat.io/grpcmock/invoker"
+	"go.nhat.io/grpcmock/service"
+	"go.nhat.io/grpcmock/test"
+	"go.nhat.io/grpcmock/test/grpctest"
 )
 
 func TestInvoker_Invoke_Unary_Unimplemented(t *testing.T) {
@@ -87,8 +87,8 @@ func TestInvoker_Invoke_Unary_Success(t *testing.T) {
 		Name:   "Foobar",
 	}
 
-	grpcAssert.EqualMessage(t, expectedRequest, actualRequest)
-	grpcAssert.EqualMessage(t, expectedResponse, actualResponse)
+	xassert.EqualMessage(t, expectedRequest, actualRequest)
+	xassert.EqualMessage(t, expectedResponse, actualResponse)
 	assert.NoError(t, err)
 }
 
@@ -151,7 +151,7 @@ func TestInvoker_Invoke_ServerStream_Success(t *testing.T) {
 	assert.Equal(t, len(expected), len(result))
 
 	for i := 0; i < len(expected); i++ {
-		grpcAssert.EqualMessage(t, expected[i], result[i])
+		xassert.EqualMessage(t, expected[i], result[i])
 	}
 }
 
@@ -201,12 +201,12 @@ func TestInvoker_Invoke_ClientStream_Success(t *testing.T) {
 
 	expectedResult := &grpctest.CreateItemsResponse{NumItems: int64(len(items))}
 
-	grpcAssert.EqualMessage(t, expectedResult, result)
+	xassert.EqualMessage(t, expectedResult, result)
 	assert.NoError(t, err)
 	assert.Equal(t, len(received), len(items))
 
 	for i := 0; i < len(received); i++ {
-		grpcAssert.EqualMessage(t, received[i], items[i])
+		xassert.EqualMessage(t, received[i], items[i])
 	}
 }
 
@@ -270,7 +270,7 @@ func TestInvoker_Invoke_BidirectionalStream_Success(t *testing.T) {
 	assert.Equal(t, len(expected), len(result))
 
 	for i := 0; i < len(expected); i++ {
-		grpcAssert.EqualMessage(t, expected[i], result[i])
+		xassert.EqualMessage(t, expected[i], result[i])
 	}
 }
 
