@@ -13,9 +13,9 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	srvMatcher "github.com/nhatthm/grpcmock/matcher"
-	"github.com/nhatthm/grpcmock/test"
-	"github.com/nhatthm/grpcmock/test/grpctest"
+	xmatcher "go.nhat.io/grpcmock/matcher"
+	"go.nhat.io/grpcmock/test"
+	"go.nhat.io/grpcmock/test/grpctest"
 )
 
 func TestUnaryRequest_WithHeader(t *testing.T) {
@@ -24,11 +24,11 @@ func TestUnaryRequest_WithHeader(t *testing.T) {
 	r := newGetItemRequest()
 	r.WithHeader("foo", "bar")
 
-	assert.Equal(t, srvMatcher.HeaderMatcher{"foo": matcher.Exact("bar")}, r.requestHeader)
+	assert.Equal(t, xmatcher.HeaderMatcher{"foo": matcher.Exact("bar")}, r.requestHeader)
 
 	r.WithHeader("john", "doe")
 
-	assert.Equal(t, srvMatcher.HeaderMatcher{"foo": matcher.Exact("bar"), "john": matcher.Exact("doe")}, r.requestHeader)
+	assert.Equal(t, xmatcher.HeaderMatcher{"foo": matcher.Exact("bar"), "john": matcher.Exact("doe")}, r.requestHeader)
 }
 
 func TestUnaryRequest_WithHeaders(t *testing.T) {
@@ -37,11 +37,11 @@ func TestUnaryRequest_WithHeaders(t *testing.T) {
 	r := newGetItemRequest()
 	r.WithHeaders(map[string]interface{}{"foo": "bar"})
 
-	assert.Equal(t, srvMatcher.HeaderMatcher{"foo": matcher.Exact("bar")}, r.requestHeader)
+	assert.Equal(t, xmatcher.HeaderMatcher{"foo": matcher.Exact("bar")}, r.requestHeader)
 
 	r.WithHeader("john", "doe")
 
-	assert.Equal(t, srvMatcher.HeaderMatcher{"foo": matcher.Exact("bar"), "john": matcher.Exact("doe")}, r.requestHeader)
+	assert.Equal(t, xmatcher.HeaderMatcher{"foo": matcher.Exact("bar"), "john": matcher.Exact("doe")}, r.requestHeader)
 }
 
 func TestUnaryRequest_WithPayload_Panic(t *testing.T) {
@@ -694,7 +694,7 @@ func TestUnaryRequest_HeaderMatcher(t *testing.T) {
 	r.WithHeader("locale", "en-US")
 
 	actual := HeaderMatcher(r)
-	expected := srvMatcher.HeaderMatcher{"locale": matcher.Match("en-US")}
+	expected := xmatcher.HeaderMatcher{"locale": matcher.Match("en-US")}
 
 	assert.Equal(t, expected, actual)
 }

@@ -6,8 +6,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"go.nhat.io/matcher/v2"
 
-	grpcMatcher "github.com/nhatthm/grpcmock/matcher"
-	"github.com/nhatthm/grpcmock/test/grpctest"
+	xmatcher "go.nhat.io/grpcmock/matcher"
+	"go.nhat.io/grpcmock/test/grpctest"
 )
 
 func TestFormatValueInline(t *testing.T) {
@@ -52,18 +52,18 @@ func TestFormatValueInline(t *testing.T) {
 		{
 			scenario: "Random Matcher",
 			input: matcher.Match(func() matcher.Matcher {
-				return grpcMatcher.Fn("en-US", nil)
+				return xmatcher.Fn("en-US", nil)
 			}),
 			expected: `en-US`,
 		},
 		{
 			scenario: "Payload Matcher is nil",
-			input:    (*grpcMatcher.PayloadMatcher)(nil),
+			input:    (*xmatcher.PayloadMatcher)(nil),
 			expected: "",
 		},
 		{
 			scenario: "Payload Matcher is not nil",
-			input:    grpcMatcher.Payload(matcher.Exact(`expected`), nil),
+			input:    xmatcher.Payload(matcher.Exact(`expected`), nil),
 			expected: "expected",
 		},
 	}
@@ -124,13 +124,13 @@ func TestFormatType(t *testing.T) {
 		},
 		{
 			scenario: "PayloadMatcher",
-			input:    grpcMatcher.Payload(matcher.JSON(`{"id": 42}`), nil),
+			input:    xmatcher.Payload(matcher.JSON(`{"id": 42}`), nil),
 			expected: ` using matcher.JSONMatcher`,
 		},
 		{
 			scenario: "Random Matcher",
 			input: matcher.Match(func() matcher.Matcher {
-				return grpcMatcher.Fn("en-US", nil)
+				return xmatcher.Fn("en-US", nil)
 			}),
 		},
 	}
@@ -194,25 +194,25 @@ func TestFormatValue(t *testing.T) {
 		{
 			scenario: "Random Matcher",
 			input: matcher.Match(func() matcher.Matcher {
-				return grpcMatcher.Fn("en-US", nil)
+				return xmatcher.Fn("en-US", nil)
 			}),
 			expected: `en-US`,
 		},
 		{
 			scenario: "Random Matcher without expectation",
 			input: matcher.Match(func() matcher.Matcher {
-				return grpcMatcher.Fn("", nil)
+				return xmatcher.Fn("", nil)
 			}),
 			expected: `matches custom expectation`,
 		},
 		{
 			scenario: "Payload Matcher is nil",
-			input:    (*grpcMatcher.PayloadMatcher)(nil),
+			input:    (*xmatcher.PayloadMatcher)(nil),
 			expected: "",
 		},
 		{
 			scenario: "Payload Matcher is not nil",
-			input:    grpcMatcher.Payload(matcher.Exact(`expected`), nil),
+			input:    xmatcher.Payload(matcher.Exact(`expected`), nil),
 			expected: "expected",
 		},
 	}

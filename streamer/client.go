@@ -5,8 +5,8 @@ import (
 
 	"google.golang.org/grpc"
 
-	grpcReflect "github.com/nhatthm/grpcmock/reflect"
-	"github.com/nhatthm/grpcmock/stream"
+	xreflect "go.nhat.io/grpcmock/reflect"
+	"go.nhat.io/grpcmock/stream"
 )
 
 // ClientStreamer is a client-stream RPC.
@@ -53,7 +53,7 @@ func TeeClientStreamer(s *ClientStreamer) *ClientStreamer {
 // ClientStreamerPayload tees the stream till io.EOF and return the payload.
 func ClientStreamerPayload(s *ClientStreamer) (interface{}, error) {
 	s = TeeClientStreamer(s)
-	out := grpcReflect.NewSlicePtr(s.InputType())
+	out := xreflect.NewSlicePtr(s.InputType())
 
 	err := stream.RecvAll(s, out)
 	result := reflect.ValueOf(out).Elem()

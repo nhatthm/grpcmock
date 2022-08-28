@@ -10,7 +10,7 @@ import (
 	"go.nhat.io/matcher/v2"
 	"google.golang.org/grpc/metadata"
 
-	grpcMatcher "github.com/nhatthm/grpcmock/matcher"
+	xmatcher "go.nhat.io/grpcmock/matcher"
 )
 
 func TestHeaderMatcher_Match(t *testing.T) {
@@ -18,7 +18,7 @@ func TestHeaderMatcher_Match(t *testing.T) {
 
 	testCases := []struct {
 		scenario      string
-		matcher       grpcMatcher.HeaderMatcher
+		matcher       xmatcher.HeaderMatcher
 		header        map[string]string
 		expectedError string
 	}{
@@ -27,12 +27,12 @@ func TestHeaderMatcher_Match(t *testing.T) {
 		},
 		{
 			scenario: "empty",
-			matcher:  grpcMatcher.HeaderMatcher{},
+			matcher:  xmatcher.HeaderMatcher{},
 		},
 		{
 			scenario: "match error",
-			matcher: grpcMatcher.HeaderMatcher{
-				"Authorization": grpcMatcher.Fn("", func(interface{}) (bool, error) {
+			matcher: xmatcher.HeaderMatcher{
+				"Authorization": xmatcher.Fn("", func(interface{}) (bool, error) {
 					return false, errors.New("match error")
 				}),
 			},
@@ -40,7 +40,7 @@ func TestHeaderMatcher_Match(t *testing.T) {
 		},
 		{
 			scenario: "mismatched",
-			matcher: grpcMatcher.HeaderMatcher{
+			matcher: xmatcher.HeaderMatcher{
 				"Authorization": matcher.Match("Bearer token"),
 			},
 			header: map[string]string{
@@ -50,7 +50,7 @@ func TestHeaderMatcher_Match(t *testing.T) {
 		},
 		{
 			scenario: "matched",
-			matcher: grpcMatcher.HeaderMatcher{
+			matcher: xmatcher.HeaderMatcher{
 				"Authorization": matcher.Match(regexp.MustCompile(`Bearer .*`)),
 			},
 			header: map[string]string{

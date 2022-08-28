@@ -6,7 +6,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/nhatthm/grpcmock/streamer"
+	"go.nhat.io/grpcmock/streamer"
 )
 
 func TestServerStreamer_OutputType(t *testing.T) {

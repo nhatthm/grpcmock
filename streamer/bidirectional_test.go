@@ -6,8 +6,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/nhatthm/grpcmock/streamer"
-	"github.com/nhatthm/grpcmock/test/grpctest"
+	"go.nhat.io/grpcmock/streamer"
+	"go.nhat.io/grpcmock/test/grpctest"
 )
 
 func TestBidirectionalStreamer_Types(t *testing.T) {

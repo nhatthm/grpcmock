@@ -10,10 +10,10 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
-	grpcAssert "github.com/nhatthm/grpcmock/assert"
-	grpcMock "github.com/nhatthm/grpcmock/mock/grpc"
-	"github.com/nhatthm/grpcmock/streamer"
-	"github.com/nhatthm/grpcmock/test/grpctest"
+	xassert "go.nhat.io/grpcmock/assert"
+	xmock "go.nhat.io/grpcmock/mock/grpc"
+	"go.nhat.io/grpcmock/streamer"
+	"go.nhat.io/grpcmock/test/grpctest"
 )
 
 func TestClientStreamer_Types(t *testing.T) {
@@ -30,7 +30,7 @@ func TestClientStreamer_Types(t *testing.T) {
 func TestTeeClientStreamer(t *testing.T) {
 	t.Parallel()
 
-	s := grpcMock.MockServerStream(func(s *grpcMock.ServerStream) {
+	s := xmock.MockServerStream(func(s *xmock.ServerStream) {
 		s.On("RecvMsg", &grpctest.Item{}).
 			Once().
 			Run(func(args mock.Arguments) {
@@ -54,14 +54,14 @@ func TestTeeClientStreamer(t *testing.T) {
 	// Wrapped stream could get the item normally.
 	err := wrappedClientStream.RecvMsg(item1)
 
-	grpcAssert.EqualMessage(t, expected, item1)
+	xassert.EqualMessage(t, expected, item1)
 	assert.NoError(t, err)
 
 	// The item is sent to the buffer as well.
 	item2 := &grpctest.Item{}
 	err = clientStream.RecvMsg(item2)
 
-	grpcAssert.EqualMessage(t, expected, item2)
+	xassert.EqualMessage(t, expected, item2)
 	assert.NoError(t, err)
 
 	// Changing the item from the wrapped stream does not affect the one from buffer.
@@ -83,13 +83,13 @@ func TestClientStreamerPayload(t *testing.T) {
 
 	testCases := []struct {
 		scenario       string
-		mockStream     grpcMock.ServerStreamMocker
+		mockStream     xmock.ServerStreamMocker
 		expectedResult []*grpctest.Item
 		expectedError  error
 	}{
 		{
 			scenario: "read error",
-			mockStream: grpcMock.MockServerStream(func(s *grpcMock.ServerStream) {
+			mockStream: xmock.MockServerStream(func(s *xmock.ServerStream) {
 				s.On("RecvMsg", &grpctest.Item{}).
 					Return(errors.New("recv error"))
 			}),
@@ -97,7 +97,7 @@ func TestClientStreamerPayload(t *testing.T) {
 		},
 		{
 			scenario: "success",
-			mockStream: grpcMock.MockServerStream(func(s *grpcMock.ServerStream) {
+			mockStream: xmock.MockServerStream(func(s *xmock.ServerStream) {
 				s.On("RecvMsg", &grpctest.Item{}).Once().
 					Run(func(args mock.Arguments) {
 						msg := args.Get(0).(*grpctest.Item) // nolint: errcheck
@@ -127,7 +127,7 @@ func TestClientStreamerPayload(t *testing.T) {
 			assert.Equal(t, tc.expectedError, err)
 
 			for i, m := range result {
-				grpcAssert.EqualMessage(t, tc.expectedResult[i], m)
+				xassert.EqualMessage(t, tc.expectedResult[i], m)
 			}
 		})
 	}

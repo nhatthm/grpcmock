@@ -10,19 +10,19 @@ import (
 	"sync"
 	"time"
 
-	grpcRecovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
-	grpcTags "github.com/grpc-ecosystem/go-grpc-middleware/tags"
+	recovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
+	tags "github.com/grpc-ecosystem/go-grpc-middleware/tags"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
 
-	grpcErrors "github.com/nhatthm/grpcmock/errors"
-	"github.com/nhatthm/grpcmock/format"
-	"github.com/nhatthm/grpcmock/must"
-	"github.com/nhatthm/grpcmock/planner"
-	grpcReflect "github.com/nhatthm/grpcmock/reflect"
-	"github.com/nhatthm/grpcmock/request"
-	"github.com/nhatthm/grpcmock/service"
-	"github.com/nhatthm/grpcmock/streamer"
+	xerrors "go.nhat.io/grpcmock/errors"
+	"go.nhat.io/grpcmock/format"
+	"go.nhat.io/grpcmock/must"
+	"go.nhat.io/grpcmock/planner"
+	xreflect "go.nhat.io/grpcmock/reflect"
+	"go.nhat.io/grpcmock/request"
+	"go.nhat.io/grpcmock/service"
+	"go.nhat.io/grpcmock/streamer"
 )
 
 // Server wraps a grpc server and provides mocking functionalities.
@@ -66,12 +66,12 @@ func NewUnstartedServer(opts ...ServerOption) *Server {
 		services: map[string]*service.Method{},
 		serverOpts: []grpc.ServerOption{
 			grpc.ChainUnaryInterceptor(
-				grpcRecovery.UnaryServerInterceptor(),
-				grpcTags.UnaryServerInterceptor(),
+				recovery.UnaryServerInterceptor(),
+				tags.UnaryServerInterceptor(),
 			),
 			grpc.ChainStreamInterceptor(
-				grpcRecovery.StreamServerInterceptor(),
-				grpcTags.StreamServerInterceptor(),
+				recovery.StreamServerInterceptor(),
+				tags.StreamServerInterceptor(),
 			),
 		},
 		closeServer: closeNothing,
@@ -124,7 +124,7 @@ func (s *Server) method(method string) *service.Method {
 	s.mu.Unlock()
 
 	if !ok {
-		panic(fmt.Errorf("%w: %s", grpcErrors.ErrMethodNotFound, method))
+		panic(fmt.Errorf("%w: %s", xerrors.ErrMethodNotFound, method))
 	}
 
 	return svc
@@ -137,7 +137,7 @@ func (s *Server) ExpectUnary(method string) *request.UnaryRequest {
 	svc := s.method(method)
 
 	if !service.IsMethodUnary(svc.MethodType) {
-		panic(fmt.Errorf("%w: %s", grpcErrors.ErrMethodNotUnary, method))
+		panic(fmt.Errorf("%w: %s", xerrors.ErrMethodNotUnary, method))
 	}
 
 	r := request.NewUnaryRequest(&s.mu, svc).Once()
@@ -154,7 +154,7 @@ func (s *Server) ExpectClientStream(method string) *request.ClientStreamRequest 
 	svc := s.method(method)
 
 	if !service.IsMethodClientStream(svc.MethodType) {
-		panic(fmt.Errorf("%w: %s", grpcErrors.ErrMethodNotClientStream, method))
+		panic(fmt.Errorf("%w: %s", xerrors.ErrMethodNotClientStream, method))
 	}
 
 	r := request.NewClientStreamRequest(&s.mu, svc).Once()
@@ -171,7 +171,7 @@ func (s *Server) ExpectServerStream(method string) *request.ServerStreamRequest 
 	svc := s.method(method)
 
 	if !service.IsMethodServerStream(svc.MethodType) {
-		panic(fmt.Errorf("%w: %s", grpcErrors.ErrMethodNotServerStream, method))
+		panic(fmt.Errorf("%w: %s", xerrors.ErrMethodNotServerStream, method))
 	}
 
 	r := request.NewServerStreamRequest(&s.mu, svc).Once()
@@ -188,7 +188,7 @@ func (s *Server) ExpectBidirectionalStream(method string) *request.Bidirectional
 	svc := s.method(method)
 
 	if !service.IsMethodBidirectionalStream(svc.MethodType) {
-		panic(fmt.Errorf("%w: %s", grpcErrors.ErrMethodNotBidirectionalStream, method))
+		panic(fmt.Errorf("%w: %s", xerrors.ErrMethodNotBidirectionalStream, method))
 	}
 
 	r := request.NewBidirectionalStreamRequest(&s.mu, svc).Once()
@@ -309,7 +309,7 @@ func (s *Server) handleRequest(ctx context.Context, svc service.Method, in inter
 	assert.NoError(s.test, err)
 
 	if err != nil {
-		return grpcErrors.StatusError(err)
+		return xerrors.StatusError(err)
 	}
 
 	// Log the request.
@@ -327,7 +327,7 @@ func (s *Server) registerServiceMethod(svc service.Method) {
 }
 
 func (s *Server) registerService(id string, svc interface{}) {
-	for _, method := range grpcReflect.FindServiceMethods(svc) {
+	for _, method := range xreflect.FindServiceMethods(svc) {
 		s.registerServiceMethod(service.Method{
 			ServiceName: id,
 			MethodName:  method.Name,
@@ -425,17 +425,17 @@ func newUnaryHandler(
 	handle func(ctx context.Context, svc service.Method, in interface{}, out interface{}) error,
 ) func(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	return func(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-		in := grpcReflect.New(svc.Input)
+		in := xreflect.New(svc.Input)
 
 		if err := dec(in); err != nil {
-			return grpcReflect.NewZero(svc.Output), grpcErrors.StatusError(err)
+			return xreflect.NewZero(svc.Output), xerrors.StatusError(err)
 		}
 
 		intercept := func(ctx context.Context, in interface{}) (interface{}, error) {
-			out := grpcReflect.New(svc.Output)
+			out := xreflect.New(svc.Output)
 
 			if err := handle(ctx, svc, in, out); err != nil {
-				return grpcReflect.NewZero(svc.Output), err
+				return xreflect.NewZero(svc.Output), err
 			}
 
 			return out, nil
@@ -469,19 +469,19 @@ func newStreamHandler(
 		// nolint: exhaustive
 		switch svc.MethodType {
 		case service.TypeServerStream:
-			in = grpcReflect.New(svc.Input)
+			in = xreflect.New(svc.Input)
 			if err := s.RecvMsg(in); err != nil {
-				return grpcErrors.StatusError(err)
+				return xerrors.StatusError(err)
 			}
 
-			out = streamer.NewServerStreamer(s, grpcReflect.UnwrapType(svc.Output))
+			out = streamer.NewServerStreamer(s, xreflect.UnwrapType(svc.Output))
 
 		case service.TypeClientStream:
-			in = streamer.NewClientStreamer(s, grpcReflect.UnwrapType(svc.Input), grpcReflect.UnwrapType(svc.Output))
-			out = grpcReflect.New(svc.Output)
+			in = streamer.NewClientStreamer(s, xreflect.UnwrapType(svc.Input), xreflect.UnwrapType(svc.Output))
+			out = xreflect.New(svc.Output)
 
 		default:
-			in = streamer.NewBidirectionalStreamer(s, grpcReflect.UnwrapType(svc.Input), grpcReflect.UnwrapType(svc.Output))
+			in = streamer.NewBidirectionalStreamer(s, xreflect.UnwrapType(svc.Input), xreflect.UnwrapType(svc.Output))
 			out = in
 		}
 
@@ -518,7 +518,7 @@ func WithPlanner(p planner.Planner) ServerOption {
 // See: RegisterServiceFromInstance(), RegisterServiceFromMethods().
 func RegisterService(registerFunc interface{}) ServerOption {
 	return func(s *Server) {
-		serviceDesc, svc := grpcReflect.ParseRegisterFunc(registerFunc)
+		serviceDesc, svc := xreflect.ParseRegisterFunc(registerFunc)
 
 		s.registerService(serviceDesc.ServiceName, svc)
 	}
@@ -605,7 +605,7 @@ func FindServerMethod(srv *Server, method string) *service.Method {
 		ServiceName: svc.ServiceName,
 		MethodName:  svc.MethodName,
 		MethodType:  svc.MethodType,
-		Input:       grpcReflect.New(svc.Input),
-		Output:      grpcReflect.New(svc.Output),
+		Input:       xreflect.New(svc.Input),
+		Output:      xreflect.New(svc.Output),
 	}
 }

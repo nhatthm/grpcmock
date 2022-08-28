@@ -1,7 +1,7 @@
 package planner
 
 import (
-	"github.com/nhatthm/grpcmock/request"
+	"go.nhat.io/grpcmock/request"
 )
 
 func newUnaryRequestWithTimes(i request.RepeatedTime) *request.UnaryRequest {

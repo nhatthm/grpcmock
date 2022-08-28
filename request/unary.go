@@ -13,12 +13,12 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	grpcErrors "github.com/nhatthm/grpcmock/errors"
-	grpcMatcher "github.com/nhatthm/grpcmock/matcher"
-	"github.com/nhatthm/grpcmock/must"
-	"github.com/nhatthm/grpcmock/reflect"
-	"github.com/nhatthm/grpcmock/service"
-	"github.com/nhatthm/grpcmock/value"
+	xerrors "go.nhat.io/grpcmock/errors"
+	xmatcher "go.nhat.io/grpcmock/matcher"
+	"go.nhat.io/grpcmock/must"
+	"go.nhat.io/grpcmock/reflect"
+	"go.nhat.io/grpcmock/service"
+	"go.nhat.io/grpcmock/value"
 )
 
 // UnaryRequest represents the expectation for a unary request.
@@ -35,9 +35,9 @@ type UnaryRequest struct {
 	run func(ctx context.Context, in interface{}) (interface{}, error)
 
 	// requestHeader is a list of expected headers of the given request.
-	requestHeader grpcMatcher.HeaderMatcher
+	requestHeader xmatcher.HeaderMatcher
 	// requestPayload is the expected parameters of the given request.
-	requestPayload *grpcMatcher.PayloadMatcher
+	requestPayload *xmatcher.PayloadMatcher
 
 	// statusCode is the response code when the request is handled.
 	statusCode codes.Code
@@ -71,7 +71,7 @@ func (r *UnaryRequest) WithHeader(header string, value interface{}) *UnaryReques
 	defer r.unlock()
 
 	if r.requestHeader == nil {
-		r.requestHeader = grpcMatcher.HeaderMatcher{}
+		r.requestHeader = xmatcher.HeaderMatcher{}
 	}
 
 	r.requestHeader[header] = matcher.Match(value)
@@ -250,7 +250,7 @@ func (r *UnaryRequest) handle(ctx context.Context, in interface{}, out interface
 
 	resp, err := r.run(ctx, in)
 	if err != nil {
-		return grpcErrors.StatusError(err)
+		return xerrors.StatusError(err)
 	}
 
 	if reflect.UnwrapType(out) == reflect.UnwrapType(resp) {
@@ -342,10 +342,10 @@ func (r *UnaryRequest) After(d time.Duration) *UnaryRequest {
 	return r
 }
 
-func (r *UnaryRequest) headerMatcher() grpcMatcher.HeaderMatcher {
+func (r *UnaryRequest) headerMatcher() xmatcher.HeaderMatcher {
 	return r.requestHeader
 }
 
-func (r *UnaryRequest) payloadMatcher() *grpcMatcher.PayloadMatcher {
+func (r *UnaryRequest) payloadMatcher() *xmatcher.PayloadMatcher {
 	return r.requestPayload
 }

@@ -60,7 +60,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/nhatthm/grpcmock"
+	"go.nhat.io/grpcmock"
 )
 
 func TestServer(t *testing.T) {
@@ -114,9 +114,9 @@ import (
 	"context"
 	"testing"
 
-	"github.com/nhatthm/grpcmock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"go.nhat.io/grpcmock"
 )
 
 func mockItemServiceServer(m ...grpcmock.ServerOption) grpcmock.ServerMockerWithContextDialer {
@@ -216,7 +216,7 @@ package main
 import (
 	"testing"
 
-	"github.com/nhatthm/grpcmock"
+	"go.nhat.io/grpcmock"
 )
 
 func TestServer(t *testing.T) {
@@ -260,7 +260,7 @@ package main
 import (
 	"testing"
 
-	"github.com/nhatthm/grpcmock"
+	"go.nhat.io/grpcmock"
 )
 
 func TestServer(t *testing.T) {
@@ -283,7 +283,7 @@ package main
 import (
 	"testing"
 
-	"github.com/nhatthm/grpcmock"
+	"go.nhat.io/grpcmock"
 )
 
 func TestServer(t *testing.T) {
@@ -313,8 +313,8 @@ package main
 import (
 	"testing"
 
-	"github.com/nhatthm/grpcmock"
-	"github.com/nhatthm/grpcmock/service"
+	"go.nhat.io/grpcmock"
+	"go.nhat.io/grpcmock/service"
 )
 
 func TestServer(t *testing.T) {
@@ -423,7 +423,7 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/nhatthm/grpcmock"
+	"go.nhat.io/grpcmock"
 )
 
 func TestServer(t *testing.T) {
@@ -453,7 +453,7 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/nhatthm/grpcmock"
+	"go.nhat.io/grpcmock"
 )
 
 func TestServer(t *testing.T) {
@@ -499,7 +499,7 @@ package main
 import (
 	"testing"
 
-	"github.com/nhatthm/grpcmock"
+	"go.nhat.io/grpcmock"
 )
 
 func TestServer(t *testing.T) {
@@ -559,7 +559,7 @@ package main
 import (
 	"testing"
 
-	"github.com/nhatthm/grpcmock"
+	"go.nhat.io/grpcmock"
 	"google.golang.org/grpc/codes"
 )
 
@@ -595,7 +595,7 @@ package main
 import (
 	"testing"
 
-	"github.com/nhatthm/grpcmock"
+	"go.nhat.io/grpcmock"
 )
 
 func TestServer(t *testing.T) {
@@ -640,7 +640,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/nhatthm/grpcmock"
+	"go.nhat.io/grpcmock"
 	"google.golang.org/grpc/metadata"
 )
 
@@ -695,7 +695,7 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/nhatthm/grpcmock"
+	"go.nhat.io/grpcmock"
 )
 
 func TestServer(t *testing.T) {
@@ -725,7 +725,7 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/nhatthm/grpcmock"
+	"go.nhat.io/grpcmock"
 )
 
 func TestServer(t *testing.T) {
@@ -773,7 +773,7 @@ package main
 import (
 	"testing"
 
-	"github.com/nhatthm/grpcmock"
+	"go.nhat.io/grpcmock"
 )
 
 func TestServer(t *testing.T) {
@@ -833,7 +833,7 @@ package main
 import (
 	"testing"
 
-	"github.com/nhatthm/grpcmock"
+	"go.nhat.io/grpcmock"
 	"google.golang.org/grpc/codes"
 )
 
@@ -869,7 +869,7 @@ package main
 import (
 	"testing"
 
-	"github.com/nhatthm/grpcmock"
+	"go.nhat.io/grpcmock"
 )
 
 func TestServer(t *testing.T) {
@@ -914,8 +914,8 @@ import (
 	"context"
 	"testing"
 
-	"github.com/nhatthm/grpcmock"
-	"github.com/nhatthm/grpcmock/stream"
+	"go.nhat.io/grpcmock"
+	"go.nhat.io/grpcmock/stream"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 )
@@ -972,7 +972,7 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/nhatthm/grpcmock"
+	"go.nhat.io/grpcmock"
 )
 
 func TestServer(t *testing.T) {
@@ -1002,7 +1002,7 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/nhatthm/grpcmock"
+	"go.nhat.io/grpcmock"
 )
 
 func TestServer(t *testing.T) {
@@ -1048,8 +1048,8 @@ package main
 import (
 	"testing"
 
+	"go.nhat.io/grpcmock"
 	"go.nhat.io/matcher/v2"
-	"github.com/nhatthm/grpcmock"
 )
 
 func TestServer(t *testing.T) {
@@ -1108,7 +1108,7 @@ package main
 import (
 	"testing"
 
-	"github.com/nhatthm/grpcmock"
+	"go.nhat.io/grpcmock"
 	"google.golang.org/grpc/codes"
 )
 
@@ -1144,7 +1144,7 @@ package main
 import (
 	"testing"
 
-	"github.com/nhatthm/grpcmock"
+	"go.nhat.io/grpcmock"
 )
 
 func TestServer(t *testing.T) {
@@ -1200,7 +1200,7 @@ package main
 import (
 	"testing"
 
-	"github.com/nhatthm/grpcmock"
+	"go.nhat.io/grpcmock"
 	"google.golang.org/grpc/codes"
 )
 
@@ -1235,7 +1235,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/nhatthm/grpcmock"
+	"go.nhat.io/grpcmock"
 	"google.golang.org/grpc"
 )
 
@@ -1279,7 +1279,7 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/nhatthm/grpcmock"
+	"go.nhat.io/grpcmock"
 )
 
 func TestServer(t *testing.T) {
@@ -1309,7 +1309,7 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/nhatthm/grpcmock"
+	"go.nhat.io/grpcmock"
 )
 
 func TestServer(t *testing.T) {
@@ -1356,7 +1356,7 @@ package main
 import (
 	"testing"
 
-	"github.com/nhatthm/grpcmock"
+	"go.nhat.io/grpcmock"
 	"google.golang.org/grpc/codes"
 )
 
@@ -1389,7 +1389,7 @@ import (
 	"io"
 	"testing"
 
-	"github.com/nhatthm/grpcmock"
+	"go.nhat.io/grpcmock"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 )
@@ -1430,7 +1430,7 @@ func TestServer(t *testing.T) {
 
 ## Execution Plan
 
-The mocked gRPC server is created with the `github.com/nhatthm/grpcmock/planner.Sequence()` by default, and it matches incoming requests sequentially. You can
+The mocked gRPC server is created with the `go.nhat.io/grpcmock/planner.Sequence()` by default, and it matches incoming requests sequentially. You can
 easily change this behavior to match your application execution by implementing the `planner.Planner` interface.
 
 ```go
@@ -1439,8 +1439,8 @@ package planner
 import (
 	"context"
 
-	"github.com/nhatthm/grpcmock/request"
-	"github.com/nhatthm/grpcmock/service"
+	"go.nhat.io/grpcmock/request"
+	"go.nhat.io/grpcmock/service"
 )
 
 type Planner interface {

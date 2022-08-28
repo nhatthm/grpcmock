@@ -4,7 +4,7 @@ import (
 	"net"
 	"sync"
 
-	"github.com/nhatthm/grpcmock/must"
+	"go.nhat.io/grpcmock/must"
 )
 
 var _ net.Listener = (*listener)(nil)

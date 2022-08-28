@@ -5,7 +5,7 @@ import (
 
 	"github.com/spf13/afero"
 
-	"github.com/nhatthm/grpcmock/service"
+	"go.nhat.io/grpcmock/service"
 )
 
 type baseRequest struct {

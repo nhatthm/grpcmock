@@ -7,9 +7,9 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/nhatthm/grpcmock"
-	grpcAssert "github.com/nhatthm/grpcmock/assert"
-	"github.com/nhatthm/grpcmock/test/grpctest"
+	"go.nhat.io/grpcmock"
+	xassert "go.nhat.io/grpcmock/assert"
+	"go.nhat.io/grpcmock/test/grpctest"
 )
 
 func ExampleMockServer() {
@@ -51,7 +51,7 @@ func ExampleMockServer() {
 		}
 
 		require.NoError(t, err)
-		grpcAssert.EqualMessage(t, expected, out)
+		xassert.EqualMessage(t, expected, out)
 
 		output, err := json.MarshalIndent(out, "", "    ")
 		require.NoError(t, err)
@@ -109,7 +109,7 @@ func ExampleMockServerWithBufConn() {
 		}
 
 		require.NoError(t, err)
-		grpcAssert.EqualMessage(t, expected, out)
+		xassert.EqualMessage(t, expected, out)
 
 		output, err := json.MarshalIndent(out, "", "    ")
 		require.NoError(t, err)

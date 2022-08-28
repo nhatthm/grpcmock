@@ -14,11 +14,11 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	grpcErrors "github.com/nhatthm/grpcmock/errors"
-	grpcMatcher "github.com/nhatthm/grpcmock/matcher"
-	"github.com/nhatthm/grpcmock/must"
-	"github.com/nhatthm/grpcmock/service"
-	"github.com/nhatthm/grpcmock/streamer"
+	xerrors "go.nhat.io/grpcmock/errors"
+	xmatcher "go.nhat.io/grpcmock/matcher"
+	"go.nhat.io/grpcmock/must"
+	"go.nhat.io/grpcmock/service"
+	"go.nhat.io/grpcmock/streamer"
 )
 
 // ServerStreamRequest represents the expectation for a server-stream request.
@@ -35,9 +35,9 @@ type ServerStreamRequest struct {
 	run func(ctx context.Context, in interface{}, s grpc.ServerStream) error
 
 	// requestHeader is a list of expected headers of the given request.
-	requestHeader grpcMatcher.HeaderMatcher
+	requestHeader xmatcher.HeaderMatcher
 	// requestPayload is the expected parameters of the given request.
-	requestPayload *grpcMatcher.PayloadMatcher
+	requestPayload *xmatcher.PayloadMatcher
 
 	// statusCode is the response code when the request is handled.
 	statusCode codes.Code
@@ -71,7 +71,7 @@ func (r *ServerStreamRequest) WithHeader(header string, value interface{}) *Serv
 	defer r.unlock()
 
 	if r.requestHeader == nil {
-		r.requestHeader = grpcMatcher.HeaderMatcher{}
+		r.requestHeader = xmatcher.HeaderMatcher{}
 	}
 
 	r.requestHeader[header] = matcher.Match(value)
@@ -294,7 +294,7 @@ func (r *ServerStreamRequest) handle(ctx context.Context, in interface{}, out in
 		return status.Error(r.statusCode, r.statusMessage)
 	}
 
-	return grpcErrors.StatusError(r.run(ctx, in, out.(*streamer.ServerStreamer)))
+	return xerrors.StatusError(r.run(ctx, in, out.(*streamer.ServerStreamer)))
 }
 
 // Once indicates that the mock should only return the value once.
@@ -376,10 +376,10 @@ func (r *ServerStreamRequest) After(d time.Duration) *ServerStreamRequest {
 	return r
 }
 
-func (r *ServerStreamRequest) headerMatcher() grpcMatcher.HeaderMatcher {
+func (r *ServerStreamRequest) headerMatcher() xmatcher.HeaderMatcher {
 	return r.requestHeader
 }
 
-func (r *ServerStreamRequest) payloadMatcher() *grpcMatcher.PayloadMatcher {
+func (r *ServerStreamRequest) payloadMatcher() *xmatcher.PayloadMatcher {
 	return r.requestPayload
 }

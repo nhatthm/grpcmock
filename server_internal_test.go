@@ -12,10 +12,10 @@ import (
 	"google.golang.org/grpc/status"
 	"google.golang.org/grpc/test/bufconn"
 
-	grpcMock "github.com/nhatthm/grpcmock/mock/grpc"
-	"github.com/nhatthm/grpcmock/planner"
-	"github.com/nhatthm/grpcmock/service"
-	"github.com/nhatthm/grpcmock/test/grpctest"
+	xmock "go.nhat.io/grpcmock/mock/grpc"
+	"go.nhat.io/grpcmock/planner"
+	"go.nhat.io/grpcmock/service"
+	"go.nhat.io/grpcmock/test/grpctest"
 )
 
 func TestServer_HandleRequest_Unexpected(t *testing.T) {
@@ -187,13 +187,13 @@ func TestNewStreamHandler_ServerStream(t *testing.T) {
 
 	testCases := []struct {
 		scenario      string
-		mockStream    grpcMock.ServerStreamMocker
+		mockStream    xmock.ServerStreamMocker
 		handle        func(ctx context.Context, svc service.Method, in interface{}, out interface{}) error
 		expectedError error
 	}{
 		{
 			scenario: "could not receive message",
-			mockStream: grpcMock.MockServerStream(func(s *grpcMock.ServerStream) {
+			mockStream: xmock.MockServerStream(func(s *xmock.ServerStream) {
 				s.On("RecvMsg", &grpctest.ListItemsRequest{}).
 					Return(errors.New("recv error"))
 			}),
@@ -206,7 +206,7 @@ func TestNewStreamHandler_ServerStream(t *testing.T) {
 		},
 		{
 			scenario: "handle error",
-			mockStream: grpcMock.MockServerStream(func(s *grpcMock.ServerStream) {
+			mockStream: xmock.MockServerStream(func(s *xmock.ServerStream) {
 				s.On("RecvMsg", &grpctest.ListItemsRequest{}).
 					Return(nil)
 
@@ -220,7 +220,7 @@ func TestNewStreamHandler_ServerStream(t *testing.T) {
 		},
 		{
 			scenario: "success",
-			mockStream: grpcMock.MockServerStream(func(s *grpcMock.ServerStream) {
+			mockStream: xmock.MockServerStream(func(s *xmock.ServerStream) {
 				s.On("RecvMsg", &grpctest.ListItemsRequest{}).
 					Return(nil)
 
@@ -256,13 +256,13 @@ func TestNewStreamHandler_ClientStream(t *testing.T) {
 
 	testCases := []struct {
 		scenario      string
-		mockStream    grpcMock.ServerStreamMocker
+		mockStream    xmock.ServerStreamMocker
 		handle        func(ctx context.Context, svc service.Method, in interface{}, out interface{}) error
 		expectedError error
 	}{
 		{
 			scenario: "handle error",
-			mockStream: grpcMock.MockServerStream(func(s *grpcMock.ServerStream) {
+			mockStream: xmock.MockServerStream(func(s *xmock.ServerStream) {
 				s.On("Context").
 					Return(context.Background())
 			}),
@@ -273,7 +273,7 @@ func TestNewStreamHandler_ClientStream(t *testing.T) {
 		},
 		{
 			scenario: "success",
-			mockStream: grpcMock.MockServerStream(func(s *grpcMock.ServerStream) {
+			mockStream: xmock.MockServerStream(func(s *xmock.ServerStream) {
 				s.On("Context").
 					Return(context.Background())
 			}),
@@ -306,13 +306,13 @@ func TestNewStreamHandler_BidirectionalStream(t *testing.T) {
 
 	testCases := []struct {
 		scenario      string
-		mockStream    grpcMock.ServerStreamMocker
+		mockStream    xmock.ServerStreamMocker
 		handle        func(ctx context.Context, svc service.Method, in interface{}, out interface{}) error
 		expectedError error
 	}{
 		{
 			scenario: "handle error",
-			mockStream: grpcMock.MockServerStream(func(s *grpcMock.ServerStream) {
+			mockStream: xmock.MockServerStream(func(s *xmock.ServerStream) {
 				s.On("Context").
 					Return(context.Background())
 			}),
@@ -323,7 +323,7 @@ func TestNewStreamHandler_BidirectionalStream(t *testing.T) {
 		},
 		{
 			scenario: "success",
-			mockStream: grpcMock.MockServerStream(func(s *grpcMock.ServerStream) {
+			mockStream: xmock.MockServerStream(func(s *xmock.ServerStream) {
 				s.On("Context").
 					Return(context.Background())
 			}),

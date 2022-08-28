@@ -5,7 +5,7 @@ import (
 	"io"
 	"reflect"
 
-	grpcReflect "github.com/nhatthm/grpcmock/reflect"
+	xreflect "go.nhat.io/grpcmock/reflect"
 )
 
 // Receiver is an interface wrapper around grpc.ClientStream and grpc.ServerStream.
@@ -15,7 +15,7 @@ type Receiver interface {
 
 // RecvAll reads all messages using a receiver until io.EOF.
 func RecvAll(r Receiver, out interface{}) error {
-	outType, err := grpcReflect.UnwrapPtrSliceType(out)
+	outType, err := xreflect.UnwrapPtrSliceType(out)
 	if err != nil {
 		return err
 	}
@@ -34,7 +34,7 @@ func RecvAll(r Receiver, out interface{}) error {
 
 func recvAllMessages(r Receiver, out reflect.Value, msgType reflect.Type) (reflect.Value, error) {
 	for {
-		msg := grpcReflect.New(msgType)
+		msg := xreflect.New(msgType)
 		err := r.RecvMsg(msg)
 
 		if errors.Is(err, io.EOF) {
@@ -64,5 +64,5 @@ func newSliceMessageValue(t reflect.Type, v reflect.Value) reflect.Value {
 }
 
 func appendMessage(s reflect.Value, v interface{}) reflect.Value {
-	return reflect.Append(s, newSliceMessageValue(s.Type().Elem(), grpcReflect.UnwrapValue(v)))
+	return reflect.Append(s, newSliceMessageValue(s.Type().Elem(), xreflect.UnwrapValue(v)))
 }

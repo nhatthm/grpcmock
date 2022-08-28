@@ -15,10 +15,10 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	grpcMatcher "github.com/nhatthm/grpcmock/matcher"
-	"github.com/nhatthm/grpcmock/streamer"
-	"github.com/nhatthm/grpcmock/test"
-	"github.com/nhatthm/grpcmock/test/grpctest"
+	xmatcher "go.nhat.io/grpcmock/matcher"
+	"go.nhat.io/grpcmock/streamer"
+	"go.nhat.io/grpcmock/test"
+	"go.nhat.io/grpcmock/test/grpctest"
 )
 
 func TestBidirectionalStreamRequest_WithHeader(t *testing.T) {
@@ -27,11 +27,11 @@ func TestBidirectionalStreamRequest_WithHeader(t *testing.T) {
 	r := newTransformItemsRequest()
 	r.WithHeader("foo", "bar")
 
-	assert.Equal(t, grpcMatcher.HeaderMatcher{"foo": matcher.Exact("bar")}, r.requestHeader)
+	assert.Equal(t, xmatcher.HeaderMatcher{"foo": matcher.Exact("bar")}, r.requestHeader)
 
 	r.WithHeader("john", "doe")
 
-	assert.Equal(t, grpcMatcher.HeaderMatcher{"foo": matcher.Exact("bar"), "john": matcher.Exact("doe")}, r.requestHeader)
+	assert.Equal(t, xmatcher.HeaderMatcher{"foo": matcher.Exact("bar"), "john": matcher.Exact("doe")}, r.requestHeader)
 }
 
 func TestBidirectionalStreamRequest_WithHeaders(t *testing.T) {
@@ -40,11 +40,11 @@ func TestBidirectionalStreamRequest_WithHeaders(t *testing.T) {
 	r := newTransformItemsRequest()
 	r.WithHeaders(map[string]interface{}{"foo": "bar"})
 
-	assert.Equal(t, grpcMatcher.HeaderMatcher{"foo": matcher.Exact("bar")}, r.requestHeader)
+	assert.Equal(t, xmatcher.HeaderMatcher{"foo": matcher.Exact("bar")}, r.requestHeader)
 
 	r.WithHeader("john", "doe")
 
-	assert.Equal(t, grpcMatcher.HeaderMatcher{"foo": matcher.Exact("bar"), "john": matcher.Exact("doe")}, r.requestHeader)
+	assert.Equal(t, xmatcher.HeaderMatcher{"foo": matcher.Exact("bar"), "john": matcher.Exact("doe")}, r.requestHeader)
 }
 
 func TestBidirectionalStreamRequest_ReturnCode(t *testing.T) {
@@ -401,7 +401,7 @@ func TestBidirectionalStreamRequest_HeaderMatcher(t *testing.T) {
 	r := newTransformItemsRequest().WithHeader("locale", "en-US")
 
 	actual := HeaderMatcher(r)
-	expected := grpcMatcher.HeaderMatcher{"locale": matcher.Match("en-US")}
+	expected := xmatcher.HeaderMatcher{"locale": matcher.Match("en-US")}
 
 	assert.Equal(t, expected, actual)
 }

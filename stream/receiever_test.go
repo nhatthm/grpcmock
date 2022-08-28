@@ -9,17 +9,17 @@ import (
 	"github.com/stretchr/testify/mock"
 	"google.golang.org/protobuf/proto"
 
-	grpcAssert "github.com/nhatthm/grpcmock/assert"
-	grpcMock "github.com/nhatthm/grpcmock/mock/grpc"
-	"github.com/nhatthm/grpcmock/stream"
-	"github.com/nhatthm/grpcmock/test"
-	"github.com/nhatthm/grpcmock/test/grpctest"
+	xassert "go.nhat.io/grpcmock/assert"
+	xmock "go.nhat.io/grpcmock/mock/grpc"
+	"go.nhat.io/grpcmock/stream"
+	"go.nhat.io/grpcmock/test"
+	"go.nhat.io/grpcmock/test/grpctest"
 )
 
 func TestRecvAll(t *testing.T) {
 	t.Parallel()
 
-	sendItems := func(s *grpcMock.ClientStream) {
+	sendItems := func(s *xmock.ClientStream) {
 		for _, i := range test.DefaultItems() {
 			i := i
 
@@ -38,33 +38,33 @@ func TestRecvAll(t *testing.T) {
 
 	testCases := []struct {
 		scenario       string
-		mockStream     grpcMock.ClientStreamMocker
+		mockStream     xmock.ClientStreamMocker
 		output         interface{}
 		expectedOutput interface{}
 		expectedError  string
 	}{
 		{
 			scenario:      "output is nil",
-			mockStream:    grpcMock.NoMockClientStream,
+			mockStream:    xmock.NoMockClientStream,
 			expectedError: `not a pointer: <nil>`,
 		},
 		{
 			scenario:       "output is not a pointer",
-			mockStream:     grpcMock.NoMockClientStream,
+			mockStream:     xmock.NoMockClientStream,
 			output:         grpctest.Item{},
 			expectedError:  `not a pointer: grpctest.Item`,
 			expectedOutput: grpctest.Item{},
 		},
 		{
 			scenario:       "output is not a slice",
-			mockStream:     grpcMock.NoMockClientStream,
+			mockStream:     xmock.NoMockClientStream,
 			output:         &grpctest.Item{},
 			expectedError:  `not a slice: *grpctest.Item`,
 			expectedOutput: &grpctest.Item{},
 		},
 		{
 			scenario: "recv error",
-			mockStream: grpcMock.MockClientStream(func(s *grpcMock.ClientStream) {
+			mockStream: xmock.MockClientStream(func(s *xmock.ClientStream) {
 				s.On("RecvMsg", mock.Anything).
 					Return(errors.New("recv error"))
 			}),
@@ -74,7 +74,7 @@ func TestRecvAll(t *testing.T) {
 		},
 		{
 			scenario:   "success with a slice of struct",
-			mockStream: grpcMock.MockClientStream(sendItems),
+			mockStream: xmock.MockClientStream(sendItems),
 			output:     &[]grpctest.Item{},
 			expectedOutput: &[]grpctest.Item{
 				{
@@ -91,7 +91,7 @@ func TestRecvAll(t *testing.T) {
 		},
 		{
 			scenario:   "success with a slice of pointer",
-			mockStream: grpcMock.MockClientStream(sendItems),
+			mockStream: xmock.MockClientStream(sendItems),
 			output:     &[]*grpctest.Item{},
 			expectedOutput: &[]*grpctest.Item{
 				{
@@ -116,7 +116,7 @@ func TestRecvAll(t *testing.T) {
 			result := tc.output
 			err := stream.RecvAll(tc.mockStream(t), result)
 
-			grpcAssert.JSONEq(t, tc.expectedOutput, result)
+			xassert.JSONEq(t, tc.expectedOutput, result)
 
 			if tc.expectedError == "" {
 				assert.NoError(t, err)

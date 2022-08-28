@@ -11,10 +11,10 @@ import (
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 
-	grpcMock "github.com/nhatthm/grpcmock/mock/grpc"
-	"github.com/nhatthm/grpcmock/streamer"
-	"github.com/nhatthm/grpcmock/test"
-	"github.com/nhatthm/grpcmock/test/grpctest"
+	xmock "go.nhat.io/grpcmock/mock/grpc"
+	"go.nhat.io/grpcmock/streamer"
+	"go.nhat.io/grpcmock/test"
+	"go.nhat.io/grpcmock/test/grpctest"
 )
 
 func TestServerStreamHandler_AddHeader_SendHeader(t *testing.T) {
@@ -27,7 +27,7 @@ func TestServerStreamHandler_AddHeader_SendHeader(t *testing.T) {
 	}{
 		{
 			scenario: "error",
-			mockStreamer: test.MockListItemsStreamer(func(s *grpcMock.ServerStream) {
+			mockStreamer: test.MockListItemsStreamer(func(s *xmock.ServerStream) {
 				s.On("SendHeader", mock.Anything).
 					Return(status.Error(codes.Internal, "send error"))
 			}),
@@ -35,7 +35,7 @@ func TestServerStreamHandler_AddHeader_SendHeader(t *testing.T) {
 		},
 		{
 			scenario: "success",
-			mockStreamer: test.MockListItemsStreamer(func(s *grpcMock.ServerStream) {
+			mockStreamer: test.MockListItemsStreamer(func(s *xmock.ServerStream) {
 				s.On("SendHeader", metadata.New(map[string]string{
 					"user":  "foobar",
 					"email": "test@example.com",
@@ -73,7 +73,7 @@ func TestServerStreamHandler_SetHeader_SendHeader(t *testing.T) {
 	}{
 		{
 			scenario: "error",
-			mockStreamer: test.MockListItemsStreamer(func(s *grpcMock.ServerStream) {
+			mockStreamer: test.MockListItemsStreamer(func(s *xmock.ServerStream) {
 				s.On("SendHeader", mock.Anything).
 					Return(status.Error(codes.Internal, "send error"))
 			}),
@@ -81,7 +81,7 @@ func TestServerStreamHandler_SetHeader_SendHeader(t *testing.T) {
 		},
 		{
 			scenario: "success",
-			mockStreamer: test.MockListItemsStreamer(func(s *grpcMock.ServerStream) {
+			mockStreamer: test.MockListItemsStreamer(func(s *xmock.ServerStream) {
 				s.On("SendHeader", metadata.New(map[string]string{
 					"user":  "foobar",
 					"email": "test@example.com",
@@ -121,7 +121,7 @@ func TestServerStreamHandler_Send(t *testing.T) {
 	}{
 		{
 			scenario: "error",
-			mockStreamer: test.MockListItemsStreamer(func(s *grpcMock.ServerStream) {
+			mockStreamer: test.MockListItemsStreamer(func(s *xmock.ServerStream) {
 				s.On("SendMsg", mock.Anything).
 					Return(status.Error(codes.Internal, "send error"))
 			}),
@@ -129,7 +129,7 @@ func TestServerStreamHandler_Send(t *testing.T) {
 		},
 		{
 			scenario: "success",
-			mockStreamer: test.MockListItemsStreamer(func(s *grpcMock.ServerStream) {
+			mockStreamer: test.MockListItemsStreamer(func(s *xmock.ServerStream) {
 				s.On("SendMsg", &grpctest.Item{Id: 42}).
 					Return(nil)
 			}),
@@ -162,7 +162,7 @@ func TestServerStreamHandler_SendMany(t *testing.T) {
 	}{
 		{
 			scenario: "error",
-			mockStreamer: test.MockListItemsStreamer(func(s *grpcMock.ServerStream) {
+			mockStreamer: test.MockListItemsStreamer(func(s *xmock.ServerStream) {
 				s.On("SendMsg", mock.Anything).
 					Return(status.Error(codes.Internal, "send error"))
 			}),
@@ -170,7 +170,7 @@ func TestServerStreamHandler_SendMany(t *testing.T) {
 		},
 		{
 			scenario: "success",
-			mockStreamer: test.MockListItemsStreamer(func(s *grpcMock.ServerStream) {
+			mockStreamer: test.MockListItemsStreamer(func(s *xmock.ServerStream) {
 				s.On("SendMsg", &grpctest.Item{Id: 41}).
 					Return(nil)
 
@@ -201,7 +201,7 @@ func TestServerStreamHandler_WaitFor(t *testing.T) {
 
 	duration := 50 * time.Millisecond
 
-	s := test.MockListItemsStreamer(func(s *grpcMock.ServerStream) {
+	s := test.MockListItemsStreamer(func(s *xmock.ServerStream) {
 		s.On("SendMsg", &grpctest.Item{Id: 42}).
 			Return(nil)
 	})(t)

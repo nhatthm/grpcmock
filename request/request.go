@@ -3,8 +3,8 @@ package request
 import (
 	"context"
 
-	"github.com/nhatthm/grpcmock/matcher"
-	"github.com/nhatthm/grpcmock/service"
+	"go.nhat.io/grpcmock/matcher"
+	"go.nhat.io/grpcmock/service"
 )
 
 // UnlimitedTimes indicates that a request could be repeated without limits.

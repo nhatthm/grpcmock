@@ -6,8 +6,8 @@ import (
 
 	"google.golang.org/grpc/metadata"
 
-	"github.com/nhatthm/grpcmock/request"
-	"github.com/nhatthm/grpcmock/test"
+	"go.nhat.io/grpcmock/request"
+	"go.nhat.io/grpcmock/test"
 )
 
 func expectGetItems() *request.UnaryRequest {

@@ -11,14 +11,14 @@ import (
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/proto"
 
-	"github.com/nhatthm/grpcmock/matcher"
-	grpcMock "github.com/nhatthm/grpcmock/mock/grpc"
-	"github.com/nhatthm/grpcmock/planner"
-	"github.com/nhatthm/grpcmock/request"
-	"github.com/nhatthm/grpcmock/service"
-	"github.com/nhatthm/grpcmock/streamer"
-	"github.com/nhatthm/grpcmock/test"
-	"github.com/nhatthm/grpcmock/test/grpctest"
+	"go.nhat.io/grpcmock/matcher"
+	xmock "go.nhat.io/grpcmock/mock/grpc"
+	"go.nhat.io/grpcmock/planner"
+	"go.nhat.io/grpcmock/request"
+	"go.nhat.io/grpcmock/service"
+	"go.nhat.io/grpcmock/streamer"
+	"go.nhat.io/grpcmock/test"
+	"go.nhat.io/grpcmock/test/grpctest"
 )
 
 func TestMatchService(t *testing.T) {
@@ -241,7 +241,7 @@ Error: header "locale" with value "en-US" expected, "en-CA" received
 			mockRequest: func(r *request.ClientStreamRequest) {
 				r.WithHeader("locale", "en-US")
 			},
-			mockStreamer: test.MockCreateItemsStreamer(func(s *grpcMock.ServerStream) {
+			mockStreamer: test.MockCreateItemsStreamer(func(s *xmock.ServerStream) {
 				s.On("RecvMsg", mock.Anything).
 					Return(errors.New("read error"))
 			}),
@@ -588,7 +588,7 @@ func TestMatchPayload_ClientStream(t *testing.T) {
 			mockRequest: func(r *request.ClientStreamRequest) {
 				r.WithPayload(`[{"id":42}]`)
 			},
-			mockStreamer: test.MockCreateItemsStreamer(func(s *grpcMock.ServerStream) {
+			mockStreamer: test.MockCreateItemsStreamer(func(s *xmock.ServerStream) {
 				s.On("RecvMsg", mock.Anything).
 					Return(errors.New("recv error"))
 			}),
@@ -751,7 +751,7 @@ Error: payload does not match expectation, received: {}
 func TestMatchPayload_Panic(t *testing.T) {
 	t.Parallel()
 
-	s := test.MockCreateItemsStreamer(func(s *grpcMock.ServerStream) {
+	s := test.MockCreateItemsStreamer(func(s *xmock.ServerStream) {
 		s.On("RecvMsg", mock.Anything).
 			Panic("recv panic")
 	})(t)
@@ -774,7 +774,7 @@ Error: could not match payload: recv panic
 var noMockCreateItemsStream = test.MockCreateItemsStreamer()
 
 func mockCreateItemsStreamer() func(t *testing.T) *streamer.ClientStreamer {
-	return test.MockCreateItemsStreamer(func(s *grpcMock.ServerStream) {
+	return test.MockCreateItemsStreamer(func(s *xmock.ServerStream) {
 		s.On("RecvMsg", &grpctest.Item{}).Once().
 			Run(func(args mock.Arguments) {
 				item := args.Get(0).(*grpctest.Item) // nolint: errcheck

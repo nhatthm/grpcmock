@@ -8,8 +8,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
 
-	grpcReflect "github.com/nhatthm/grpcmock/reflect"
-	"github.com/nhatthm/grpcmock/test/grpctest"
+	xreflect "go.nhat.io/grpcmock/reflect"
+	"go.nhat.io/grpcmock/test/grpctest"
 )
 
 type testServer interface {
@@ -40,17 +40,17 @@ func TestBuildServiceMethods(t *testing.T) {
 	testCases := []struct {
 		scenario string
 		service  interface{}
-		expected []grpcReflect.ServiceMethod
+		expected []xreflect.ServiceMethod
 	}{
 		{
 			scenario: "no method",
 			service:  struct{}{},
-			expected: []grpcReflect.ServiceMethod{},
+			expected: []xreflect.ServiceMethod{},
 		},
 		{
 			scenario: "interface with multiple cases",
 			service:  (*testServer)(nil),
-			expected: []grpcReflect.ServiceMethod{
+			expected: []xreflect.ServiceMethod{
 				{
 					Name:   "GetItem",
 					Input:  &getItemRequest{},
@@ -61,7 +61,7 @@ func TestBuildServiceMethods(t *testing.T) {
 		{
 			scenario: "generated server",
 			service:  (*grpctest.ItemServiceServer)(nil),
-			expected: []grpcReflect.ServiceMethod{
+			expected: []xreflect.ServiceMethod{
 				{
 					Name:           "CreateItems",
 					Input:          &grpctest.Item{},
@@ -95,7 +95,7 @@ func TestBuildServiceMethods(t *testing.T) {
 		t.Run(tc.scenario, func(t *testing.T) {
 			t.Parallel()
 
-			actual := grpcReflect.FindServiceMethods(tc.service)
+			actual := xreflect.FindServiceMethods(tc.service)
 
 			assert.Equal(t, tc.expected, actual)
 		})
@@ -140,7 +140,7 @@ func TestIsNil(t *testing.T) {
 		t.Run(tc.scenario, func(t *testing.T) {
 			t.Parallel()
 
-			assert.Equal(t, tc.expected, grpcReflect.IsNil(tc.input))
+			assert.Equal(t, tc.expected, xreflect.IsNil(tc.input))
 		})
 	}
 }
@@ -185,7 +185,7 @@ func TestIsPtr(t *testing.T) {
 		t.Run(tc.scenario, func(t *testing.T) {
 			t.Parallel()
 
-			assert.Equal(t, tc.expected, grpcReflect.IsPtr(tc.input))
+			assert.Equal(t, tc.expected, xreflect.IsPtr(tc.input))
 		})
 	}
 }
@@ -224,7 +224,7 @@ func TestUnwrapType(t *testing.T) {
 		t.Run(tc.scenario, func(t *testing.T) {
 			t.Parallel()
 
-			assert.Equal(t, expected, grpcReflect.UnwrapType(tc.input))
+			assert.Equal(t, expected, xreflect.UnwrapType(tc.input))
 		})
 	}
 }
@@ -263,7 +263,7 @@ func TestUnwrapValue(t *testing.T) {
 		t.Run(tc.scenario, func(t *testing.T) {
 			t.Parallel()
 
-			assert.Equal(t, expected.Interface(), grpcReflect.UnwrapValue(tc.input).Interface())
+			assert.Equal(t, expected.Interface(), xreflect.UnwrapValue(tc.input).Interface())
 		})
 	}
 }
@@ -271,7 +271,7 @@ func TestUnwrapValue(t *testing.T) {
 func TestNew(t *testing.T) {
 	t.Parallel()
 
-	actual := grpcReflect.New(&grpctest.Item{})
+	actual := xreflect.New(&grpctest.Item{})
 	expected := &grpctest.Item{}
 
 	assert.Equal(t, expected, actual)
@@ -280,7 +280,7 @@ func TestNew(t *testing.T) {
 func TestNewZero(t *testing.T) {
 	t.Parallel()
 
-	actual := grpcReflect.NewZero(&grpctest.Item{})
+	actual := xreflect.NewZero(&grpctest.Item{})
 	expected := (*grpctest.Item)(nil)
 
 	assert.Equal(t, expected, actual)
@@ -291,7 +291,7 @@ func TestNewValue(t *testing.T) {
 
 	item := &grpctest.Item{Id: 42}
 
-	actual := grpcReflect.NewValue(item)
+	actual := xreflect.NewValue(item)
 	expected := &grpctest.Item{Id: 42}
 
 	assert.Equal(t, expected, actual)
@@ -327,7 +327,7 @@ func TestNewSlicePre(t *testing.T) {
 		t.Run(tc.scenario, func(t *testing.T) {
 			t.Parallel()
 
-			actual := grpcReflect.NewSlicePtr(tc.v)
+			actual := xreflect.NewSlicePtr(tc.v)
 			expected := &[]*grpctest.Item{}
 
 			assert.Equal(t, expected, actual)
@@ -385,7 +385,7 @@ func TestSetPtrValue(t *testing.T) {
 			run := func() {
 				result := tc.dst
 
-				grpcReflect.SetPtrValue(result, tc.value)
+				xreflect.SetPtrValue(result, tc.value)
 
 				assert.Equal(t, tc.expectedResult, result)
 			}
@@ -426,7 +426,7 @@ func TestPtrValue(t *testing.T) {
 		t.Run(tc.scenario, func(t *testing.T) {
 			t.Parallel()
 
-			actual := grpcReflect.PtrValue(tc.value)
+			actual := xreflect.PtrValue(tc.value)
 
 			assert.Equal(t, tc.expected, actual)
 		})
@@ -437,7 +437,7 @@ func TestPtrValue_Panic(t *testing.T) {
 	t.Parallel()
 
 	assert.Panics(t, func() {
-		grpcReflect.PtrValue(nil)
+		xreflect.PtrValue(nil)
 	})
 }
 
@@ -500,10 +500,10 @@ func TestParseRegisterFunc(t *testing.T) {
 
 			if tc.expectedError != "" {
 				assert.PanicsWithError(t, tc.expectedError, func() {
-					grpcReflect.ParseRegisterFunc(tc.input)
+					xreflect.ParseRegisterFunc(tc.input)
 				})
 			} else {
-				serviceDesc, instance := grpcReflect.ParseRegisterFunc(tc.input)
+				serviceDesc, instance := xreflect.ParseRegisterFunc(tc.input)
 
 				assert.Equal(t, tc.expectedServiceDesc, serviceDesc)
 				assert.Equal(t, tc.expectedInstance, instance)
@@ -549,7 +549,7 @@ func TestUnwrapPtrSliceType(t *testing.T) {
 		t.Run(tc.scenario, func(t *testing.T) {
 			t.Parallel()
 
-			result, err := grpcReflect.UnwrapPtrSliceType(tc.input)
+			result, err := xreflect.UnwrapPtrSliceType(tc.input)
 
 			assert.Equal(t, tc.expectedResult, result)
 

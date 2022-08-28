@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"go.nhat.io/matcher/v2"
 
-	srvMatcher "github.com/nhatthm/grpcmock/matcher"
+	xmatcher "go.nhat.io/grpcmock/matcher"
 )
 
 func TestPayloadMatcher_Match(t *testing.T) {
@@ -77,7 +77,7 @@ func TestPayloadMatcher_Match(t *testing.T) {
 		t.Run(tc.scenario, func(t *testing.T) {
 			t.Parallel()
 
-			m := srvMatcher.Payload(tc.matcher, tc.decoder)
+			m := xmatcher.Payload(tc.matcher, tc.decoder)
 			matched, err := m.Match(tc.payload)
 
 			assert.Equal(t, tc.expectedResult, matched)
@@ -91,7 +91,7 @@ func TestBodyMatcher_Matcher(t *testing.T) {
 	t.Parallel()
 
 	expected := `payload`
-	m := srvMatcher.Payload(matcher.Match(expected), nil)
+	m := xmatcher.Payload(matcher.Match(expected), nil)
 
 	assert.Equal(t, matcher.Match(expected), m.Matcher())
 	assert.Equal(t, expected, m.Expected())

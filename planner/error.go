@@ -10,10 +10,10 @@ import (
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 
-	"github.com/nhatthm/grpcmock/format"
-	"github.com/nhatthm/grpcmock/request"
-	"github.com/nhatthm/grpcmock/service"
-	"github.com/nhatthm/grpcmock/value"
+	"go.nhat.io/grpcmock/format"
+	"go.nhat.io/grpcmock/request"
+	"go.nhat.io/grpcmock/service"
+	"go.nhat.io/grpcmock/value"
 )
 
 // Error represents an error that occurs while matching a request.

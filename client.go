@@ -12,8 +12,8 @@ import (
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/test/bufconn"
 
-	"github.com/nhatthm/grpcmock/errors"
-	"github.com/nhatthm/grpcmock/stream"
+	"go.nhat.io/grpcmock/errors"
+	"go.nhat.io/grpcmock/stream"
 )
 
 var methodRegex = regexp.MustCompile(`/?[^/]+/[^/]+$`)

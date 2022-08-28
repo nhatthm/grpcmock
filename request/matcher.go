@@ -6,55 +6,55 @@ import (
 
 	"go.nhat.io/matcher/v2"
 
-	grpcMatcher "github.com/nhatthm/grpcmock/matcher"
-	"github.com/nhatthm/grpcmock/must"
-	"github.com/nhatthm/grpcmock/streamer"
-	"github.com/nhatthm/grpcmock/value"
+	xmatcher "go.nhat.io/grpcmock/matcher"
+	"go.nhat.io/grpcmock/must"
+	"go.nhat.io/grpcmock/streamer"
+	"go.nhat.io/grpcmock/value"
 )
 
-func matchUnaryPayload(in interface{}) *grpcMatcher.PayloadMatcher {
+func matchUnaryPayload(in interface{}) *xmatcher.PayloadMatcher {
 	switch v := in.(type) {
 	case []byte, string:
-		return grpcMatcher.Payload(matcher.JSON(value.String(in)), decodeUnaryPayload)
+		return xmatcher.Payload(matcher.JSON(value.String(in)), decodeUnaryPayload)
 
 	case matcher.Matcher,
 		func() matcher.Matcher,
 		*regexp.Regexp:
-		return grpcMatcher.Payload(matcher.Match(v), decodeUnaryPayload)
+		return xmatcher.Payload(matcher.Match(v), decodeUnaryPayload)
 
-	case grpcMatcher.MatchFn:
-		return grpcMatcher.Payload(grpcMatcher.Fn("", v), nil)
+	case xmatcher.MatchFn:
+		return xmatcher.Payload(xmatcher.Fn("", v), nil)
 	}
 
-	return grpcMatcher.Payload(matcher.JSON(in), decodeUnaryPayload)
+	return xmatcher.Payload(matcher.JSON(in), decodeUnaryPayload)
 }
 
-func matchServerStreamPayload(in interface{}) *grpcMatcher.PayloadMatcher {
+func matchServerStreamPayload(in interface{}) *xmatcher.PayloadMatcher {
 	return matchUnaryPayload(in)
 }
 
-func matchClientStreamPayload(in interface{}) *grpcMatcher.PayloadMatcher {
+func matchClientStreamPayload(in interface{}) *xmatcher.PayloadMatcher {
 	switch v := in.(type) {
 	case []byte, string:
-		return grpcMatcher.Payload(matcher.JSON(value.String(v)), decodeClientStreamPayload)
+		return xmatcher.Payload(matcher.JSON(value.String(v)), decodeClientStreamPayload)
 
 	case matcher.Matcher,
 		func() matcher.Matcher,
 		*regexp.Regexp:
-		return grpcMatcher.Payload(matcher.Match(v), decodeClientStreamPayload)
+		return xmatcher.Payload(matcher.Match(v), decodeClientStreamPayload)
 
-	case grpcMatcher.MatchFn:
+	case xmatcher.MatchFn:
 		return matchClientStreamPayloadWithCustomMatcher("", v)
 
-	case func() (string, grpcMatcher.MatchFn):
+	case func() (string, xmatcher.MatchFn):
 		return matchClientStreamPayloadWithCustomMatcher(v())
 	}
 
-	return grpcMatcher.Payload(matcher.JSON(in), decodeClientStreamPayload)
+	return xmatcher.Payload(matcher.JSON(in), decodeClientStreamPayload)
 }
 
-func matchClientStreamPayloadWithCustomMatcher(expected string, match grpcMatcher.MatchFn) *grpcMatcher.PayloadMatcher {
-	return grpcMatcher.Payload(grpcMatcher.Fn(expected, func(actual interface{}) (bool, error) {
+func matchClientStreamPayloadWithCustomMatcher(expected string, match xmatcher.MatchFn) *xmatcher.PayloadMatcher {
+	return xmatcher.Payload(xmatcher.Fn(expected, func(actual interface{}) (bool, error) {
 		in, err := streamer.ClientStreamerPayload(actual.(*streamer.ClientStreamer))
 		// This should never happen because the PayloadMatcher will read the stream first.
 		// If there is an error while reading the stream, it is caught inside the PayloadMatcher.

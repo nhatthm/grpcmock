@@ -7,7 +7,7 @@ import (
 
 	"google.golang.org/protobuf/proto"
 
-	grpcReflect "github.com/nhatthm/grpcmock/reflect"
+	xreflect "go.nhat.io/grpcmock/reflect"
 )
 
 var _ SendReceiver = (*Buffer)(nil)
@@ -24,12 +24,12 @@ func (b *Buffer) Len() int {
 
 // SendMsg persists the message into the Buffer.
 func (b *Buffer) SendMsg(m interface{}) error {
-	if !grpcReflect.IsPtr(m) {
-		if grpcReflect.IsNil(m) {
-			return fmt.Errorf("send msg error: %w", grpcReflect.ErrPtrIsNil)
+	if !xreflect.IsPtr(m) {
+		if xreflect.IsNil(m) {
+			return fmt.Errorf("send msg error: %w", xreflect.ErrPtrIsNil)
 		}
 
-		return fmt.Errorf("send msg error: %w: %T", grpcReflect.ErrIsNotPtr, m)
+		return fmt.Errorf("send msg error: %w: %T", xreflect.ErrIsNotPtr, m)
 	}
 
 	if m, ok := m.(proto.Message); ok {
@@ -43,12 +43,12 @@ func (b *Buffer) SendMsg(m interface{}) error {
 
 // RecvMsg returns the messages in buffer.
 func (b *Buffer) RecvMsg(m interface{}) error {
-	if !grpcReflect.IsPtr(m) {
-		if grpcReflect.IsNil(m) {
-			return fmt.Errorf("recv msg error: %w", grpcReflect.ErrPtrIsNil)
+	if !xreflect.IsPtr(m) {
+		if xreflect.IsNil(m) {
+			return fmt.Errorf("recv msg error: %w", xreflect.ErrPtrIsNil)
 		}
 
-		return fmt.Errorf("recv msg error: %w: %T", grpcReflect.ErrIsNotPtr, m)
+		return fmt.Errorf("recv msg error: %w: %T", xreflect.ErrIsNotPtr, m)
 	}
 
 	if _, ok := m.(proto.Message); !ok {
@@ -59,8 +59,8 @@ func (b *Buffer) RecvMsg(m interface{}) error {
 		return io.EOF
 	}
 
-	if grpcReflect.UnwrapType(b.buf[0]) != grpcReflect.UnwrapType(m) {
-		return fmt.Errorf("recv msg error: %w: got %T and %T", grpcReflect.ErrIsNotSameType, b.buf[0], m)
+	if xreflect.UnwrapType(b.buf[0]) != xreflect.UnwrapType(m) {
+		return fmt.Errorf("recv msg error: %w: got %T and %T", xreflect.ErrIsNotSameType, b.buf[0], m)
 	}
 
 	reflect.ValueOf(m).Elem().

@@ -7,10 +7,10 @@ import (
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc/metadata"
 
-	"github.com/nhatthm/grpcmock/planner"
-	"github.com/nhatthm/grpcmock/service"
-	"github.com/nhatthm/grpcmock/test"
-	"github.com/nhatthm/grpcmock/test/grpctest"
+	"go.nhat.io/grpcmock/planner"
+	"go.nhat.io/grpcmock/service"
+	"go.nhat.io/grpcmock/test"
+	"go.nhat.io/grpcmock/test/grpctest"
 )
 
 func TestSequence(t *testing.T) {

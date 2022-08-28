@@ -4,8 +4,8 @@ import (
 	"context"
 	"sync"
 
-	"github.com/nhatthm/grpcmock/request"
-	"github.com/nhatthm/grpcmock/service"
+	"go.nhat.io/grpcmock/request"
+	"go.nhat.io/grpcmock/service"
 )
 
 var _ Planner = (*sequence)(nil)
