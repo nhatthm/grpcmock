@@ -4,7 +4,7 @@ go 1.17
 
 require (
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0
-	github.com/spf13/afero v1.9.2
+	github.com/spf13/afero v1.9.3
 	github.com/stretchr/testify v1.8.1
 	github.com/swaggest/assertjson v1.7.0
 	go.nhat.io/aferomock v0.4.0
