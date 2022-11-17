@@ -18,7 +18,7 @@ jobs:
         registry: [ go.nhat.io, go-staging.nhat.io ]
     steps:
       - name: notify ${{ matrix.registry }}
-        uses: benc-uk/workflow-dispatch@v1
+        uses: benc-uk/workflow-dispatch@v121
         with:
           workflow: build
           repo: nhatthm/${{ matrix.registry }}
