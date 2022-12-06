@@ -7,7 +7,7 @@
 [![codecov](https://codecov.io/gh/nhatthm/grpcmock/branch/master/graph/badge.svg?token=eTdAgDE2vR)](https://codecov.io/gh/nhatthm/grpcmock)
 [![Go Report Card](https://goreportcard.com/badge/go.nhat.io/grpcmock)](https://goreportcard.com/report/go.nhat.io/grpcmock)
 [![GoDevDoc](https://img.shields.io/badge/dev-doc-00ADD8?logo=go)](https://pkg.go.dev/go.nhat.io/grpcmock)
-[![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://donate.nhat.me)
+[![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](http://donate.nhat.me)
 
 Test gRPC service and client like a pro.
 
@@ -521,7 +521,7 @@ If this project help you reduce time to develop, you can give me a cup of coffee
 
 ### Paypal donation
 
-[![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://donate.nhat.me)
+[![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](http://donate.nhat.me)
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;or scan this
 
