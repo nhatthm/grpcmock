@@ -1,4 +1,4 @@
-> ⚠️ From `v0.20.0`, the project will be rebranded to `go.nhat.io/grpcmock`. `v.19.0` is the last version with `github.com/nhatthm/grpcmock`.
+> ⚠️ From `v0.20.0`, the project will be rebranded to `go.nhat.io/grpcmock`. `v0.19.0` is the last version with `github.com/nhatthm/grpcmock`.
 
 # gRPC Test Utilities for Golang
 
