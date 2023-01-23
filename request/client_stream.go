@@ -13,6 +13,8 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/encoding/protojson"
+	"google.golang.org/protobuf/proto"
 
 	xerrors "go.nhat.io/grpcmock/errors"
 	xmatcher "go.nhat.io/grpcmock/matcher"
@@ -268,7 +270,7 @@ func (r *ClientStreamRequest) handle(ctx context.Context, in interface{}, out in
 
 	switch resp := resp.(type) {
 	case []byte, string, fmt.Stringer:
-		if err := json.Unmarshal([]byte(value.String(resp)), out); err != nil {
+		if err := protojson.Unmarshal([]byte(value.String(resp)), out.(proto.Message)); err != nil {
 			return status.Error(codes.Internal, err.Error())
 		}
 
