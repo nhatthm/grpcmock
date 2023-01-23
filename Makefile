@@ -1,15 +1,22 @@
-BUILD_DIR ?= out
+MODULE_NAME=grpcmock
+
 VENDOR_DIR = vendor
 
-GOLANGCI_LINT_VERSION ?= v1.48.0
+GOLANGCI_LINT_VERSION ?= v1.50.1
 
 GO ?= go
 GOLANGCI_LINT ?= $(shell go env GOPATH)/bin/golangci-lint-$(GOLANGCI_LINT_VERSION)
+
+GITHUB_OUTPUT ?= /dev/null
 
 .PHONY: $(VENDOR_DIR)
 $(VENDOR_DIR):
 	@mkdir -p $(VENDOR_DIR)
 	@$(GO) mod vendor
+	@$(GO) mod tidy
+
+.PHONY: tidy
+tidy:
 	@$(GO) mod tidy
 
 .PHONY: lint
@@ -35,9 +42,10 @@ gen:
 	@rm -rf test/grpctest
 	@protoc --go_out=. --go-grpc_out=. resources/protobuf/service.proto
 
-.PHONY: golangci-lint-version
-golangci-lint-version:
-	@echo "::set-output name=GOLANGCI_LINT_VERSION::$(GOLANGCI_LINT_VERSION)"
+.PHONY: $(GITHUB_OUTPUT)
+$(GITHUB_OUTPUT):
+	@echo "MODULE_NAME=$(MODULE_NAME)" >> "$@"
+	@echo "GOLANGCI_LINT_VERSION=$(GOLANGCI_LINT_VERSION)" >> "$@"
 
 $(GOLANGCI_LINT):
 	@echo "$(OK_COLOR)==> Installing golangci-lint $(GOLANGCI_LINT_VERSION)$(NO_COLOR)"; \

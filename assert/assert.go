@@ -57,5 +57,5 @@ func JSONEq(t assert.TestingT, expected, actual interface{}, msgAndArgs ...inter
 }
 
 func sanitizeErrorMessage(msg string) string {
-	return strings.ReplaceAll(msg, "\\00a0", " ")
+	return strings.ReplaceAll(msg, "\u00a0", " ")
 }

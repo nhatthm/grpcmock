@@ -12,7 +12,7 @@ import (
 	"go.nhat.io/grpcmock/test/grpctest"
 )
 
-type testServer interface {
+type testServer interface { //nolint: interfacebloat
 	// RPC Methods.
 	GetItem(context.Context, getItemRequest) (getItemResponse, error)
 

@@ -54,7 +54,7 @@ func stepSend(expectedType reflect.Type, msg interface{}) streamStepFunc {
 
 		switch resp := msg.(type) {
 		case []byte, string:
-			out := xreflect.New(expectedType).(proto.Message)
+			out := xreflect.New(expectedType).(proto.Message) //nolint: errcheck
 
 			if err := protojson.Unmarshal([]byte(value.String(resp)), out); err != nil {
 				return status.Error(codes.Internal, err.Error())
@@ -67,7 +67,7 @@ func stepSend(expectedType reflect.Type, msg interface{}) streamStepFunc {
 	}
 }
 
-func stepSendMany(msgType reflect.Type, msg interface{}) streamStepFunc {
+func stepSendMany(msgType reflect.Type, msg interface{}) streamStepFunc { //nolint: cyclop
 	return func(_ context.Context, s grpc.ServerStream) error {
 		expectedType := reflect.SliceOf(msgType)
 
@@ -110,7 +110,7 @@ func stepSendMany(msgType reflect.Type, msg interface{}) streamStepFunc {
 			}
 
 			for _, m := range msgs {
-				out := xreflect.New(msgType).(proto.Message)
+				out := xreflect.New(msgType).(proto.Message) //nolint: errcheck
 
 				if err := protojson.Unmarshal(m, out); err != nil {
 					return status.Error(codes.Internal, err.Error())
