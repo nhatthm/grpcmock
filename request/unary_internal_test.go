@@ -13,6 +13,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
+	xassert "go.nhat.io/grpcmock/assert"
 	xmatcher "go.nhat.io/grpcmock/matcher"
 	"go.nhat.io/grpcmock/test"
 	"go.nhat.io/grpcmock/test/grpctest"
@@ -448,7 +449,7 @@ func TestUnaryRequest_Return(t *testing.T) {
 		{
 			scenario:       "random string",
 			output:         "hello world",
-			expectedError:  status.Error(codes.Internal, `invalid character 'h' looking for beginning of value`),
+			expectedError:  status.Error(codes.Internal, `proto: syntax error (line 1:1): invalid value hello`),
 			expectedResult: &grpctest.Item{},
 		},
 		{
@@ -484,8 +485,8 @@ func TestUnaryRequest_Return(t *testing.T) {
 
 			err := r.handle(context.Background(), nil, out)
 
-			assert.Equal(t, tc.expectedResult, out)
-			assert.Equal(t, tc.expectedError, err)
+			xassert.EqualMessage(t, tc.expectedResult, out)
+			xassert.EqualError(t, tc.expectedError, err)
 		})
 	}
 }
@@ -539,7 +540,7 @@ func TestUnaryRequest_ReturnFile_Success(t *testing.T) {
 		Name:   "Foobar",
 	}
 
-	assert.Equal(t, expected, output)
+	xassert.EqualMessage(t, expected, output)
 	assert.NoError(t, err)
 }
 
@@ -566,7 +567,7 @@ func TestUnaryRequest_Returnf(t *testing.T) {
 
 	expected := &grpctest.Item{Id: 42}
 
-	assert.Equal(t, expected, output)
+	xassert.EqualMessage(t, expected, output)
 	assert.Nil(t, err)
 }
 
@@ -583,7 +584,7 @@ func TestUnaryRequest_ReturnJSON(t *testing.T) {
 
 	expected := &grpctest.Item{Id: 42}
 
-	assert.Equal(t, expected, output)
+	xassert.EqualMessage(t, expected, output)
 	assert.Nil(t, err)
 }
 

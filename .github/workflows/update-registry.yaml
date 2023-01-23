@@ -3,6 +3,8 @@ name: 'update-registry'
 
 on:
   push:
+    branches:
+      - master
     tags:
       - v*
   workflow_dispatch:
@@ -17,11 +19,17 @@ jobs:
       matrix:
         registry: [ go.nhat.io, go-staging.nhat.io ]
     steps:
+      - uses: actions/checkout@v3
+
+      - id: vars
+        run: |
+          make $GITHUB_OUTPUT
+
       - name: notify ${{ matrix.registry }}
         uses: benc-uk/workflow-dispatch@v121
         with:
           workflow: build
           repo: nhatthm/${{ matrix.registry }}
           token: ${{ secrets.REGISTRY_TOKEN }}
-          inputs: '{"modules": "${{ env.MODULE_NAME }}"}'
+          inputs: '{"modules": "${{ steps.vars.outputs.MODULE_NAME }}"}'
           ref: 'master'

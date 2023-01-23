@@ -10,6 +10,8 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/encoding/protojson"
+	"google.golang.org/protobuf/proto"
 
 	"go.nhat.io/grpcmock/errors"
 	xreflect "go.nhat.io/grpcmock/reflect"
@@ -52,9 +54,9 @@ func stepSend(expectedType reflect.Type, msg interface{}) streamStepFunc {
 
 		switch resp := msg.(type) {
 		case []byte, string:
-			out := xreflect.New(expectedType)
+			out := xreflect.New(expectedType).(proto.Message) //nolint: errcheck
 
-			if err := json.Unmarshal([]byte(value.String(resp)), out); err != nil {
+			if err := protojson.Unmarshal([]byte(value.String(resp)), out); err != nil {
 				return status.Error(codes.Internal, err.Error())
 			}
 
@@ -65,7 +67,7 @@ func stepSend(expectedType reflect.Type, msg interface{}) streamStepFunc {
 	}
 }
 
-func stepSendMany(msgType reflect.Type, msg interface{}) streamStepFunc {
+func stepSendMany(msgType reflect.Type, msg interface{}) streamStepFunc { //nolint: cyclop
 	return func(_ context.Context, s grpc.ServerStream) error {
 		expectedType := reflect.SliceOf(msgType)
 
@@ -101,13 +103,25 @@ func stepSendMany(msgType reflect.Type, msg interface{}) streamStepFunc {
 
 		switch resp := msg.(type) {
 		case []byte, string:
-			out := xreflect.New(expectedPtrType)
+			var msgs []json.RawMessage
 
-			if err := json.Unmarshal([]byte(value.String(resp)), out); err != nil {
+			if err := json.Unmarshal([]byte(value.String(resp)), &msgs); err != nil {
 				return status.Error(codes.Internal, err.Error())
 			}
 
-			return sendMany(out)
+			for _, m := range msgs {
+				out := xreflect.New(msgType).(proto.Message) //nolint: errcheck
+
+				if err := protojson.Unmarshal(m, out); err != nil {
+					return status.Error(codes.Internal, err.Error())
+				}
+
+				if err := s.SendMsg(out); err != nil {
+					return err
+				}
+			}
+
+			return nil
 		}
 
 		return status.Errorf(codes.Internal, "%s: got %T, want %s", errors.ErrUnsupportedDataType.Error(), msg, expectedType.String())

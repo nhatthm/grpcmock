@@ -12,6 +12,8 @@ import (
 	"go.nhat.io/matcher/v2"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/encoding/protojson"
+	"google.golang.org/protobuf/proto"
 
 	xerrors "go.nhat.io/grpcmock/errors"
 	xmatcher "go.nhat.io/grpcmock/matcher"
@@ -261,7 +263,7 @@ func (r *UnaryRequest) handle(ctx context.Context, in interface{}, out interface
 
 	switch resp := resp.(type) {
 	case []byte, string, fmt.Stringer:
-		if err := json.Unmarshal([]byte(value.String(resp)), out); err != nil {
+		if err := protojson.Unmarshal([]byte(value.String(resp)), out.(proto.Message)); err != nil {
 			return status.Error(codes.Internal, err.Error())
 		}
 

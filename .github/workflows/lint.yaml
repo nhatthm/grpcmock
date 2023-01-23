@@ -21,15 +21,15 @@ jobs:
         with:
             go-version: ${{ env.GO_VERSION }}
 
-      - id: get-lint-version
+      - id: vars
         run: |
-          make golangci-lint-version
+          make $GITHUB_OUTPUT
 
       - name: lint
         uses: golangci/golangci-lint-action@v3
         with:
           # Required: the version of golangci-lint is required and must be specified without patch version: we always use the latest patch version.
-          version: ${{ steps.get-lint-version.outputs.GOLANGCI_LINT_VERSION }}
+          version: ${{ steps.vars.outputs.GOLANGCI_LINT_VERSION }}
 
           # Optional: working directory, useful for monorepos
           # working-directory: somedir

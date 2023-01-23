@@ -254,7 +254,7 @@ func (r *ServerStreamRequest) ReturnFile(filePath string) {
 //			ReturnError(codes.Internal, "stream error")
 //
 // See: ServerStreamRequest.Return(), ServerStreamRequest.Returnf(), ServerStreamRequest.ReturnJSON(), ServerStreamRequest.ReturnFile().
-func (r *ServerStreamRequest) ReturnStream() *serverStreamHandler {
+func (r *ServerStreamRequest) ReturnStream() *serverStreamHandler { //nolint: revive
 	h := &serverStreamHandler{}
 
 	r.ReturnCode(codes.OK)

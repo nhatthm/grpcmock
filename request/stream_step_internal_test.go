@@ -11,6 +11,7 @@ import (
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 
+	xassert "go.nhat.io/grpcmock/assert"
 	xmock "go.nhat.io/grpcmock/mock/grpc"
 	"go.nhat.io/grpcmock/reflect"
 	"go.nhat.io/grpcmock/test/grpctest"
@@ -94,7 +95,7 @@ func TestStepSend(t *testing.T) {
 			scenario:         "byte error",
 			mockServerStream: xmock.NoMockServerStream,
 			msg:              []byte(`{`),
-			expectedError:    `rpc error: code = Internal desc = unexpected end of JSON input`,
+			expectedError:    `rpc error: code = Internal desc = proto: unexpected EOF`,
 		},
 		{
 			scenario: "byte",
@@ -125,7 +126,7 @@ func TestStepSend(t *testing.T) {
 			if tc.expectedError == "" {
 				assert.NoError(t, err)
 			} else {
-				assert.EqualError(t, err, tc.expectedError)
+				xassert.EqualErrorMessage(t, err, tc.expectedError)
 			}
 		})
 	}

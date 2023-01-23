@@ -2,9 +2,11 @@ package assert
 
 import (
 	"encoding/json"
+	"strings"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/swaggest/assertjson"
+	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -15,6 +17,24 @@ func EqualMessage(t assert.TestingT, expected, actual proto.Message, msgAndArgs 
 	}
 
 	return assert.Equal(t, expected, actual, msgAndArgs...)
+}
+
+// EqualError asserts that two grpc errors are equal.
+func EqualError(t assert.TestingT, expected, actual error, msgAndArgs ...interface{}) bool {
+	if st, _ := status.FromError(actual); st != nil {
+		actual = status.Error(st.Code(), sanitizeErrorMessage(st.Message()))
+	}
+
+	return assert.Equal(t, expected, actual, msgAndArgs...)
+}
+
+// EqualErrorMessage asserts that the grpc error message is equal.
+func EqualErrorMessage(t assert.TestingT, actual error, expected string, msgAndArgs ...interface{}) bool {
+	if st, _ := status.FromError(actual); st != nil {
+		actual = status.Error(st.Code(), sanitizeErrorMessage(st.Message()))
+	}
+
+	return assert.EqualError(t, actual, expected, msgAndArgs...)
 }
 
 // JSONEq compares 2 json objects.
@@ -34,4 +54,8 @@ func JSONEq(t assert.TestingT, expected, actual interface{}, msgAndArgs ...inter
 	}
 
 	return assertjson.Equal(t, expectedBytes, actualBytes, msgAndArgs...)
+}
+
+func sanitizeErrorMessage(msg string) string {
+	return strings.ReplaceAll(msg, "\u00a0", " ")
 }

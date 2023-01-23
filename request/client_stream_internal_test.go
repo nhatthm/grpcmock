@@ -651,7 +651,7 @@ func TestClientStreamRequest_Return(t *testing.T) {
 			scenario:       "random string",
 			mockStreamer:   test.NoMockClientStreamer,
 			output:         "hello world",
-			expectedError:  status.Error(codes.Internal, `invalid character 'h' looking for beginning of value`),
+			expectedError:  status.Error(codes.Internal, `proto: syntax error (line 1:1): invalid value hello`),
 			expectedResult: &grpctest.CreateItemsResponse{},
 		},
 		{
@@ -692,8 +692,8 @@ func TestClientStreamRequest_Return(t *testing.T) {
 
 			err := r.handle(context.Background(), tc.mockStreamer(t), out)
 
-			assert.Equal(t, tc.expectedResult, out)
-			assert.Equal(t, tc.expectedError, err)
+			xassert.EqualMessage(t, tc.expectedResult, out)
+			xassert.EqualError(t, tc.expectedError, err)
 		})
 	}
 }
