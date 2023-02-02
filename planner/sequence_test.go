@@ -20,7 +20,7 @@ func TestSequence(t *testing.T) {
 
 	testCases := []struct {
 		scenario        string
-		mockPlanner     func() planner.Planner
+		mockPlanner     func(t testing.TB) planner.Planner
 		context         context.Context
 		request         service.Method
 		input           interface{}
@@ -29,10 +29,8 @@ func TestSequence(t *testing.T) {
 		expectedError   string
 	}{
 		{
-			scenario: "service mismatched",
-			mockPlanner: mockSequence(func(p planner.Planner) {
-				p.Expect(expectGetItems())
-			}),
+			scenario:       "service mismatched",
+			mockPlanner:    mockSequence(expectGetItems()),
 			context:        context.Background(),
 			request:        test.ListItemsSvc(),
 			expectedRemain: 1,
@@ -43,11 +41,9 @@ Error: method Unary "/grpctest.Service/GetItem" expected, ServerStream "/grpctes
 		},
 		{
 			scenario: "header mismatched",
-			mockPlanner: mockSequence(func(p planner.Planner) {
-				p.Expect(expectGetItems().
-					WithHeader("locale", "en-US"),
-				)
-			}),
+			mockPlanner: mockSequence(expectGetItems().
+				WithHeader("locale", "en-US"),
+			),
 			context:        context.Background(),
 			request:        expectedSvc,
 			expectedRemain: 1,
@@ -59,12 +55,8 @@ Error: header "locale" with value "en-US" expected, "" received
 `,
 		},
 		{
-			scenario: "payload mismatched",
-			mockPlanner: mockSequence(func(p planner.Planner) {
-				p.Expect(expectGetItems().
-					WithPayload(`{"id": 42}`),
-				)
-			}),
+			scenario:       "payload mismatched",
+			mockPlanner:    mockSequence(expectGetItems().WithPayload(`{"id": 42}`)),
 			context:        context.Background(),
 			request:        expectedSvc,
 			expectedRemain: 1,
@@ -79,12 +71,10 @@ Error: expected request payload: {"id": 42}, received: null
 		},
 		{
 			scenario: "success",
-			mockPlanner: mockSequence(func(p planner.Planner) {
-				p.Expect(expectGetItems().
-					WithHeader("locale", "en-US").
-					WithPayload(`{"id": 42}`),
-				)
-			}),
+			mockPlanner: mockSequence(expectGetItems().
+				WithHeader("locale", "en-US").
+				WithPayload(`{"id": 42}`),
+			),
 			context:         metadata.NewIncomingContext(context.Background(), metadata.New(map[string]string{"locale": "en-US"})),
 			request:         expectedSvc,
 			input:           &grpctest.Item{Id: 42},
@@ -97,7 +87,7 @@ Error: expected request payload: {"id": 42}, received: null
 		t.Run(tc.scenario, func(t *testing.T) {
 			t.Parallel()
 
-			p := tc.mockPlanner()
+			p := tc.mockPlanner(t)
 
 			result, err := p.Plan(tc.context, tc.request, tc.input)
 			remain := p.Remain()
@@ -114,6 +104,63 @@ Error: expected request payload: {"id": 42}, received: null
 	}
 }
 
+func TestSequence_Plan_MatchedRequestIsRemoved(t *testing.T) {
+	t.Parallel()
+
+	p := mockSequence(
+		expectGetItems().WithTimes(1).
+			WithPayload(grpctest.GetItemRequest{Id: 40}),
+		expectGetItems().WithTimes(1).
+			WithPayload(grpctest.GetItemRequest{Id: 42}),
+	)(t)
+
+	// First hit.
+	result, err := p.Plan(context.Background(), test.GetItemsSvc(), grpctest.GetItemRequest{Id: 40})
+
+	assert.NotNil(t, result)
+	assert.NoError(t, err)
+	assert.Len(t, p.Remain(), 1)
+
+	// Second hit.
+	result, err = p.Plan(context.Background(), test.GetItemsSvc(), grpctest.GetItemRequest{Id: 42})
+
+	assert.NotNil(t, result)
+	assert.NoError(t, err)
+	assert.Len(t, p.Remain(), 0)
+}
+
+func TestSequence_Plan_AlwaysMatchTheFirstUnlimitedRequest(t *testing.T) {
+	t.Parallel()
+
+	p := mockSequence(
+		expectGetItems().WithTimes(planner.UnlimitedTimes),
+		expectGetItems().WithTimes(1).
+			WithHeader("locale", "en-US"),
+		expectGetItems().WithTimes(1).
+			WithPayload(grpctest.GetItemRequest{Id: 42}),
+	)(t)
+
+	const expectedRemains = 3
+
+	// First hit.
+	result, err := p.Plan(context.Background(), test.GetItemsSvc(), grpctest.GetItemRequest{Id: 42})
+
+	assert.NotNil(t, result)
+	assert.Nil(t, result.HeaderMatcher())
+	assert.Nil(t, result.PayloadMatcher())
+	assert.NoError(t, err)
+	assert.Len(t, p.Remain(), expectedRemains)
+
+	// Second hit.
+	result, err = p.Plan(context.Background(), test.GetItemsSvc(), grpctest.GetItemRequest{Id: 42})
+
+	assert.NotNil(t, result)
+	assert.Nil(t, result.HeaderMatcher())
+	assert.Nil(t, result.PayloadMatcher())
+	assert.NoError(t, err)
+	assert.Len(t, p.Remain(), expectedRemains)
+}
+
 func TestSequence_Empty(t *testing.T) {
 	t.Parallel()
 
@@ -121,7 +168,7 @@ func TestSequence_Empty(t *testing.T) {
 
 	assert.True(t, p.IsEmpty())
 
-	p.Expect(expectGetItems())
+	p.Expect(expectGetItems().Build(t))
 
 	assert.False(t, p.IsEmpty())
 
@@ -130,12 +177,14 @@ func TestSequence_Empty(t *testing.T) {
 	assert.True(t, p.IsEmpty())
 }
 
-func mockSequence(mocks ...func(p planner.Planner)) func() planner.Planner {
-	return func() planner.Planner {
+func mockSequence(builders ...expectationBuilder) func(tb testing.TB) planner.Planner {
+	return func(tb testing.TB) planner.Planner {
+		tb.Helper()
+
 		p := planner.Sequence()
 
-		for _, m := range mocks {
-			m(p)
+		for _, b := range builders {
+			p.Expect(b.Build(tb))
 		}
 
 		return p

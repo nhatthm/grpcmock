@@ -4,14 +4,13 @@ import (
 	"context"
 	"sync"
 
-	"go.nhat.io/grpcmock/request"
 	"go.nhat.io/grpcmock/service"
 )
 
 var _ Planner = (*firstMatch)(nil)
 
 type firstMatch struct {
-	expectations []request.Request
+	expectations []Expectation
 
 	mu sync.Mutex
 }
@@ -23,18 +22,18 @@ func (m *firstMatch) IsEmpty() bool {
 	return len(m.expectations) == 0
 }
 
-func (m *firstMatch) Expect(expect request.Request) {
+func (m *firstMatch) Expect(expect Expectation) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
 	m.expectations = append(m.expectations, expect)
 }
 
-func (m *firstMatch) Plan(ctx context.Context, req service.Method, in interface{}) (request.Request, error) {
+func (m *firstMatch) Plan(ctx context.Context, req service.Method, in interface{}) (Expectation, error) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
-	matched := (request.Request)(nil)
+	matched := (Expectation)(nil)
 	found := -1
 
 	for i, expect := range m.expectations {
@@ -59,7 +58,7 @@ func (m *firstMatch) Plan(ctx context.Context, req service.Method, in interface{
 	return matched, nil
 }
 
-func (m *firstMatch) Remain() []request.Request {
+func (m *firstMatch) Remain() []Expectation {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 

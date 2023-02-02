@@ -2,60 +2,111 @@ package planner_test
 
 import (
 	"context"
-	"sync"
+	"testing"
 
+	"go.nhat.io/matcher/v2"
 	"google.golang.org/grpc/metadata"
 
-	"go.nhat.io/grpcmock/request"
+	xmatcher "go.nhat.io/grpcmock/matcher"
+	plannerMock "go.nhat.io/grpcmock/mock/planner"
+	"go.nhat.io/grpcmock/planner"
+	"go.nhat.io/grpcmock/service"
 	"go.nhat.io/grpcmock/test"
 )
 
-func expectGetItems() *request.UnaryRequest {
-	svc := test.GetItemsSvc()
-
-	return request.NewUnaryRequest(&sync.Mutex{}, &svc).Once()
+type expectationBuilder struct {
+	serviceMethod  service.Method
+	headerMatcher  xmatcher.HeaderMatcher
+	payloadMatcher *xmatcher.PayloadMatcher
+	times          planner.RepeatedTime
 }
 
-func expectListItems() *request.ServerStreamRequest {
-	svc := test.ListItemsSvc()
+func (b expectationBuilder) WithServiceMethod(serviceMethod service.Method) expectationBuilder {
+	b.serviceMethod = serviceMethod
 
-	return request.NewServerStreamRequest(&sync.Mutex{}, &svc).Once()
+	return b
 }
 
-func expectCreateItems() *request.ClientStreamRequest {
-	svc := test.CreateItemsSvc()
+func (b expectationBuilder) WithHeader(header string, value interface{}) expectationBuilder {
+	headerMatcher := make(xmatcher.HeaderMatcher, len(b.headerMatcher))
+	for header, value := range b.headerMatcher {
+		headerMatcher[header] = value
+	}
 
-	return request.NewClientStreamRequest(&sync.Mutex{}, &svc).Once()
+	headerMatcher[header] = matcher.Match(value)
+	b.headerMatcher = headerMatcher
+
+	return b
 }
 
-func expectTransformItems() *request.BidirectionalStreamRequest {
-	svc := test.TransformItemsSvc()
+func (b expectationBuilder) WithPayload(in interface{}) expectationBuilder {
+	switch b.serviceMethod.MethodType {
+	case service.TypeUnary:
+		b.payloadMatcher = xmatcher.UnaryPayload(in)
 
-	return request.NewBidirectionalStreamRequest(&sync.Mutex{}, &svc).Once()
+	case service.TypeServerStream:
+		b.payloadMatcher = xmatcher.ServerStreamPayload(in)
+
+	case service.TypeClientStream:
+		b.payloadMatcher = xmatcher.ClientStreamPayload(in)
+
+	case service.TypeBidirectionalStream:
+		// Do nothing.
+	}
+
+	return b
 }
 
-func newGetItemRequest() *request.UnaryRequest {
-	svc := test.GetItemsSvc()
+func (b expectationBuilder) WithTimes(t planner.RepeatedTime) expectationBuilder {
+	b.times = t
 
-	return request.NewUnaryRequest(&sync.Mutex{}, &svc)
+	return b
 }
 
-func newListItemsRequest() *request.ServerStreamRequest {
-	svc := test.ListItemsSvc()
+func (b expectationBuilder) Mock() func(tb testing.TB) *plannerMock.Expectation {
+	return plannerMock.MockExpectation(func(e *plannerMock.Expectation) {
+		e.On("ServiceMethod").Maybe().
+			Return(b.serviceMethod)
 
-	return request.NewServerStreamRequest(&sync.Mutex{}, &svc)
+		e.On("HeaderMatcher").Maybe().
+			Return(b.headerMatcher)
+
+		e.On("PayloadMatcher").Maybe().
+			Return(b.payloadMatcher)
+
+		e.On("RemainTimes").Maybe().
+			Return(b.times)
+	})
 }
 
-func newCreateItemsRequest() *request.ClientStreamRequest {
-	svc := test.CreateItemsSvc()
+func (b expectationBuilder) Build(tb testing.TB) *plannerMock.Expectation {
+	tb.Helper()
 
-	return request.NewClientStreamRequest(&sync.Mutex{}, &svc)
+	return b.Mock()(tb)
 }
 
-func newTransformItemsRequest() *request.BidirectionalStreamRequest {
-	svc := test.TransformItemsSvc()
+func expectGetItems() expectationBuilder {
+	return expectationBuilder{}.
+		WithServiceMethod(test.GetItemsSvc()).
+		WithTimes(1)
+}
 
-	return request.NewBidirectionalStreamRequest(&sync.Mutex{}, &svc)
+func expectListItems() expectationBuilder {
+	return expectationBuilder{}.
+		WithServiceMethod(test.ListItemsSvc()).
+		WithTimes(1)
+}
+
+func expectCreateItems() expectationBuilder {
+	return expectationBuilder{}.
+		WithServiceMethod(test.CreateItemsSvc()).
+		WithTimes(1)
+}
+
+func expectTransformItems() expectationBuilder {
+	return expectationBuilder{}.
+		WithServiceMethod(test.TransformItemsSvc()).
+		WithTimes(1)
 }
 
 func withIncomingHeader(header, value string) context.Context {

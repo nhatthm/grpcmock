@@ -11,14 +11,13 @@ import (
 	"google.golang.org/grpc/status"
 
 	"go.nhat.io/grpcmock/format"
-	"go.nhat.io/grpcmock/request"
 	"go.nhat.io/grpcmock/service"
 	"go.nhat.io/grpcmock/value"
 )
 
 // Error represents an error that occurs while matching a request.
 type Error struct {
-	expected      request.Request
+	expected      Expectation
 	actual        service.Method
 	actualHeader  map[string]string
 	actualPayload interface{}
@@ -28,7 +27,7 @@ type Error struct {
 }
 
 func (e Error) formatExpected(w io.Writer) {
-	format.ExpectedRequest(w, request.ServiceMethod(e.expected), request.HeaderMatcher(e.expected), request.PayloadMatcher(e.expected))
+	format.ExpectedRequest(w, e.expected.ServiceMethod(), e.expected.HeaderMatcher(), e.expected.PayloadMatcher())
 }
 
 func (e Error) formatActual(w io.Writer) {
@@ -51,10 +50,10 @@ func (e Error) Error() string {
 }
 
 // NewError creates a new Error.
-func NewError(ctx context.Context, expected request.Request, req service.Method, in interface{}, messageFormat string, messageArgs ...interface{}) *Error {
+func NewError(ctx context.Context, expected Expectation, req service.Method, in interface{}, messageFormat string, messageArgs ...interface{}) *Error {
 	var actualHeader map[string]string
 
-	expectedHeader := request.HeaderMatcher(expected)
+	expectedHeader := expected.HeaderMatcher()
 
 	if len(expectedHeader) > 0 {
 		actualHeader = make(map[string]string, len(expectedHeader))

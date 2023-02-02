@@ -51,10 +51,10 @@ func TestPlanner_Expect(t *testing.T) {
 	t.Parallel()
 
 	p := planner.Mock(func(p *planner.Planner) {
-		p.On("Expect", (request.Request)(nil))
+		p.On("Expect", (*planner.Expectation)(nil))
 	})(t)
 
-	p.Expect((request.Request)(nil))
+	p.Expect((*planner.Expectation)(nil))
 }
 
 func TestPlanner_Plan(t *testing.T) {

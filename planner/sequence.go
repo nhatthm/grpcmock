@@ -4,14 +4,13 @@ import (
 	"context"
 	"sync"
 
-	"go.nhat.io/grpcmock/request"
 	"go.nhat.io/grpcmock/service"
 )
 
 var _ Planner = (*sequence)(nil)
 
 type sequence struct {
-	expectations []request.Request
+	expectations []Expectation
 
 	mu sync.Mutex
 }
@@ -23,14 +22,14 @@ func (s *sequence) IsEmpty() bool {
 	return len(s.expectations) == 0
 }
 
-func (s *sequence) Expect(expect request.Request) {
+func (s *sequence) Expect(expect Expectation) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
 	s.expectations = append(s.expectations, expect)
 }
 
-func (s *sequence) Plan(ctx context.Context, req service.Method, in interface{}) (request.Request, error) {
+func (s *sequence) Plan(ctx context.Context, req service.Method, in interface{}) (Expectation, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -44,7 +43,7 @@ func (s *sequence) Plan(ctx context.Context, req service.Method, in interface{})
 	return expected, nil
 }
 
-func (s *sequence) Remain() []request.Request {
+func (s *sequence) Remain() []Expectation {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -63,7 +62,7 @@ func Sequence() Planner {
 	return &sequence{}
 }
 
-func nextExpectations(expectedRequests []request.Request) (request.Request, []request.Request) {
+func nextExpectations(expectedRequests []Expectation) (Expectation, []Expectation) {
 	r := expectedRequests[0]
 
 	if trackRepeatable(r) {

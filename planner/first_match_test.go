@@ -7,7 +7,6 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"go.nhat.io/grpcmock/planner"
-	"go.nhat.io/grpcmock/request"
 	"go.nhat.io/grpcmock/test"
 	"go.nhat.io/grpcmock/test/grpctest"
 )
@@ -15,11 +14,11 @@ import (
 func TestFirstMatch_Plan_Unary_Error(t *testing.T) {
 	t.Parallel()
 
-	expected := `rpc error: code = FailedPrecondition desc = unexpected request received: "/grpctest.Service/GetItem", payload: {"id":42}`
+	const expected = `rpc error: code = FailedPrecondition desc = unexpected request received: "/grpctest.Service/GetItem", payload: {"id":42}`
 
 	testCases := []struct {
 		scenario        string
-		mockPlanner     func() planner.Planner
+		mockPlanner     func(t testing.TB) planner.Planner
 		expectedRemains int
 	}{
 		{
@@ -27,28 +26,18 @@ func TestFirstMatch_Plan_Unary_Error(t *testing.T) {
 			mockPlanner: mockFirstMatch(),
 		},
 		{
-			scenario: "service mismatched",
-			mockPlanner: mockFirstMatch(func(p planner.Planner) {
-				p.Expect(newListItemsRequest())
-			}),
+			scenario:        "service mismatched",
+			mockPlanner:     mockFirstMatch(expectListItems()),
 			expectedRemains: 1,
 		},
 		{
-			scenario: "header mismatched",
-			mockPlanner: mockFirstMatch(func(p planner.Planner) {
-				p.Expect(newGetItemRequest().
-					WithHeader("locale", "en-US"),
-				)
-			}),
+			scenario:        "header mismatched",
+			mockPlanner:     mockFirstMatch(expectGetItems().WithHeader("locale", "en-US")),
 			expectedRemains: 1,
 		},
 		{
-			scenario: "payload mismatched",
-			mockPlanner: mockFirstMatch(func(p planner.Planner) {
-				p.Expect(newGetItemRequest().
-					WithPayload(grpctest.GetItemRequest{Id: 40}),
-				)
-			}),
+			scenario:        "payload mismatched",
+			mockPlanner:     mockFirstMatch(expectGetItems().WithPayload(grpctest.GetItemRequest{Id: 40})),
 			expectedRemains: 1,
 		},
 	}
@@ -58,7 +47,7 @@ func TestFirstMatch_Plan_Unary_Error(t *testing.T) {
 		t.Run(tc.scenario, func(t *testing.T) {
 			t.Parallel()
 
-			p := tc.mockPlanner()
+			p := tc.mockPlanner(t)
 			result, err := p.Plan(context.Background(), test.GetItemsSvc(), grpctest.GetItemRequest{Id: 42})
 
 			assert.Nil(t, result)
@@ -71,26 +60,22 @@ func TestFirstMatch_Plan_Unary_Error(t *testing.T) {
 func TestFirstMatch_Plan_Unary_AlwaysMatchTheFirstUnlimitedRequest(t *testing.T) {
 	t.Parallel()
 
-	p := mockFirstMatch(func(p planner.Planner) {
-		p.Expect(newGetItemRequest().UnlimitedTimes())
-
-		p.Expect(newGetItemRequest().Once().
+	p := mockFirstMatch(
+		expectGetItems().WithTimes(planner.UnlimitedTimes),
+		expectGetItems().WithTimes(1).
 			WithHeader("locale", "en-US"),
-		)
-
-		p.Expect(newGetItemRequest().Once().
+		expectGetItems().WithTimes(1).
 			WithPayload(grpctest.GetItemRequest{Id: 42}),
-		)
-	})()
+	)(t)
 
-	expectedRemains := 3
+	const expectedRemains = 3
 
 	// First hit.
 	result, err := p.Plan(context.Background(), test.GetItemsSvc(), grpctest.GetItemRequest{Id: 42})
 
 	assert.NotNil(t, result)
-	assert.Nil(t, request.HeaderMatcher(result))
-	assert.Nil(t, request.PayloadMatcher(result))
+	assert.Nil(t, result.HeaderMatcher())
+	assert.Nil(t, result.PayloadMatcher())
 	assert.NoError(t, err)
 	assert.Len(t, p.Remain(), expectedRemains)
 
@@ -98,8 +83,8 @@ func TestFirstMatch_Plan_Unary_AlwaysMatchTheFirstUnlimitedRequest(t *testing.T)
 	result, err = p.Plan(context.Background(), test.GetItemsSvc(), grpctest.GetItemRequest{Id: 42})
 
 	assert.NotNil(t, result)
-	assert.Nil(t, request.HeaderMatcher(result))
-	assert.Nil(t, request.PayloadMatcher(result))
+	assert.Nil(t, result.HeaderMatcher())
+	assert.Nil(t, result.PayloadMatcher())
 	assert.NoError(t, err)
 	assert.Len(t, p.Remain(), expectedRemains)
 }
@@ -107,25 +92,31 @@ func TestFirstMatch_Plan_Unary_AlwaysMatchTheFirstUnlimitedRequest(t *testing.T)
 func TestFirstMatch_Plan_Unary_MatchedRequestIsRemoved(t *testing.T) {
 	t.Parallel()
 
-	p := mockFirstMatch(func(p planner.Planner) {
-		p.Expect(newGetItemRequest().Once().
+	p := mockFirstMatch(
+		expectGetItems().WithTimes(1).
 			WithPayload(grpctest.GetItemRequest{Id: 42}),
-		)
-
-		p.Expect(newGetItemRequest().Once().
+		expectGetItems().WithTimes(1).
+			WithPayload(grpctest.GetItemRequest{Id: 41}),
+		expectGetItems().WithTimes(1).
 			WithPayload(grpctest.GetItemRequest{Id: 40}),
-		)
-	})()
+	)(t)
 
 	// First hit.
-	result, err := p.Plan(context.Background(), test.GetItemsSvc(), grpctest.GetItemRequest{Id: 40})
+	result, err := p.Plan(context.Background(), test.GetItemsSvc(), grpctest.GetItemRequest{Id: 41})
+
+	assert.NotNil(t, result)
+	assert.NoError(t, err)
+	assert.Len(t, p.Remain(), 2)
+
+	// Second hit.
+	result, err = p.Plan(context.Background(), test.GetItemsSvc(), grpctest.GetItemRequest{Id: 42})
 
 	assert.NotNil(t, result)
 	assert.NoError(t, err)
 	assert.Len(t, p.Remain(), 1)
 
-	// Second hit.
-	result, err = p.Plan(context.Background(), test.GetItemsSvc(), grpctest.GetItemRequest{Id: 42})
+	// Third hit.
+	result, err = p.Plan(context.Background(), test.GetItemsSvc(), grpctest.GetItemRequest{Id: 40})
 
 	assert.NotNil(t, result)
 	assert.NoError(t, err)
@@ -135,11 +126,11 @@ func TestFirstMatch_Plan_Unary_MatchedRequestIsRemoved(t *testing.T) {
 func TestFirstMatch_Plan_ClientStream_Error(t *testing.T) {
 	t.Parallel()
 
-	expected := `rpc error: code = FailedPrecondition desc = unexpected request received: "/grpctest.Service/CreateItems", payload: [{"id":42}]`
+	const expected = `rpc error: code = FailedPrecondition desc = unexpected request received: "/grpctest.Service/CreateItems", payload: [{"id":42}]`
 
 	testCases := []struct {
 		scenario        string
-		mockPlanner     func() planner.Planner
+		mockPlanner     func(t testing.TB) planner.Planner
 		expectedRemains int
 	}{
 		{
@@ -147,28 +138,18 @@ func TestFirstMatch_Plan_ClientStream_Error(t *testing.T) {
 			mockPlanner: mockFirstMatch(),
 		},
 		{
-			scenario: "service mismatched",
-			mockPlanner: mockFirstMatch(func(p planner.Planner) {
-				p.Expect(newGetItemRequest())
-			}),
+			scenario:        "service mismatched",
+			mockPlanner:     mockFirstMatch(expectGetItems()),
 			expectedRemains: 1,
 		},
 		{
-			scenario: "header mismatched",
-			mockPlanner: mockFirstMatch(func(p planner.Planner) {
-				p.Expect(newCreateItemsRequest().
-					WithHeader("locale", "en-US"),
-				)
-			}),
+			scenario:        "header mismatched",
+			mockPlanner:     mockFirstMatch(expectGetItems().WithHeader("locale", "en-US")),
 			expectedRemains: 1,
 		},
 		{
-			scenario: "payload mismatched",
-			mockPlanner: mockFirstMatch(func(p planner.Planner) {
-				p.Expect(newCreateItemsRequest().
-					WithPayload([]*grpctest.Item{{Id: 40}}),
-				)
-			}),
+			scenario:        "payload mismatched",
+			mockPlanner:     mockFirstMatch(expectGetItems().WithPayload([]*grpctest.Item{{Id: 40}})),
 			expectedRemains: 1,
 		},
 	}
@@ -182,7 +163,7 @@ func TestFirstMatch_Plan_ClientStream_Error(t *testing.T) {
 				test.MockStreamRecvItemsSuccess(&grpctest.Item{Id: 42}),
 			)(t)
 
-			p := tc.mockPlanner()
+			p := tc.mockPlanner(t)
 			result, err := p.Plan(context.Background(), test.CreateItemsSvc(), s)
 
 			assert.Nil(t, result)
@@ -195,26 +176,22 @@ func TestFirstMatch_Plan_ClientStream_Error(t *testing.T) {
 func TestFirstMatch_Plan_ClientStream_AlwaysMatchTheFirstUnlimitedRequest(t *testing.T) {
 	t.Parallel()
 
-	p := mockFirstMatch(func(p planner.Planner) {
-		p.Expect(newCreateItemsRequest().UnlimitedTimes())
-
-		p.Expect(newCreateItemsRequest().Once().
+	p := mockFirstMatch(
+		expectCreateItems().WithTimes(planner.UnlimitedTimes),
+		expectCreateItems().WithTimes(1).
 			WithHeader("locale", "en-US"),
-		)
-
-		p.Expect(newCreateItemsRequest().Once().
+		expectCreateItems().WithTimes(1).
 			WithPayload([]*grpctest.Item{{Id: 40}}),
-		)
-	})()
+	)(t)
 
-	expectedRemains := 3
+	const expectedRemains = 3
 
 	// First hit.
 	result, err := p.Plan(context.Background(), test.CreateItemsSvc(), test.NoMockClientStreamer(t))
 
 	assert.NotNil(t, result)
-	assert.Nil(t, request.HeaderMatcher(result))
-	assert.Nil(t, request.PayloadMatcher(result))
+	assert.Nil(t, result.HeaderMatcher())
+	assert.Nil(t, result.PayloadMatcher())
 	assert.NoError(t, err)
 	assert.Len(t, p.Remain(), expectedRemains)
 
@@ -222,8 +199,8 @@ func TestFirstMatch_Plan_ClientStream_AlwaysMatchTheFirstUnlimitedRequest(t *tes
 	result, err = p.Plan(context.Background(), test.CreateItemsSvc(), test.NoMockClientStreamer(t))
 
 	assert.NotNil(t, result)
-	assert.Nil(t, request.HeaderMatcher(result))
-	assert.Nil(t, request.PayloadMatcher(result))
+	assert.Nil(t, result.HeaderMatcher())
+	assert.Nil(t, result.PayloadMatcher())
 	assert.NoError(t, err)
 	assert.Len(t, p.Remain(), expectedRemains)
 }
@@ -231,28 +208,36 @@ func TestFirstMatch_Plan_ClientStream_AlwaysMatchTheFirstUnlimitedRequest(t *tes
 func TestFirstMatch_Plan_ClientStream_MatchedRequestIsRemoved(t *testing.T) {
 	t.Parallel()
 
-	p := mockFirstMatch(func(p planner.Planner) {
-		p.Expect(newCreateItemsRequest().Once().
+	p := mockFirstMatch(
+		expectCreateItems().WithTimes(1).
 			WithPayload([]*grpctest.Item{{Id: 42}}),
-		)
-
-		p.Expect(newCreateItemsRequest().Once().
+		expectCreateItems().WithTimes(1).
+			WithPayload([]*grpctest.Item{{Id: 41}}),
+		expectCreateItems().WithTimes(1).
 			WithPayload([]*grpctest.Item{{Id: 40}}),
-		)
-	})()
+	)(t)
 
 	// First hit.
 	result, err := p.Plan(context.Background(), test.CreateItemsSvc(), test.MockCreateItemsStreamer(
-		test.MockStreamRecvItemsSuccess(&grpctest.Item{Id: 40}),
+		test.MockStreamRecvItemsSuccess(&grpctest.Item{Id: 41}),
+	)(t))
+
+	assert.NotNil(t, result)
+	assert.NoError(t, err)
+	assert.Len(t, p.Remain(), 2)
+
+	// Second hit.
+	result, err = p.Plan(context.Background(), test.CreateItemsSvc(), test.MockCreateItemsStreamer(
+		test.MockStreamRecvItemsSuccess(&grpctest.Item{Id: 42}),
 	)(t))
 
 	assert.NotNil(t, result)
 	assert.NoError(t, err)
 	assert.Len(t, p.Remain(), 1)
 
-	// Second hit.
+	// Third hit.
 	result, err = p.Plan(context.Background(), test.CreateItemsSvc(), test.MockCreateItemsStreamer(
-		test.MockStreamRecvItemsSuccess(&grpctest.Item{Id: 42}),
+		test.MockStreamRecvItemsSuccess(&grpctest.Item{Id: 40}),
 	)(t))
 
 	assert.NotNil(t, result)
@@ -263,11 +248,11 @@ func TestFirstMatch_Plan_ClientStream_MatchedRequestIsRemoved(t *testing.T) {
 func TestFirstMatch_Plan_ServerStream_Error(t *testing.T) {
 	t.Parallel()
 
-	expected := `rpc error: code = FailedPrecondition desc = unexpected request received: "/grpctest.Service/ListItems", payload: {}`
+	const expected = `rpc error: code = FailedPrecondition desc = unexpected request received: "/grpctest.Service/ListItems", payload: {}`
 
 	testCases := []struct {
 		scenario        string
-		mockPlanner     func() planner.Planner
+		mockPlanner     func(t testing.TB) planner.Planner
 		expectedRemains int
 	}{
 		{
@@ -275,28 +260,18 @@ func TestFirstMatch_Plan_ServerStream_Error(t *testing.T) {
 			mockPlanner: mockFirstMatch(),
 		},
 		{
-			scenario: "service mismatched",
-			mockPlanner: mockFirstMatch(func(p planner.Planner) {
-				p.Expect(newGetItemRequest())
-			}),
+			scenario:        "service mismatched",
+			mockPlanner:     mockFirstMatch(expectGetItems()),
 			expectedRemains: 1,
 		},
 		{
-			scenario: "header mismatched",
-			mockPlanner: mockFirstMatch(func(p planner.Planner) {
-				p.Expect(newListItemsRequest().
-					WithHeader("locale", "en-US"),
-				)
-			}),
+			scenario:        "header mismatched",
+			mockPlanner:     mockFirstMatch(expectListItems().WithHeader("locale", "en-US")),
 			expectedRemains: 1,
 		},
 		{
-			scenario: "payload mismatched",
-			mockPlanner: mockFirstMatch(func(p planner.Planner) {
-				p.Expect(newListItemsRequest().
-					WithPayload(grpctest.GetItemRequest{Id: 40}),
-				)
-			}),
+			scenario:        "payload mismatched",
+			mockPlanner:     mockFirstMatch(expectListItems().WithPayload(grpctest.GetItemRequest{Id: 40})),
 			expectedRemains: 1,
 		},
 	}
@@ -306,7 +281,7 @@ func TestFirstMatch_Plan_ServerStream_Error(t *testing.T) {
 		t.Run(tc.scenario, func(t *testing.T) {
 			t.Parallel()
 
-			p := tc.mockPlanner()
+			p := tc.mockPlanner(t)
 			result, err := p.Plan(context.Background(), test.ListItemsSvc(), grpctest.ListItemsRequest{})
 
 			assert.Nil(t, result)
@@ -319,26 +294,22 @@ func TestFirstMatch_Plan_ServerStream_Error(t *testing.T) {
 func TestFirstMatch_Plan_ServerStream_AlwaysMatchTheFirstUnlimitedRequest(t *testing.T) {
 	t.Parallel()
 
-	p := mockFirstMatch(func(p planner.Planner) {
-		p.Expect(newListItemsRequest().UnlimitedTimes())
-
-		p.Expect(newListItemsRequest().Once().
+	p := mockFirstMatch(
+		expectListItems().WithTimes(planner.UnlimitedTimes),
+		expectListItems().WithTimes(1).
 			WithHeader("locale", "en-US"),
-		)
-
-		p.Expect(newListItemsRequest().Once().
+		expectListItems().WithTimes(1).
 			WithPayload(grpctest.ListItemsRequest{}),
-		)
-	})()
+	)(t)
 
-	expectedRemains := 3
+	const expectedRemains = 3
 
 	// First hit.
 	result, err := p.Plan(context.Background(), test.ListItemsSvc(), grpctest.ListItemsRequest{})
 
 	assert.NotNil(t, result)
-	assert.Nil(t, request.HeaderMatcher(result))
-	assert.Nil(t, request.PayloadMatcher(result))
+	assert.Nil(t, result.HeaderMatcher())
+	assert.Nil(t, result.PayloadMatcher())
 	assert.NoError(t, err)
 	assert.Len(t, p.Remain(), expectedRemains)
 
@@ -346,8 +317,8 @@ func TestFirstMatch_Plan_ServerStream_AlwaysMatchTheFirstUnlimitedRequest(t *tes
 	result, err = p.Plan(context.Background(), test.ListItemsSvc(), grpctest.ListItemsRequest{})
 
 	assert.NotNil(t, result)
-	assert.Nil(t, request.HeaderMatcher(result))
-	assert.Nil(t, request.PayloadMatcher(result))
+	assert.Nil(t, result.HeaderMatcher())
+	assert.Nil(t, result.PayloadMatcher())
 	assert.NoError(t, err)
 	assert.Len(t, p.Remain(), expectedRemains)
 }
@@ -355,25 +326,31 @@ func TestFirstMatch_Plan_ServerStream_AlwaysMatchTheFirstUnlimitedRequest(t *tes
 func TestFirstMatch_Plan_ServerStream_MatchedRequestIsRemoved(t *testing.T) {
 	t.Parallel()
 
-	p := mockFirstMatch(func(p planner.Planner) {
-		p.Expect(newListItemsRequest().Once().
-			WithPayload(grpctest.ListItemsRequest{}),
-		)
-
-		p.Expect(newListItemsRequest().Once().
-			WithPayload(grpctest.ListItemsRequest{}),
-		)
-	})()
+	p := mockFirstMatch(
+		expectListItems().WithTimes(1).
+			WithPayload(grpctest.ListItemsRequest{PageSize: 2}),
+		expectListItems().WithTimes(1).
+			WithPayload(grpctest.ListItemsRequest{PageSize: 1}),
+		expectListItems().WithTimes(1).
+			WithPayload(grpctest.ListItemsRequest{PageSize: 0}),
+	)(t)
 
 	// First hit.
-	result, err := p.Plan(context.Background(), test.ListItemsSvc(), grpctest.ListItemsRequest{})
+	result, err := p.Plan(context.Background(), test.ListItemsSvc(), grpctest.ListItemsRequest{PageSize: 1})
+
+	assert.NotNil(t, result)
+	assert.NoError(t, err)
+	assert.Len(t, p.Remain(), 2)
+
+	// Second hit.
+	result, err = p.Plan(context.Background(), test.ListItemsSvc(), grpctest.ListItemsRequest{PageSize: 2})
 
 	assert.NotNil(t, result)
 	assert.NoError(t, err)
 	assert.Len(t, p.Remain(), 1)
 
-	// Second hit.
-	result, err = p.Plan(context.Background(), test.ListItemsSvc(), grpctest.ListItemsRequest{})
+	// Third hit.
+	result, err = p.Plan(context.Background(), test.ListItemsSvc(), grpctest.ListItemsRequest{PageSize: 0})
 
 	assert.NotNil(t, result)
 	assert.NoError(t, err)
@@ -383,11 +360,11 @@ func TestFirstMatch_Plan_ServerStream_MatchedRequestIsRemoved(t *testing.T) {
 func TestFirstMatch_Plan_BidirectionalStream_Error(t *testing.T) {
 	t.Parallel()
 
-	expected := `rpc error: code = FailedPrecondition desc = unexpected request received: "/grpctest.Service/TransformItems"`
+	const expected = `rpc error: code = FailedPrecondition desc = unexpected request received: "/grpctest.Service/TransformItems"`
 
 	testCases := []struct {
 		scenario        string
-		mockPlanner     func() planner.Planner
+		mockPlanner     func(t testing.TB) planner.Planner
 		expectedRemains int
 	}{
 		{
@@ -395,19 +372,13 @@ func TestFirstMatch_Plan_BidirectionalStream_Error(t *testing.T) {
 			mockPlanner: mockFirstMatch(),
 		},
 		{
-			scenario: "service mismatched",
-			mockPlanner: mockFirstMatch(func(p planner.Planner) {
-				p.Expect(newGetItemRequest())
-			}),
+			scenario:        "service mismatched",
+			mockPlanner:     mockFirstMatch(expectGetItems()),
 			expectedRemains: 1,
 		},
 		{
-			scenario: "header mismatched",
-			mockPlanner: mockFirstMatch(func(p planner.Planner) {
-				p.Expect(newTransformItemsRequest().
-					WithHeader("locale", "en-US"),
-				)
-			}),
+			scenario:        "header mismatched",
+			mockPlanner:     mockFirstMatch(expectTransformItems().WithHeader("locale", "en-US")),
 			expectedRemains: 1,
 		},
 	}
@@ -417,7 +388,7 @@ func TestFirstMatch_Plan_BidirectionalStream_Error(t *testing.T) {
 		t.Run(tc.scenario, func(t *testing.T) {
 			t.Parallel()
 
-			p := tc.mockPlanner()
+			p := tc.mockPlanner(t)
 			result, err := p.Plan(context.Background(), test.TransformItemsSvc(), test.NoMockBidirectionalStreamer(t))
 
 			assert.Nil(t, result)
@@ -430,26 +401,22 @@ func TestFirstMatch_Plan_BidirectionalStream_Error(t *testing.T) {
 func TestFirstMatch_Plan_BidirectionalStream_AlwaysMatchTheFirstUnlimitedRequest(t *testing.T) {
 	t.Parallel()
 
-	p := mockFirstMatch(func(p planner.Planner) {
-		p.Expect(newTransformItemsRequest().UnlimitedTimes())
-
-		p.Expect(newTransformItemsRequest().Once().
+	p := mockFirstMatch(
+		expectTransformItems().WithTimes(planner.UnlimitedTimes),
+		expectTransformItems().WithTimes(1).
 			WithHeader("locale", "en-US"),
-		)
+		expectTransformItems().WithTimes(1).
+			WithHeader("locale", "en-US"),
+	)(t)
 
-		p.Expect(newTransformItemsRequest().Once().
-			WithHeader("locale", "es-US"),
-		)
-	})()
-
-	expectedRemains := 3
+	const expectedRemains = 3
 
 	// First hit.
 	result, err := p.Plan(context.Background(), test.TransformItemsSvc(), test.NoMockBidirectionalStreamer(t))
 
 	assert.NotNil(t, result)
-	assert.Nil(t, request.HeaderMatcher(result))
-	assert.Nil(t, request.PayloadMatcher(result))
+	assert.Nil(t, result.HeaderMatcher())
+	assert.Nil(t, result.PayloadMatcher())
 	assert.NoError(t, err)
 	assert.Len(t, p.Remain(), expectedRemains)
 
@@ -457,8 +424,8 @@ func TestFirstMatch_Plan_BidirectionalStream_AlwaysMatchTheFirstUnlimitedRequest
 	result, err = p.Plan(context.Background(), test.TransformItemsSvc(), test.NoMockBidirectionalStreamer(t))
 
 	assert.NotNil(t, result)
-	assert.Nil(t, request.HeaderMatcher(result))
-	assert.Nil(t, request.PayloadMatcher(result))
+	assert.Nil(t, result.HeaderMatcher())
+	assert.Nil(t, result.PayloadMatcher())
 	assert.NoError(t, err)
 	assert.Len(t, p.Remain(), expectedRemains)
 }
@@ -466,24 +433,30 @@ func TestFirstMatch_Plan_BidirectionalStream_AlwaysMatchTheFirstUnlimitedRequest
 func TestFirstMatch_Plan_BidirectionalStream_MatchedRequestIsRemoved(t *testing.T) {
 	t.Parallel()
 
-	p := mockFirstMatch(func(p planner.Planner) {
-		p.Expect(newTransformItemsRequest().Once().
+	p := mockFirstMatch(
+		expectTransformItems().WithTimes(1).
 			WithHeader("locale", "en-US"),
-		)
-
-		p.Expect(newTransformItemsRequest().Once().
+		expectTransformItems().WithTimes(1).
 			WithHeader("locale", "es-US"),
-		)
-	})()
+		expectTransformItems().WithTimes(1).
+			WithHeader("locale", "vi-US"),
+	)(t)
 
 	// First hit.
 	result, err := p.Plan(withIncomingHeader("locale", "es-US"), test.TransformItemsSvc(), test.NoMockBidirectionalStreamer(t))
 
 	assert.NotNil(t, result)
 	assert.NoError(t, err)
-	assert.Len(t, p.Remain(), 1)
+	assert.Len(t, p.Remain(), 2)
 
 	// Second hit.
+	result, err = p.Plan(withIncomingHeader("locale", "vi-US"), test.TransformItemsSvc(), test.NoMockBidirectionalStreamer(t))
+
+	assert.NotNil(t, result)
+	assert.NoError(t, err)
+	assert.Len(t, p.Remain(), 1)
+
+	// Third hit.
 	result, err = p.Plan(withIncomingHeader("locale", "en-US"), test.TransformItemsSvc(), test.NoMockBidirectionalStreamer(t))
 
 	assert.NotNil(t, result)
@@ -498,7 +471,7 @@ func TestFirstMatch_Empty(t *testing.T) {
 
 	assert.True(t, p.IsEmpty())
 
-	p.Expect(expectGetItems())
+	p.Expect(expectGetItems().Build(t))
 
 	assert.False(t, p.IsEmpty())
 
@@ -507,12 +480,14 @@ func TestFirstMatch_Empty(t *testing.T) {
 	assert.True(t, p.IsEmpty())
 }
 
-func mockFirstMatch(mocks ...func(p planner.Planner)) func() planner.Planner {
-	return func() planner.Planner {
+func mockFirstMatch(builders ...expectationBuilder) func(tb testing.TB) planner.Planner {
+	return func(tb testing.TB) planner.Planner {
+		tb.Helper()
+
 		p := planner.FirstMatch()
 
-		for _, m := range mocks {
-			m(p)
+		for _, b := range builders {
+			p.Expect(b.Build(tb))
 		}
 
 		return p
