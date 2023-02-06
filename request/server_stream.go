@@ -22,6 +22,8 @@ import (
 )
 
 // ServerStreamRequest represents the expectation for a server-stream request.
+//
+// Deprecated: Use go.nhat.io/grpcmock.ServerStreamExpectation instead.
 type ServerStreamRequest struct {
 	baseRequest
 
@@ -46,6 +48,8 @@ type ServerStreamRequest struct {
 }
 
 // NewServerStreamRequest creates a new server-stream expectation.
+//
+// Deprecated: The function will be removed in the future.
 func NewServerStreamRequest(locker sync.Locker, svc *service.Method) *ServerStreamRequest {
 	return &ServerStreamRequest{
 		baseRequest: baseRequest{

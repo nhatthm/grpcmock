@@ -30,6 +30,7 @@ func (r *baseRequest) unlock() {
 	r.locker.Unlock()
 }
 
+// nolint: unused
 func (r *baseRequest) withFs(fs afero.Fs) {
 	r.lock()
 	defer r.unlock()

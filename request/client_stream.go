@@ -26,6 +26,8 @@ import (
 )
 
 // ClientStreamRequest represents the expectation for a client-stream request.
+//
+// Deprecated:go.nhat.io/grpcmock.ClientStreamExpectation instead.
 type ClientStreamRequest struct {
 	baseRequest
 
@@ -50,6 +52,8 @@ type ClientStreamRequest struct {
 }
 
 // NewClientStreamRequest creates a new client-stream expectation.
+//
+// Deprecated: The function will be removed in the future.
 func NewClientStreamRequest(locker sync.Locker, svc *service.Method) *ClientStreamRequest {
 	return &ClientStreamRequest{
 		baseRequest: baseRequest{

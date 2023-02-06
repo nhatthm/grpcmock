@@ -19,6 +19,8 @@ import (
 )
 
 // BidirectionalStreamRequest represents the expectation for a client-stream request.
+//
+// Deprecated: Use go.nhat.io/grpcmock.BidirectionalStreamExpectation instead.
 type BidirectionalStreamRequest struct {
 	baseRequest
 
@@ -41,6 +43,8 @@ type BidirectionalStreamRequest struct {
 }
 
 // NewBidirectionalStreamRequest creates a new client-stream expectation.
+//
+// Deprecated: The function will be removed in the future.
 func NewBidirectionalStreamRequest(locker sync.Locker, svc *service.Method) *BidirectionalStreamRequest {
 	return &BidirectionalStreamRequest{
 		baseRequest: baseRequest{
