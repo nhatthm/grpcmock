@@ -6,10 +6,7 @@ import (
 )
 
 // UnlimitedTimes indicates that a request could be repeated without limits.
-const UnlimitedTimes RepeatedTime = 0
-
-// RepeatedTime represents a number of times that a request could be repeated.
-type RepeatedTime uint
+const UnlimitedTimes uint = 0
 
 // Expectation is an interface that represents an expectation.
 //
@@ -18,11 +15,11 @@ type Expectation interface {
 	ServiceMethod() service.Method
 	HeaderMatcher() matcher.HeaderMatcher
 	PayloadMatcher() *matcher.PayloadMatcher
-	RemainTimes() RepeatedTime
+	RemainTimes() uint
 	Fulfilled()
-	FulfilledTimes() RepeatedTime
+	FulfilledTimes() uint
 }
 
 type repeatableExpectation interface {
-	RemainTimes() RepeatedTime
+	RemainTimes() uint
 }

@@ -9,7 +9,6 @@ import (
 
 	xmatcher "go.nhat.io/grpcmock/matcher"
 	plannerMock "go.nhat.io/grpcmock/mock/planner"
-	"go.nhat.io/grpcmock/planner"
 	"go.nhat.io/grpcmock/service"
 	"go.nhat.io/grpcmock/test"
 )
@@ -18,7 +17,7 @@ type expectationBuilder struct {
 	serviceMethod  service.Method
 	headerMatcher  xmatcher.HeaderMatcher
 	payloadMatcher *xmatcher.PayloadMatcher
-	times          planner.RepeatedTime
+	times          uint
 }
 
 func (b expectationBuilder) WithServiceMethod(serviceMethod service.Method) expectationBuilder {
@@ -39,6 +38,7 @@ func (b expectationBuilder) WithHeader(header string, value interface{}) expecta
 	return b
 }
 
+// nolint: wsl
 func (b expectationBuilder) WithPayload(in interface{}) expectationBuilder {
 	switch b.serviceMethod.MethodType {
 	case service.TypeUnary:
@@ -57,7 +57,7 @@ func (b expectationBuilder) WithPayload(in interface{}) expectationBuilder {
 	return b
 }
 
-func (b expectationBuilder) WithTimes(t planner.RepeatedTime) expectationBuilder {
+func (b expectationBuilder) WithTimes(t uint) expectationBuilder {
 	b.times = t
 
 	return b

@@ -6,8 +6,6 @@ import (
 	mock "github.com/stretchr/testify/mock"
 	matcher "go.nhat.io/grpcmock/matcher"
 
-	planner "go.nhat.io/grpcmock/planner"
-
 	service "go.nhat.io/grpcmock/service"
 )
 
@@ -22,14 +20,14 @@ func (_m *Expectation) Fulfilled() {
 }
 
 // FulfilledTimes provides a mock function with given fields:
-func (_m *Expectation) FulfilledTimes() planner.RepeatedTime {
+func (_m *Expectation) FulfilledTimes() uint {
 	ret := _m.Called()
 
-	var r0 planner.RepeatedTime
-	if rf, ok := ret.Get(0).(func() planner.RepeatedTime); ok {
+	var r0 uint
+	if rf, ok := ret.Get(0).(func() uint); ok {
 		r0 = rf()
 	} else {
-		r0 = ret.Get(0).(planner.RepeatedTime)
+		r0 = ret.Get(0).(uint)
 	}
 
 	return r0
@@ -68,14 +66,14 @@ func (_m *Expectation) PayloadMatcher() *matcher.PayloadMatcher {
 }
 
 // RemainTimes provides a mock function with given fields:
-func (_m *Expectation) RemainTimes() planner.RepeatedTime {
+func (_m *Expectation) RemainTimes() uint {
 	ret := _m.Called()
 
-	var r0 planner.RepeatedTime
-	if rf, ok := ret.Get(0).(func() planner.RepeatedTime); ok {
+	var r0 uint
+	if rf, ok := ret.Get(0).(func() uint); ok {
 		r0 = rf()
 	} else {
-		r0 = ret.Get(0).(planner.RepeatedTime)
+		r0 = ret.Get(0).(uint)
 	}
 
 	return r0
