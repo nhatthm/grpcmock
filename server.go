@@ -20,7 +20,6 @@ import (
 	"go.nhat.io/grpcmock/must"
 	"go.nhat.io/grpcmock/planner"
 	xreflect "go.nhat.io/grpcmock/reflect"
-	"go.nhat.io/grpcmock/request"
 	"go.nhat.io/grpcmock/service"
 	"go.nhat.io/grpcmock/streamer"
 )
@@ -43,7 +42,7 @@ type Server struct {
 	mu sync.Mutex
 
 	// Holds the requested that were made to this server.
-	Requests []request.Request
+	Requests []planner.Expectation
 }
 
 // ServerOption sets up the mocked server.
@@ -109,7 +108,7 @@ func (s *Server) WithTest(t T) *Server {
 	return s
 }
 
-func (s *Server) expect(r request.Request) {
+func (s *Server) expect(r planner.Expectation) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -133,14 +132,14 @@ func (s *Server) method(method string) *service.Method {
 // ExpectUnary adds a new expected unary request.
 //
 //	Server.ExpectUnary("grpctest.Service/GetItem")
-func (s *Server) ExpectUnary(method string) *request.UnaryRequest {
+func (s *Server) ExpectUnary(method string) UnaryExpectation {
 	svc := s.method(method)
 
 	if !service.IsMethodUnary(svc.MethodType) {
 		panic(fmt.Errorf("%w: %s", xerrors.ErrMethodNotUnary, method))
 	}
 
-	r := request.NewUnaryRequest(&s.mu, svc).Once()
+	r := newUnaryExpectation(svc)
 
 	s.expect(r)
 
@@ -150,14 +149,14 @@ func (s *Server) ExpectUnary(method string) *request.UnaryRequest {
 // ExpectClientStream adds a new expected client-stream request.
 //
 //	Server.ExpectClientStream("grpctest.Service/CreateItems")
-func (s *Server) ExpectClientStream(method string) *request.ClientStreamRequest {
+func (s *Server) ExpectClientStream(method string) ClientStreamExpectation {
 	svc := s.method(method)
 
 	if !service.IsMethodClientStream(svc.MethodType) {
 		panic(fmt.Errorf("%w: %s", xerrors.ErrMethodNotClientStream, method))
 	}
 
-	r := request.NewClientStreamRequest(&s.mu, svc).Once()
+	r := newClientStreamExpectation(svc)
 
 	s.expect(r)
 
@@ -167,14 +166,14 @@ func (s *Server) ExpectClientStream(method string) *request.ClientStreamRequest 
 // ExpectServerStream adds a new expected server-stream request.
 //
 //	Server.ExpectServerStream("grpctest.Service/ListItems")
-func (s *Server) ExpectServerStream(method string) *request.ServerStreamRequest {
+func (s *Server) ExpectServerStream(method string) ServerStreamExpectation {
 	svc := s.method(method)
 
 	if !service.IsMethodServerStream(svc.MethodType) {
 		panic(fmt.Errorf("%w: %s", xerrors.ErrMethodNotServerStream, method))
 	}
 
-	r := request.NewServerStreamRequest(&s.mu, svc).Once()
+	r := newServerStreamExpectation(svc)
 
 	s.expect(r)
 
@@ -184,14 +183,14 @@ func (s *Server) ExpectServerStream(method string) *request.ServerStreamRequest 
 // ExpectBidirectionalStream adds a new expected bidirectional-stream request.
 //
 //	Server.ExpectBidirectionalStream("grpctest.Service/TransformItems")
-func (s *Server) ExpectBidirectionalStream(method string) *request.BidirectionalStreamRequest {
+func (s *Server) ExpectBidirectionalStream(method string) BidirectionalStreamExpectation {
 	svc := s.method(method)
 
 	if !service.IsMethodBidirectionalStream(svc.MethodType) {
 		panic(fmt.Errorf("%w: %s", xerrors.ErrMethodNotBidirectionalStream, method))
 	}
 
-	r := request.NewBidirectionalStreamRequest(&s.mu, svc).Once()
+	r := newBidirectionalStreamExpectation(svc)
 
 	s.expect(r)
 
@@ -216,8 +215,8 @@ func (s *Server) ExpectationsWereMet() error {
 	sb.WriteString("there are remaining expectations that were not met:\n")
 
 	for _, expected := range s.planner.Remain() {
-		repeat := request.Repeatability(expected)
-		calls := request.NumCalls(expected)
+		repeat := expected.RemainTimes()
+		calls := expected.FulfilledTimes()
 
 		if repeat < 1 && calls > 0 {
 			continue
@@ -225,10 +224,10 @@ func (s *Server) ExpectationsWereMet() error {
 
 		sb.WriteString("- ")
 		format.ExpectedRequestTimes(&sb,
-			request.ServiceMethod(expected),
-			request.HeaderMatcher(expected),
-			request.PayloadMatcher(expected),
-			calls,
+			expected.ServiceMethod(),
+			expected.HeaderMatcher(),
+			expected.PayloadMatcher(),
+			int(calls),
 			int(repeat),
 		)
 
@@ -313,10 +312,15 @@ func (s *Server) handleRequest(ctx context.Context, svc service.Method, in inter
 	}
 
 	// Log the request.
-	request.CountCall(expected)
+	expected.Fulfilled()
+
 	s.Requests = append(s.Requests, expected)
 
-	err = request.Handle(ctx, expected, in, out)
+	h, _ := expected.(interface { //nolint: errcheck
+		Handle(ctx context.Context, in interface{}, out interface{}) error
+	})
+
+	err = h.Handle(ctx, in, out)
 	assert.NoError(s.test, err)
 
 	return err
