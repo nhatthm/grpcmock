@@ -1,6 +1,6 @@
 package reflect
 
-var _ error = (*err)(nil)
+var _ error = (*err)(nil) //nolint: errcheck // false positive.
 
 const (
 	// ErrPtrIsNil indicates that the pointer is nil.
