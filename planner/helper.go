@@ -2,8 +2,6 @@ package planner
 
 import (
 	"fmt"
-
-	"go.nhat.io/grpcmock/request"
 )
 
 func recovered(v interface{}) string {
@@ -18,21 +16,17 @@ func recovered(v interface{}) string {
 	return fmt.Sprintf("%+v", v)
 }
 
-func trackRepeatable(r request.Request) bool {
-	t := request.Repeatability(r)
+func trackRepeatable(r repeatableExpectation) bool {
+	t := r.RemainTimes()
 
-	if t == request.UnlimitedTimes {
+	if t == UnlimitedTimes {
 		return true
 	}
 
-	if t > 0 {
-		request.SetRepeatability(r, t-1)
-	}
-
-	return request.Repeatability(r) > 0
+	return t > 1
 }
 
-func removeExpectations(expectations []request.Request, index int) []request.Request {
+func removeExpectations(expectations []Expectation, index int) []Expectation {
 	if index == 0 {
 		return expectations[1:]
 	}
@@ -43,7 +37,7 @@ func removeExpectations(expectations []request.Request, index int) []request.Req
 		return expectations[:max]
 	}
 
-	remains := make([]request.Request, 0, max)
+	remains := make([]Expectation, 0, max)
 
 	remains = append(remains, expectations[:index]...)
 	remains = append(remains, expectations[index+1:]...)

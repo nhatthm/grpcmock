@@ -1,4 +1,4 @@
-package request
+package grpcmock
 
 import (
 	"context"
@@ -16,12 +16,13 @@ import (
 	"google.golang.org/grpc/status"
 
 	xmatcher "go.nhat.io/grpcmock/matcher"
+	"go.nhat.io/grpcmock/planner"
 	"go.nhat.io/grpcmock/streamer"
 	"go.nhat.io/grpcmock/test"
 	"go.nhat.io/grpcmock/test/grpctest"
 )
 
-func TestBidirectionalStreamRequest_WithHeader(t *testing.T) {
+func TestBidirectionalStreamExpectation_WithHeader(t *testing.T) {
 	t.Parallel()
 
 	r := newTransformItemsRequest()
@@ -34,7 +35,7 @@ func TestBidirectionalStreamRequest_WithHeader(t *testing.T) {
 	assert.Equal(t, xmatcher.HeaderMatcher{"foo": matcher.Exact("bar"), "john": matcher.Exact("doe")}, r.requestHeader)
 }
 
-func TestBidirectionalStreamRequest_WithHeaders(t *testing.T) {
+func TestBidirectionalStreamExpectation_WithHeaders(t *testing.T) {
 	t.Parallel()
 
 	r := newTransformItemsRequest()
@@ -47,7 +48,7 @@ func TestBidirectionalStreamRequest_WithHeaders(t *testing.T) {
 	assert.Equal(t, xmatcher.HeaderMatcher{"foo": matcher.Exact("bar"), "john": matcher.Exact("doe")}, r.requestHeader)
 }
 
-func TestBidirectionalStreamRequest_ReturnCode(t *testing.T) {
+func TestBidirectionalStreamExpectation_ReturnCode(t *testing.T) {
 	t.Parallel()
 
 	testCases := []struct {
@@ -88,11 +89,12 @@ func TestBidirectionalStreamRequest_ReturnCode(t *testing.T) {
 		t.Run(tc.scenario, func(t *testing.T) {
 			t.Parallel()
 
-			r := &BidirectionalStreamRequest{
-				baseRequest:   emptyBaseRequest(),
-				statusCode:    tc.currentCode,
-				statusMessage: tc.currentMessage,
+			r := &bidirectionalStreamExpectation{
+				baseExpectation: &baseExpectation{locker: &sync.Mutex{}},
 			}
+
+			r.statusCode = tc.currentCode
+			r.statusMessage = tc.currentMessage
 			r.ReturnCode(tc.newCode)
 
 			assert.Equal(t, tc.expectedCode, r.statusCode)
@@ -101,7 +103,7 @@ func TestBidirectionalStreamRequest_ReturnCode(t *testing.T) {
 	}
 }
 
-func TestBidirectionalStreamRequest_ReturnErrorMessage(t *testing.T) {
+func TestBidirectionalStreamExpectation_ReturnErrorMessage(t *testing.T) {
 	t.Parallel()
 
 	testCases := []struct {
@@ -134,11 +136,12 @@ func TestBidirectionalStreamRequest_ReturnErrorMessage(t *testing.T) {
 		t.Run(tc.scenario, func(t *testing.T) {
 			t.Parallel()
 
-			r := &BidirectionalStreamRequest{
-				baseRequest:   emptyBaseRequest(),
-				statusCode:    tc.currentCode,
-				statusMessage: tc.currentMessage,
+			r := &bidirectionalStreamExpectation{
+				baseExpectation: &baseExpectation{locker: &sync.Mutex{}},
 			}
+
+			r.statusCode = tc.currentCode
+			r.statusMessage = tc.currentMessage
 			r.ReturnErrorMessage(tc.newMessage)
 
 			assert.Equal(t, tc.expectedCode, r.statusCode)
@@ -147,7 +150,7 @@ func TestBidirectionalStreamRequest_ReturnErrorMessage(t *testing.T) {
 	}
 }
 
-func TestBidirectionalStreamRequest_ReturnError(t *testing.T) {
+func TestBidirectionalStreamExpectation_ReturnError(t *testing.T) {
 	t.Parallel()
 
 	testCases := []struct {
@@ -192,11 +195,12 @@ func TestBidirectionalStreamRequest_ReturnError(t *testing.T) {
 		t.Run(tc.scenario, func(t *testing.T) {
 			t.Parallel()
 
-			r := &BidirectionalStreamRequest{
-				baseRequest:   emptyBaseRequest(),
-				statusCode:    tc.currentCode,
-				statusMessage: tc.currentMessage,
+			r := &bidirectionalStreamExpectation{
+				baseExpectation: &baseExpectation{locker: &sync.Mutex{}},
 			}
+
+			r.statusCode = tc.currentCode
+			r.statusMessage = tc.currentMessage
 			r.ReturnError(tc.newCode, tc.newMessage)
 
 			assert.Equal(t, tc.expectedCode, r.statusCode)
@@ -205,7 +209,7 @@ func TestBidirectionalStreamRequest_ReturnError(t *testing.T) {
 	}
 }
 
-func TestBidirectionalStreamRequest_ReturnErrorf(t *testing.T) {
+func TestBidirectionalStreamExpectation_ReturnErrorf(t *testing.T) {
 	t.Parallel()
 
 	r := newTransformItemsRequest()
@@ -215,7 +219,7 @@ func TestBidirectionalStreamRequest_ReturnErrorf(t *testing.T) {
 	assert.Equal(t, "Item 42 not found", r.statusMessage)
 }
 
-func TestBidirectionalStreamRequest_Run_Success(t *testing.T) {
+func TestBidirectionalStreamExpectation_Run_Success(t *testing.T) {
 	t.Parallel()
 
 	r := newTransformItemsRequest()
@@ -250,12 +254,12 @@ func TestBidirectionalStreamRequest_Run_Success(t *testing.T) {
 		test.MockStreamRecvItemEOF(),
 	)(t)
 
-	err := Handle(context.Background(), r, s, s)
+	err := r.Handle(context.Background(), s, s)
 
 	assert.NoError(t, err)
 }
 
-func TestBidirectionalStreamRequest_Run_ErrorWithCode(t *testing.T) {
+func TestBidirectionalStreamExpectation_Run_ErrorWithCode(t *testing.T) {
 	t.Parallel()
 
 	r := newTransformItemsRequest()
@@ -265,14 +269,14 @@ func TestBidirectionalStreamRequest_Run_ErrorWithCode(t *testing.T) {
 
 	s := test.NoMockBidirectionalStreamer(t)
 
-	err := r.handle(context.Background(), s, s)
+	err := r.Handle(context.Background(), s, s)
 
 	expected := `rpc error: code = DeadlineExceeded desc = deadline exceeded`
 
 	assert.EqualError(t, err, expected)
 }
 
-func TestBidirectionalStreamRequest_Run_GenericError(t *testing.T) {
+func TestBidirectionalStreamExpectation_Run_GenericError(t *testing.T) {
 	t.Parallel()
 
 	r := newTransformItemsRequest()
@@ -282,73 +286,73 @@ func TestBidirectionalStreamRequest_Run_GenericError(t *testing.T) {
 
 	s := test.NoMockBidirectionalStreamer(t)
 
-	err := r.handle(context.Background(), s, s)
+	err := r.Handle(context.Background(), s, s)
 
 	expected := `rpc error: code = Internal desc = random error`
 
 	assert.EqualError(t, err, expected)
 }
 
-func TestBidirectionalStreamRequest_ReturnStatusError(t *testing.T) {
+func TestBidirectionalStreamExpectation_ReturnStatusError(t *testing.T) {
 	t.Parallel()
 
 	r := newTransformItemsRequest()
 	r.ReturnErrorf(codes.InvalidArgument, "invalid argument %q", "foobar")
 
-	err := r.handle(context.Background(), (*streamer.BidirectionalStreamer)(nil), nil)
+	err := r.Handle(context.Background(), (*streamer.BidirectionalStreamer)(nil), nil)
 	expectedError := status.Error(codes.InvalidArgument, `invalid argument "foobar"`)
 
 	assert.Equal(t, expectedError, err)
 }
 
-func TestBidirectionalStreamRequest_ReturnUnimplemented(t *testing.T) {
+func TestBidirectionalStreamExpectation_ReturnUnimplemented(t *testing.T) {
 	t.Parallel()
 
 	r := newTransformItemsRequest()
 
-	err := r.handle(context.Background(), (*streamer.BidirectionalStreamer)(nil), nil)
+	err := r.Handle(context.Background(), (*streamer.BidirectionalStreamer)(nil), nil)
 	expectedError := status.Error(codes.Unimplemented, "not implemented")
 
 	assert.Equal(t, expectedError, err)
 }
 
-func TestBidirectionalStreamRequest_Once(t *testing.T) {
+func TestBidirectionalStreamExpectation_Once(t *testing.T) {
 	t.Parallel()
 
 	r := newTransformItemsRequest()
 	r.Once()
 
-	assert.Equal(t, RepeatedTime(1), r.repeatability)
+	assert.Equal(t, uint(1), r.RemainTimes())
 }
 
-func TestBidirectionalStreamRequest_Twice(t *testing.T) {
+func TestBidirectionalStreamExpectation_Twice(t *testing.T) {
 	t.Parallel()
 
 	r := newTransformItemsRequest()
 	r.Twice()
 
-	assert.Equal(t, RepeatedTime(2), r.repeatability)
+	assert.Equal(t, uint(2), r.RemainTimes())
 }
 
-func TestBidirectionalStreamRequest_UnlimitedTimes(t *testing.T) {
+func TestBidirectionalStreamExpectation_UnlimitedTimes(t *testing.T) {
 	t.Parallel()
 
 	r := newTransformItemsRequest()
 	r.UnlimitedTimes()
 
-	assert.Equal(t, UnlimitedTimes, r.repeatability)
+	assert.Equal(t, planner.UnlimitedTimes, r.RemainTimes())
 }
 
-func TestBidirectionalStreamRequest_Times(t *testing.T) {
+func TestBidirectionalStreamExpectation_Times(t *testing.T) {
 	t.Parallel()
 
 	r := newTransformItemsRequest()
 	r.Times(20)
 
-	assert.Equal(t, RepeatedTime(20), r.repeatability)
+	assert.Equal(t, uint(20), r.RemainTimes())
 }
 
-func TestBidirectionalStreamRequest_WaitUntil(t *testing.T) {
+func TestBidirectionalStreamExpectation_WaitUntil(t *testing.T) {
 	t.Parallel()
 
 	duration := 50 * time.Millisecond
@@ -359,16 +363,39 @@ func TestBidirectionalStreamRequest_WaitUntil(t *testing.T) {
 
 	r.WaitUntil(ch).ReturnError(codes.Internal, "time out")
 
-	err := r.handle(context.Background(), nil, nil)
+	err := r.Handle(context.Background(), nil, nil)
 
 	endTime := time.Now()
 
-	assert.Equal(t, ch, r.waitFor)
 	assert.GreaterOrEqual(t, endTime.Sub(startTime), duration)
 	assert.Error(t, err)
 }
 
-func TestBidirectionalStreamRequest_WaitTime(t *testing.T) {
+func TestBidirectionalStreamExpectation_WaitUntil_ContextTimeout(t *testing.T) {
+	t.Parallel()
+
+	expectedDuration := 20 * time.Millisecond
+
+	ctx, cancel := context.WithTimeout(context.Background(), expectedDuration)
+	defer cancel()
+
+	duration := 50 * time.Millisecond
+	r := newTransformItemsRequest()
+
+	startTime := time.Now()
+	ch := time.After(duration)
+
+	r.WaitUntil(ch).ReturnError(codes.Internal, "time out")
+
+	err := r.Handle(ctx, nil, nil)
+	endTime := time.Now()
+
+	assert.GreaterOrEqual(t, endTime.Sub(startTime), expectedDuration)
+	assert.Error(t, err)
+	assert.EqualError(t, err, `rpc error: code = Internal desc = context deadline exceeded`)
+}
+
+func TestBidirectionalStreamExpectation_WaitTime(t *testing.T) {
 	t.Parallel()
 
 	duration := 50 * time.Millisecond
@@ -376,69 +403,91 @@ func TestBidirectionalStreamRequest_WaitTime(t *testing.T) {
 	r.After(duration).ReturnError(codes.Internal, "time out")
 
 	startTime := time.Now()
-	err := r.handle(context.Background(), nil, nil)
+	err := r.Handle(context.Background(), nil, nil)
 	endTime := time.Now()
 
-	assert.Equal(t, duration, r.waitTime)
 	assert.GreaterOrEqual(t, endTime.Sub(startTime), duration)
 	assert.Error(t, err)
 }
 
-func TestBidirectionalStreamRequest_ServiceMethod(t *testing.T) {
+func TestBidirectionalStreamExpectation_WaitTime_ContextTimeout(t *testing.T) {
+	t.Parallel()
+
+	expectedDuration := 20 * time.Millisecond
+
+	ctx, cancel := context.WithTimeout(context.Background(), expectedDuration)
+	defer cancel()
+
+	duration := 50 * time.Millisecond
+	r := newTransformItemsRequest()
+	r.After(duration).ReturnError(codes.Internal, "time out")
+
+	startTime := time.Now()
+	err := r.Handle(ctx, nil, nil)
+	endTime := time.Now()
+
+	assert.GreaterOrEqual(t, endTime.Sub(startTime), expectedDuration)
+	assert.Error(t, err)
+	assert.EqualError(t, err, `rpc error: code = Internal desc = context deadline exceeded`)
+}
+
+func TestBidirectionalStreamExpectation_ServiceMethod(t *testing.T) {
 	t.Parallel()
 
 	r := newTransformItemsRequest()
 
-	actual := ServiceMethod(r)
+	actual := r.ServiceMethod()
 	expected := test.TransformItemsSvc()
 
 	assert.Equal(t, expected, actual)
 }
 
-func TestBidirectionalStreamRequest_HeaderMatcher(t *testing.T) {
+func TestBidirectionalStreamExpectation_HeaderMatcher(t *testing.T) {
 	t.Parallel()
 
-	r := newTransformItemsRequest().WithHeader("locale", "en-US")
+	r := newTransformItemsRequest()
 
-	actual := HeaderMatcher(r)
+	r.WithHeader("locale", "en-US")
+
+	actual := r.HeaderMatcher()
 	expected := xmatcher.HeaderMatcher{"locale": matcher.Match("en-US")}
 
 	assert.Equal(t, expected, actual)
 }
 
-func TestBidirectionalStreamRequest_PayloadMatcher(t *testing.T) {
+func TestBidirectionalStreamExpectation_PayloadMatcher(t *testing.T) {
 	t.Parallel()
 
 	r := newTransformItemsRequest()
 
-	assert.Nil(t, PayloadMatcher(r))
+	assert.Nil(t, r.PayloadMatcher())
 }
 
-func TestBidirectionalStreamRequest_Repeatability(t *testing.T) {
+func TestBidirectionalStreamExpectation_Repeatability(t *testing.T) {
 	t.Parallel()
 
 	r := newTransformItemsRequest()
 
-	assert.Equal(t, UnlimitedTimes, Repeatability(r))
+	assert.Equal(t, planner.UnlimitedTimes, r.RemainTimes())
 
-	SetRepeatability(r, 1)
+	r.Times(1)
 
-	assert.Equal(t, RepeatedTime(1), Repeatability(r))
+	assert.Equal(t, uint(1), r.RemainTimes())
 }
 
-func TestBidirectionalStreamRequest_Calls(t *testing.T) {
+func TestBidirectionalStreamExpectation_Fulfilled(t *testing.T) {
 	t.Parallel()
 
 	r := newTransformItemsRequest()
 
-	assert.Equal(t, 0, NumCalls(r))
+	assert.Equal(t, uint(0), r.FulfilledTimes())
 
-	CountCall(r)
+	r.Fulfilled()
 
-	assert.Equal(t, 1, NumCalls(r))
+	assert.Equal(t, uint(1), r.FulfilledTimes())
 }
 
-func TestBidirectionalStreamRequest_Handle(t *testing.T) {
+func TestBidirectionalStreamExpectation_Handle(t *testing.T) {
 	t.Parallel()
 
 	r := newTransformItemsRequest()
@@ -447,14 +496,13 @@ func TestBidirectionalStreamRequest_Handle(t *testing.T) {
 	})
 
 	s := test.NoMockBidirectionalStreamer(t)
-
-	err := Handle(context.Background(), r, s, s)
+	err := r.Handle(context.Background(), s, s)
 
 	assert.NoError(t, err)
 }
 
-func newTransformItemsRequest() *BidirectionalStreamRequest {
+func newTransformItemsRequest() *bidirectionalStreamExpectation {
 	svc := test.TransformItemsSvc()
 
-	return NewBidirectionalStreamRequest(&sync.Mutex{}, &svc)
+	return newBidirectionalStreamExpectation(&svc)
 }

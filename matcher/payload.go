@@ -1,8 +1,13 @@
 package matcher
 
 import (
+	"encoding/json"
+	"regexp"
+
 	"go.nhat.io/matcher/v2"
 
+	"go.nhat.io/grpcmock/must"
+	"go.nhat.io/grpcmock/streamer"
 	"go.nhat.io/grpcmock/value"
 )
 
@@ -68,4 +73,80 @@ func Payload(m matcher.Matcher, decode PayloadDecoder) *PayloadMatcher {
 		matcher: m,
 		decode:  decode,
 	}
+}
+
+// UnaryPayload initiates a new payload matcher for a unary request.
+func UnaryPayload(in interface{}) *PayloadMatcher {
+	switch v := in.(type) {
+	case []byte, string:
+		return Payload(matcher.JSON(value.String(in)), decodeUnaryPayload)
+
+	case matcher.Matcher,
+		func() matcher.Matcher,
+		*regexp.Regexp:
+		return Payload(matcher.Match(v), decodeUnaryPayload)
+
+	case MatchFn:
+		return Payload(Fn("", v), nil)
+	}
+
+	return Payload(matcher.JSON(in), decodeUnaryPayload)
+}
+
+// ServerStreamPayload initiates a new payload matcher for a server stream request.
+func ServerStreamPayload(in interface{}) *PayloadMatcher {
+	return UnaryPayload(in)
+}
+
+// ClientStreamPayload initiates a new payload matcher for a client stream request.
+func ClientStreamPayload(in interface{}) *PayloadMatcher {
+	switch v := in.(type) {
+	case []byte, string:
+		return Payload(matcher.JSON(value.String(v)), decodeClientStreamPayload)
+
+	case matcher.Matcher,
+		func() matcher.Matcher,
+		*regexp.Regexp:
+		return Payload(matcher.Match(v), decodeClientStreamPayload)
+
+	case MatchFn:
+		return matchClientStreamPayloadWithCustomMatcher("", v)
+
+	case func() (string, MatchFn):
+		return matchClientStreamPayloadWithCustomMatcher(v())
+	}
+
+	return Payload(matcher.JSON(in), decodeClientStreamPayload)
+}
+
+func matchClientStreamPayloadWithCustomMatcher(expected string, match MatchFn) *PayloadMatcher {
+	return Payload(Fn(expected, func(actual interface{}) (bool, error) {
+		in, err := streamer.ClientStreamerPayload(actual.(*streamer.ClientStreamer))
+		// This should never happen because the PayloadMatcher will read the stream first.
+		// If there is an error while reading the stream, it is caught inside the PayloadMatcher.
+		must.NotFail(err)
+
+		return match(in)
+	}), nil)
+}
+
+func decodeUnaryPayload(in interface{}) (string, error) {
+	switch v := in.(type) {
+	case []byte:
+		return string(v), nil
+
+	case string:
+		return v, nil
+	}
+
+	data, err := json.Marshal(in)
+	if err != nil {
+		return "", err
+	}
+
+	return string(data), nil
+}
+
+func decodeClientStreamPayload(in interface{}) (string, error) {
+	return value.Marshal(in)
 }

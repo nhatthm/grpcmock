@@ -1,4 +1,4 @@
-MODULE_NAME=grpcmock
+MODULE_NAME = grpcmock
 
 VENDOR_DIR = vendor
 

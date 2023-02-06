@@ -1,4 +1,4 @@
-package request
+package grpcmock
 
 import (
 	"context"
@@ -15,11 +15,12 @@ import (
 
 	xassert "go.nhat.io/grpcmock/assert"
 	xmatcher "go.nhat.io/grpcmock/matcher"
+	"go.nhat.io/grpcmock/planner"
 	"go.nhat.io/grpcmock/test"
 	"go.nhat.io/grpcmock/test/grpctest"
 )
 
-func TestUnaryRequest_WithHeader(t *testing.T) {
+func TestUnaryExpectation_WithHeader(t *testing.T) {
 	t.Parallel()
 
 	r := newGetItemRequest()
@@ -32,7 +33,7 @@ func TestUnaryRequest_WithHeader(t *testing.T) {
 	assert.Equal(t, xmatcher.HeaderMatcher{"foo": matcher.Exact("bar"), "john": matcher.Exact("doe")}, r.requestHeader)
 }
 
-func TestUnaryRequest_WithHeaders(t *testing.T) {
+func TestUnaryExpectation_WithHeaders(t *testing.T) {
 	t.Parallel()
 
 	r := newGetItemRequest()
@@ -45,7 +46,7 @@ func TestUnaryRequest_WithHeaders(t *testing.T) {
 	assert.Equal(t, xmatcher.HeaderMatcher{"foo": matcher.Exact("bar"), "john": matcher.Exact("doe")}, r.requestHeader)
 }
 
-func TestUnaryRequest_WithPayload_Panic(t *testing.T) {
+func TestUnaryExpectation_WithPayload_Panic(t *testing.T) {
 	t.Parallel()
 
 	r := newGetItemRequest()
@@ -55,7 +56,7 @@ func TestUnaryRequest_WithPayload_Panic(t *testing.T) {
 	})
 }
 
-func TestUnaryRequest_WithPayload_Match(t *testing.T) {
+func TestUnaryExpectation_WithPayload_Match(t *testing.T) {
 	t.Parallel()
 
 	const payload = `{"id":42}`
@@ -203,7 +204,7 @@ func TestUnaryRequest_WithPayload_Match(t *testing.T) {
 	}
 }
 
-func TestUnaryRequest_WithPayload_Match_Error(t *testing.T) {
+func TestUnaryExpectation_WithPayload_Match_Error(t *testing.T) {
 	t.Parallel()
 
 	testCases := []struct {
@@ -236,7 +237,7 @@ func TestUnaryRequest_WithPayload_Match_Error(t *testing.T) {
 	}
 }
 
-func TestUnaryRequest_WithPayloadf(t *testing.T) {
+func TestUnaryExpectation_WithPayloadf(t *testing.T) {
 	t.Parallel()
 
 	r := newGetItemRequest()
@@ -249,7 +250,7 @@ func TestUnaryRequest_WithPayloadf(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestUnaryRequest_ReturnCode(t *testing.T) {
+func TestUnaryExpectation_ReturnCode(t *testing.T) {
 	t.Parallel()
 
 	testCases := []struct {
@@ -290,11 +291,12 @@ func TestUnaryRequest_ReturnCode(t *testing.T) {
 		t.Run(tc.scenario, func(t *testing.T) {
 			t.Parallel()
 
-			r := &UnaryRequest{
-				baseRequest:   emptyBaseRequest(),
-				statusCode:    tc.currentCode,
-				statusMessage: tc.currentMessage,
+			r := &unaryExpectation{
+				baseExpectation: &baseExpectation{locker: &sync.Mutex{}},
 			}
+
+			r.statusCode = tc.currentCode
+			r.statusMessage = tc.currentMessage
 			r.ReturnCode(tc.newCode)
 
 			assert.Equal(t, tc.expectedCode, r.statusCode)
@@ -303,7 +305,7 @@ func TestUnaryRequest_ReturnCode(t *testing.T) {
 	}
 }
 
-func TestUnaryRequest_ReturnErrorMessage(t *testing.T) {
+func TestUnaryExpectation_ReturnErrorMessage(t *testing.T) {
 	t.Parallel()
 
 	testCases := []struct {
@@ -336,11 +338,12 @@ func TestUnaryRequest_ReturnErrorMessage(t *testing.T) {
 		t.Run(tc.scenario, func(t *testing.T) {
 			t.Parallel()
 
-			r := &UnaryRequest{
-				baseRequest:   emptyBaseRequest(),
-				statusCode:    tc.currentCode,
-				statusMessage: tc.currentMessage,
+			r := &unaryExpectation{
+				baseExpectation: &baseExpectation{locker: &sync.Mutex{}},
 			}
+
+			r.statusCode = tc.currentCode
+			r.statusMessage = tc.currentMessage
 			r.ReturnErrorMessage(tc.newMessage)
 
 			assert.Equal(t, tc.expectedCode, r.statusCode)
@@ -349,7 +352,7 @@ func TestUnaryRequest_ReturnErrorMessage(t *testing.T) {
 	}
 }
 
-func TestUnaryRequest_ReturnError(t *testing.T) {
+func TestUnaryExpectation_ReturnError(t *testing.T) {
 	t.Parallel()
 
 	testCases := []struct {
@@ -394,11 +397,12 @@ func TestUnaryRequest_ReturnError(t *testing.T) {
 		t.Run(tc.scenario, func(t *testing.T) {
 			t.Parallel()
 
-			r := &UnaryRequest{
-				baseRequest:   emptyBaseRequest(),
-				statusCode:    tc.currentCode,
-				statusMessage: tc.currentMessage,
+			r := &unaryExpectation{
+				baseExpectation: &baseExpectation{locker: &sync.Mutex{}},
 			}
+
+			r.statusCode = tc.currentCode
+			r.statusMessage = tc.currentMessage
 			r.ReturnError(tc.newCode, tc.newMessage)
 
 			assert.Equal(t, tc.expectedCode, r.statusCode)
@@ -407,7 +411,7 @@ func TestUnaryRequest_ReturnError(t *testing.T) {
 	}
 }
 
-func TestUnaryRequest_ReturnErrorf(t *testing.T) {
+func TestUnaryExpectation_ReturnErrorf(t *testing.T) {
 	t.Parallel()
 
 	r := newGetItemRequest()
@@ -417,7 +421,7 @@ func TestUnaryRequest_ReturnErrorf(t *testing.T) {
 	assert.Equal(t, "Item 42 not found", r.statusMessage)
 }
 
-func TestUnaryRequest_Return(t *testing.T) {
+func TestUnaryExpectation_Return(t *testing.T) {
 	t.Parallel()
 
 	const payload = `{"id": 42, "locale": "en-US", "name": "Foobar"}`
@@ -483,7 +487,7 @@ func TestUnaryRequest_Return(t *testing.T) {
 			r := newGetItemRequest()
 			r.Return(tc.output)
 
-			err := r.handle(context.Background(), nil, out)
+			err := r.Handle(context.Background(), nil, out)
 
 			xassert.EqualMessage(t, tc.expectedResult, out)
 			xassert.EqualError(t, tc.expectedError, err)
@@ -491,7 +495,7 @@ func TestUnaryRequest_Return(t *testing.T) {
 	}
 }
 
-func TestUnaryRequest_ReturnStatusError(t *testing.T) {
+func TestUnaryExpectation_ReturnStatusError(t *testing.T) {
 	t.Parallel()
 
 	output := (*grpctest.Item)(nil)
@@ -499,7 +503,7 @@ func TestUnaryRequest_ReturnStatusError(t *testing.T) {
 	r := newGetItemRequest()
 	r.ReturnErrorf(codes.NotFound, "Item %d not found", 42)
 
-	err := r.handle(context.Background(), nil, output)
+	err := r.Handle(context.Background(), nil, output)
 
 	expectedResult := (*grpctest.Item)(nil)
 	expectedError := status.Error(codes.NotFound, "Item 42 not found")
@@ -508,14 +512,14 @@ func TestUnaryRequest_ReturnStatusError(t *testing.T) {
 	assert.Equal(t, expectedError, err)
 }
 
-func TestUnaryRequest_ReturnUnimplemented(t *testing.T) {
+func TestUnaryExpectation_ReturnUnimplemented(t *testing.T) {
 	t.Parallel()
 
 	output := (*grpctest.Item)(nil)
 
 	r := newGetItemRequest()
 
-	err := r.handle(context.Background(), nil, output)
+	err := r.Handle(context.Background(), nil, output)
 
 	expectedResult := (*grpctest.Item)(nil)
 	expectedError := status.Error(codes.Unimplemented, "not implemented")
@@ -524,15 +528,15 @@ func TestUnaryRequest_ReturnUnimplemented(t *testing.T) {
 	assert.Equal(t, expectedError, err)
 }
 
-func TestUnaryRequest_ReturnFile_Success(t *testing.T) {
+func TestUnaryExpectation_ReturnFile_Success(t *testing.T) {
 	t.Parallel()
 
 	output := &grpctest.Item{}
 
 	r := newGetItemRequest()
-	r.ReturnFile("fixtures/unary_response.json")
+	r.ReturnFile("resources/fixtures/unary_response.json")
 
-	err := r.handle(context.Background(), nil, output)
+	err := r.Handle(context.Background(), nil, output)
 
 	expected := &grpctest.Item{
 		Id:     42,
@@ -544,17 +548,17 @@ func TestUnaryRequest_ReturnFile_Success(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestUnaryRequest_ReturnFile_NotFound(t *testing.T) {
+func TestUnaryExpectation_ReturnFile_NotFound(t *testing.T) {
 	t.Parallel()
 
 	r := newGetItemRequest()
 
 	assert.Panics(t, func() {
-		r.ReturnFile("fixtures/not_found.json")
+		r.ReturnFile("resources/fixtures/not_found.json")
 	})
 }
 
-func TestUnaryRequest_Returnf(t *testing.T) {
+func TestUnaryExpectation_Returnf(t *testing.T) {
 	t.Parallel()
 
 	output := &grpctest.Item{}
@@ -563,7 +567,7 @@ func TestUnaryRequest_Returnf(t *testing.T) {
 
 	r.Returnf(`{"id": %d}`, 42)
 
-	err := r.handle(context.Background(), nil, output)
+	err := r.Handle(context.Background(), nil, output)
 
 	expected := &grpctest.Item{Id: 42}
 
@@ -571,7 +575,7 @@ func TestUnaryRequest_Returnf(t *testing.T) {
 	assert.Nil(t, err)
 }
 
-func TestUnaryRequest_ReturnJSON(t *testing.T) {
+func TestUnaryExpectation_ReturnJSON(t *testing.T) {
 	t.Parallel()
 
 	output := &grpctest.Item{}
@@ -580,7 +584,7 @@ func TestUnaryRequest_ReturnJSON(t *testing.T) {
 
 	r.ReturnJSON(map[string]interface{}{"id": 42})
 
-	err := r.handle(context.Background(), nil, output)
+	err := r.Handle(context.Background(), nil, output)
 
 	expected := &grpctest.Item{Id: 42}
 
@@ -588,7 +592,7 @@ func TestUnaryRequest_ReturnJSON(t *testing.T) {
 	assert.Nil(t, err)
 }
 
-func TestUnaryRequest_Run(t *testing.T) {
+func TestUnaryExpectation_Run(t *testing.T) {
 	t.Parallel()
 
 	output := (*grpctest.Item)(nil)
@@ -598,7 +602,7 @@ func TestUnaryRequest_Run(t *testing.T) {
 		return nil, errors.New("internal server error")
 	})
 
-	err := r.handle(context.Background(), nil, output)
+	err := r.Handle(context.Background(), nil, output)
 
 	expectedError := status.Error(codes.Internal, "internal server error")
 
@@ -606,43 +610,43 @@ func TestUnaryRequest_Run(t *testing.T) {
 	assert.Equal(t, expectedError, err)
 }
 
-func TestUnaryRequest_Once(t *testing.T) {
+func TestUnaryExpectation_Once(t *testing.T) {
 	t.Parallel()
 
 	r := newGetItemRequest()
 	r.Once()
 
-	assert.Equal(t, RepeatedTime(1), r.repeatability)
+	assert.Equal(t, uint(1), r.RemainTimes())
 }
 
-func TestUnaryRequest_Twice(t *testing.T) {
+func TestUnaryExpectation_Twice(t *testing.T) {
 	t.Parallel()
 
 	r := newGetItemRequest()
 	r.Twice()
 
-	assert.Equal(t, RepeatedTime(2), r.repeatability)
+	assert.Equal(t, uint(2), r.RemainTimes())
 }
 
-func TestUnaryRequest_UnlimitedTimes(t *testing.T) {
+func TestUnaryExpectation_UnlimitedTimes(t *testing.T) {
 	t.Parallel()
 
 	r := newGetItemRequest()
 	r.UnlimitedTimes()
 
-	assert.Equal(t, UnlimitedTimes, r.repeatability)
+	assert.Equal(t, planner.UnlimitedTimes, r.RemainTimes())
 }
 
-func TestUnaryRequest_Times(t *testing.T) {
+func TestUnaryExpectation_Times(t *testing.T) {
 	t.Parallel()
 
 	r := newGetItemRequest()
 	r.Times(20)
 
-	assert.Equal(t, RepeatedTime(20), r.repeatability)
+	assert.Equal(t, uint(20), r.RemainTimes())
 }
 
-func TestUnaryRequest_WaitUntil(t *testing.T) {
+func TestUnaryExpectation_WaitUntil(t *testing.T) {
 	t.Parallel()
 
 	duration := 50 * time.Millisecond
@@ -653,15 +657,39 @@ func TestUnaryRequest_WaitUntil(t *testing.T) {
 
 	r.WaitUntil(ch).ReturnError(codes.Internal, "time out")
 
-	err := r.handle(context.Background(), nil, nil)
+	err := r.Handle(context.Background(), nil, nil)
 	endTime := time.Now()
 
-	assert.Equal(t, ch, r.waitFor)
 	assert.GreaterOrEqual(t, endTime.Sub(startTime), duration)
 	assert.Error(t, err)
+	assert.EqualError(t, err, `rpc error: code = Internal desc = time out`)
 }
 
-func TestUnaryRequest_WaitTime(t *testing.T) {
+func TestUnaryExpectation_WaitUntil_ContextTimeout(t *testing.T) {
+	t.Parallel()
+
+	expectedDuration := 20 * time.Millisecond
+
+	ctx, cancel := context.WithTimeout(context.Background(), expectedDuration)
+	defer cancel()
+
+	duration := 50 * time.Millisecond
+	r := newGetItemRequest()
+
+	startTime := time.Now()
+	ch := time.After(duration)
+
+	r.WaitUntil(ch).ReturnError(codes.Internal, "time out")
+
+	err := r.Handle(ctx, nil, nil)
+	endTime := time.Now()
+
+	assert.GreaterOrEqual(t, endTime.Sub(startTime), expectedDuration)
+	assert.Error(t, err)
+	assert.EqualError(t, err, `rpc error: code = Internal desc = context deadline exceeded`)
+}
+
+func TestUnaryExpectation_WaitTime(t *testing.T) {
 	t.Parallel()
 
 	duration := 50 * time.Millisecond
@@ -669,38 +697,58 @@ func TestUnaryRequest_WaitTime(t *testing.T) {
 	r.After(duration).ReturnError(codes.Internal, "time out")
 
 	startTime := time.Now()
-	err := r.handle(context.Background(), nil, nil)
+	err := r.Handle(context.Background(), nil, nil)
 	endTime := time.Now()
 
-	assert.Equal(t, duration, r.waitTime)
 	assert.GreaterOrEqual(t, endTime.Sub(startTime), duration)
 	assert.Error(t, err)
 }
 
-func TestUnaryRequest_ServiceMethod(t *testing.T) {
+func TestUnaryExpectation_WaitTime_ContextTimeout(t *testing.T) {
+	t.Parallel()
+
+	expectedDuration := 20 * time.Millisecond
+
+	ctx, cancel := context.WithTimeout(context.Background(), expectedDuration)
+	defer cancel()
+
+	duration := 50 * time.Millisecond
+	r := newGetItemRequest()
+	r.After(duration).ReturnError(codes.Internal, "time out")
+
+	startTime := time.Now()
+	err := r.Handle(ctx, nil, nil)
+	endTime := time.Now()
+
+	assert.GreaterOrEqual(t, endTime.Sub(startTime), expectedDuration)
+	assert.Error(t, err)
+	assert.EqualError(t, err, `rpc error: code = Internal desc = context deadline exceeded`)
+}
+
+func TestUnaryExpectation_ServiceMethod(t *testing.T) {
 	t.Parallel()
 
 	r := newGetItemRequest()
 
-	actual := ServiceMethod(r)
+	actual := r.ServiceMethod()
 	expected := test.GetItemsSvc()
 
 	assert.Equal(t, expected, actual)
 }
 
-func TestUnaryRequest_HeaderMatcher(t *testing.T) {
+func TestUnaryExpectation_HeaderMatcher(t *testing.T) {
 	t.Parallel()
 
 	r := newGetItemRequest()
 	r.WithHeader("locale", "en-US")
 
-	actual := HeaderMatcher(r)
+	actual := r.HeaderMatcher()
 	expected := xmatcher.HeaderMatcher{"locale": matcher.Match("en-US")}
 
 	assert.Equal(t, expected, actual)
 }
 
-func TestUnaryRequest_PayloadMatcher(t *testing.T) {
+func TestUnaryExpectation_PayloadMatcher(t *testing.T) {
 	t.Parallel()
 
 	const payload = `{"id": 42}`
@@ -708,52 +756,52 @@ func TestUnaryRequest_PayloadMatcher(t *testing.T) {
 	r := newGetItemRequest()
 	r.WithPayload(payload)
 
-	matched, err := PayloadMatcher(r).Match(payload)
+	matched, err := r.PayloadMatcher().Match(payload)
 
 	assert.True(t, matched)
 	assert.NoError(t, err)
 }
 
-func TestUnaryRequest_Repeatability(t *testing.T) {
+func TestUnaryExpectation_Repeatability(t *testing.T) {
 	t.Parallel()
 
 	r := newGetItemRequest()
-	r.repeatability = 2
+	r.Times(2)
 
-	assert.Equal(t, RepeatedTime(2), Repeatability(r))
+	assert.Equal(t, uint(2), r.RemainTimes())
 
-	SetRepeatability(r, 1)
+	r.Fulfilled()
 
-	assert.Equal(t, RepeatedTime(1), Repeatability(r))
+	assert.Equal(t, uint(1), r.RemainTimes())
 }
 
-func TestUnaryRequest_Calls(t *testing.T) {
+func TestUnaryExpectation_Fulfilled(t *testing.T) {
 	t.Parallel()
 
 	r := newGetItemRequest()
 
-	assert.Equal(t, 0, NumCalls(r))
+	assert.Equal(t, uint(0), r.FulfilledTimes())
 
-	CountCall(r)
+	r.Fulfilled()
 
-	assert.Equal(t, 1, NumCalls(r))
+	assert.Equal(t, uint(1), r.FulfilledTimes())
 }
 
-func TestUnaryRequest_Handle(t *testing.T) {
+func TestUnaryExpectation_Handle(t *testing.T) {
 	t.Parallel()
 
 	r := newGetItemRequest()
 	r.Return(test.DefaultItem())
 
 	out := &grpctest.Item{}
-	err := Handle(context.Background(), r, &grpctest.GetItemRequest{}, out)
+	err := r.Handle(context.Background(), &grpctest.GetItemRequest{}, out)
 
 	assert.NoError(t, err)
 	assert.Equal(t, test.DefaultItem(), out)
 }
 
-func newGetItemRequest() *UnaryRequest {
+func newGetItemRequest() *unaryExpectation {
 	svc := test.GetItemsSvc()
 
-	return NewUnaryRequest(&sync.Mutex{}, &svc)
+	return newUnaryExpectation(&svc)
 }

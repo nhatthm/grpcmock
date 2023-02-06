@@ -24,6 +24,8 @@ import (
 )
 
 // UnaryRequest represents the expectation for a unary request.
+//
+// Deprecated: Use go.nhat.io/grpcmock.UnaryExpectation instead.
 type UnaryRequest struct {
 	baseRequest
 
@@ -48,6 +50,8 @@ type UnaryRequest struct {
 }
 
 // NewUnaryRequest creates a new unary request.
+//
+// Deprecated: The function will be removed in the future.
 func NewUnaryRequest(locker sync.Locker, svc *service.Method) *UnaryRequest {
 	return &UnaryRequest{
 		baseRequest: baseRequest{

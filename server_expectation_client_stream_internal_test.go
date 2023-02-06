@@ -1,4 +1,4 @@
-package request
+package grpcmock
 
 import (
 	"context"
@@ -17,13 +17,14 @@ import (
 	xassert "go.nhat.io/grpcmock/assert"
 	xmatcher "go.nhat.io/grpcmock/matcher"
 	xmock "go.nhat.io/grpcmock/mock/grpc"
+	"go.nhat.io/grpcmock/planner"
 	"go.nhat.io/grpcmock/stream"
 	"go.nhat.io/grpcmock/streamer"
 	"go.nhat.io/grpcmock/test"
 	"go.nhat.io/grpcmock/test/grpctest"
 )
 
-func TestClientStreamRequest_WithHeader(t *testing.T) {
+func TestClientStreamExpectation_WithHeader(t *testing.T) {
 	t.Parallel()
 
 	r := newCreateItemsRequest()
@@ -36,7 +37,7 @@ func TestClientStreamRequest_WithHeader(t *testing.T) {
 	assert.Equal(t, xmatcher.HeaderMatcher{"foo": matcher.Exact("bar"), "john": matcher.Exact("doe")}, r.requestHeader)
 }
 
-func TestClientStreamRequest_WithHeaders(t *testing.T) {
+func TestClientStreamExpectation_WithHeaders(t *testing.T) {
 	t.Parallel()
 
 	r := newCreateItemsRequest()
@@ -49,7 +50,7 @@ func TestClientStreamRequest_WithHeaders(t *testing.T) {
 	assert.Equal(t, xmatcher.HeaderMatcher{"foo": matcher.Exact("bar"), "john": matcher.Exact("doe")}, r.requestHeader)
 }
 
-func TestClientStreamRequest_WithPayload(t *testing.T) {
+func TestClientStreamExpectation_WithPayload(t *testing.T) {
 	t.Parallel()
 
 	const payload = `[{"id": 42, "locale": "en-US", "name": "Foobar"}]`
@@ -89,9 +90,10 @@ func TestClientStreamRequest_WithPayload(t *testing.T) {
 		t.Run(tc.scenario, func(t *testing.T) {
 			t.Parallel()
 
-			r := newCreateItemsRequest().WithPayload(tc.input)
+			r := newCreateItemsRequest()
+			r.WithPayload(tc.input)
 
-			matched, err := r.requestPayload.Match(payload)
+			matched, err := r.PayloadMatcher().Match(payload)
 
 			assert.True(t, matched)
 			assert.NoError(t, err)
@@ -99,7 +101,7 @@ func TestClientStreamRequest_WithPayload(t *testing.T) {
 	}
 }
 
-func TestClientStreamRequest_WithPayloadf(t *testing.T) {
+func TestClientStreamExpectation_WithPayloadf(t *testing.T) {
 	t.Parallel()
 
 	s := mockClientStreamerRecvMsgSuccess(&grpctest.Item{
@@ -111,13 +113,13 @@ func TestClientStreamRequest_WithPayloadf(t *testing.T) {
 	r := newCreateItemsRequest()
 	r.WithPayloadf(`[{"id": %d, "locale": %q, "name": %q}]`, 42, "en-US", "Foobar")
 
-	matched, err := r.requestPayload.Match(s)
+	matched, err := r.PayloadMatcher().Match(s)
 
 	assert.True(t, matched)
 	assert.NoError(t, err)
 }
 
-func TestClientStreamRequest_WithPayload_Matched(t *testing.T) {
+func TestClientStreamExpectation_WithPayload_Matched(t *testing.T) {
 	t.Parallel()
 
 	const payload = `[{"id":42,"locale":"en-US","name":"Foobar"}]`
@@ -183,9 +185,10 @@ func TestClientStreamRequest_WithPayload_Matched(t *testing.T) {
 				Name:   "Foobar",
 			})(t)
 
-			r := newCreateItemsRequest().WithPayload(tc.payload)
+			r := newCreateItemsRequest()
+			r.WithPayload(tc.payload)
 
-			matched, err := r.requestPayload.Match(s)
+			matched, err := r.PayloadMatcher().Match(s)
 
 			assert.True(t, matched)
 			assert.NoError(t, err)
@@ -193,7 +196,7 @@ func TestClientStreamRequest_WithPayload_Matched(t *testing.T) {
 	}
 }
 
-func TestClientStreamRequest_WithPayload_Mismatched(t *testing.T) {
+func TestClientStreamExpectation_WithPayload_Mismatched(t *testing.T) {
 	t.Parallel()
 
 	const payload = `[{"id":41,"locale":"en-US","name":"Foobar"}]`
@@ -259,9 +262,10 @@ func TestClientStreamRequest_WithPayload_Mismatched(t *testing.T) {
 				Name:   "Foobar",
 			})(t)
 
-			r := newCreateItemsRequest().WithPayload(tc.payload)
+			r := newCreateItemsRequest()
+			r.WithPayload(tc.payload)
 
-			matched, err := r.requestPayload.Match(s)
+			matched, err := r.PayloadMatcher().Match(s)
 
 			assert.False(t, matched)
 			assert.NoError(t, err)
@@ -269,7 +273,7 @@ func TestClientStreamRequest_WithPayload_Mismatched(t *testing.T) {
 	}
 }
 
-func TestClientStreamRequest_WithPayload_CustomMatcher_Matched(t *testing.T) {
+func TestClientStreamExpectation_WithPayload_CustomMatcher_Matched(t *testing.T) {
 	t.Parallel()
 
 	expectStreamMsgsCount := func(actual interface{}, msgCount int) (bool, error) {
@@ -309,10 +313,9 @@ func TestClientStreamRequest_WithPayload_CustomMatcher_Matched(t *testing.T) {
 			in := mockClientStreamerRecvMsgSuccess(test.DefaultItems()...)(t)
 
 			r := newCreateItemsRequest()
-
 			r.WithPayload(tc.matcher)
 
-			matched, err := r.requestPayload.Match(in)
+			matched, err := r.PayloadMatcher().Match(in)
 
 			assert.True(t, matched)
 			assert.NoError(t, err)
@@ -320,7 +323,7 @@ func TestClientStreamRequest_WithPayload_CustomMatcher_Matched(t *testing.T) {
 	}
 }
 
-func TestClientStreamRequest_WithPayload_CustomMatcher_Mismatched(t *testing.T) {
+func TestClientStreamExpectation_WithPayload_CustomMatcher_Mismatched(t *testing.T) {
 	t.Parallel()
 
 	testCases := []struct {
@@ -354,10 +357,10 @@ func TestClientStreamRequest_WithPayload_CustomMatcher_Mismatched(t *testing.T) 
 				Name:   "Item 41",
 			})(t)
 
-			r := newCreateItemsRequest().
-				WithPayload(tc.matcher)
+			r := newCreateItemsRequest()
+			r.WithPayload(tc.matcher)
 
-			matched, err := r.requestPayload.Match(in)
+			matched, err := r.PayloadMatcher().Match(in)
 
 			assert.False(t, matched)
 			assert.NoError(t, err)
@@ -365,7 +368,7 @@ func TestClientStreamRequest_WithPayload_CustomMatcher_Mismatched(t *testing.T) 
 	}
 }
 
-func TestClientStreamRequest_WithPayload_CustomMatcher_MatchError(t *testing.T) {
+func TestClientStreamExpectation_WithPayload_CustomMatcher_MatchError(t *testing.T) {
 	t.Parallel()
 
 	testCases := []struct {
@@ -399,10 +402,10 @@ func TestClientStreamRequest_WithPayload_CustomMatcher_MatchError(t *testing.T) 
 				Name:   "Item 41",
 			})(t)
 
-			r := newCreateItemsRequest().
-				WithPayload(tc.matcher)
+			r := newCreateItemsRequest()
+			r.WithPayload(tc.matcher)
 
-			matched, err := r.requestPayload.Match(in)
+			matched, err := r.PayloadMatcher().Match(in)
 
 			assert.False(t, matched)
 			assert.EqualError(t, err, "match error")
@@ -410,7 +413,7 @@ func TestClientStreamRequest_WithPayload_CustomMatcher_MatchError(t *testing.T) 
 	}
 }
 
-func TestClientStreamRequest_WithPayload_CustomMatcher_RecvError(t *testing.T) {
+func TestClientStreamExpectation_WithPayload_CustomMatcher_RecvError(t *testing.T) {
 	t.Parallel()
 
 	in := test.MockCreateItemsStreamer(func(s *xmock.ServerStream) {
@@ -418,19 +421,19 @@ func TestClientStreamRequest_WithPayload_CustomMatcher_RecvError(t *testing.T) {
 			Return(errors.New("recv error"))
 	})(t)
 
-	r := newCreateItemsRequest().
-		WithPayload(func(interface{}) (bool, error) {
-			// Intentionally return true here in case the PayloadMatcher misbehaves.
-			return true, nil
-		})
+	r := newCreateItemsRequest()
+	r.WithPayload(func(interface{}) (bool, error) {
+		// Intentionally return true here in case the PayloadMatcher misbehaves.
+		return true, nil
+	})
 
-	matched, err := r.requestPayload.Match(in)
+	matched, err := r.PayloadMatcher().Match(in)
 
 	assert.False(t, matched)
 	assert.EqualError(t, err, "recv error")
 }
 
-func TestClientStreamRequest_WithPayload_Match_CouldNotRecvMsg(t *testing.T) {
+func TestClientStreamExpectation_WithPayload_Match_CouldNotRecvMsg(t *testing.T) {
 	t.Parallel()
 
 	in := test.MockCreateItemsStreamer(func(s *xmock.ServerStream) {
@@ -438,10 +441,10 @@ func TestClientStreamRequest_WithPayload_Match_CouldNotRecvMsg(t *testing.T) {
 			Return(errors.New("recv error"))
 	})(t)
 
-	r := newCreateItemsRequest().
-		WithPayload(nil)
+	r := newCreateItemsRequest()
+	r.WithPayload(nil)
 
-	matched, err := r.requestPayload.Match(in)
+	matched, err := r.PayloadMatcher().Match(in)
 
 	expectedActual := `<could not decode>`
 	expectedError := `recv error`
@@ -451,7 +454,7 @@ func TestClientStreamRequest_WithPayload_Match_CouldNotRecvMsg(t *testing.T) {
 	assert.EqualError(t, err, expectedError)
 }
 
-func TestClientStreamRequest_ReturnCode(t *testing.T) {
+func TestClientStreamExpectation_ReturnCode(t *testing.T) {
 	t.Parallel()
 
 	testCases := []struct {
@@ -492,11 +495,12 @@ func TestClientStreamRequest_ReturnCode(t *testing.T) {
 		t.Run(tc.scenario, func(t *testing.T) {
 			t.Parallel()
 
-			r := &ClientStreamRequest{
-				baseRequest:   emptyBaseRequest(),
-				statusCode:    tc.currentCode,
-				statusMessage: tc.currentMessage,
+			r := &clientStreamExpectation{
+				baseExpectation: &baseExpectation{locker: &sync.Mutex{}},
 			}
+
+			r.statusCode = tc.currentCode
+			r.statusMessage = tc.currentMessage
 			r.ReturnCode(tc.newCode)
 
 			assert.Equal(t, tc.expectedCode, r.statusCode)
@@ -505,7 +509,7 @@ func TestClientStreamRequest_ReturnCode(t *testing.T) {
 	}
 }
 
-func TestClientStreamRequest_ReturnErrorMessage(t *testing.T) {
+func TestClientStreamExpectation_ReturnErrorMessage(t *testing.T) {
 	t.Parallel()
 
 	testCases := []struct {
@@ -538,11 +542,12 @@ func TestClientStreamRequest_ReturnErrorMessage(t *testing.T) {
 		t.Run(tc.scenario, func(t *testing.T) {
 			t.Parallel()
 
-			r := &ClientStreamRequest{
-				baseRequest:   emptyBaseRequest(),
-				statusCode:    tc.currentCode,
-				statusMessage: tc.currentMessage,
+			r := &clientStreamExpectation{
+				baseExpectation: &baseExpectation{locker: &sync.Mutex{}},
 			}
+
+			r.statusCode = tc.currentCode
+			r.statusMessage = tc.currentMessage
 			r.ReturnErrorMessage(tc.newMessage)
 
 			assert.Equal(t, tc.expectedCode, r.statusCode)
@@ -551,7 +556,7 @@ func TestClientStreamRequest_ReturnErrorMessage(t *testing.T) {
 	}
 }
 
-func TestClientStreamRequest_ReturnError(t *testing.T) {
+func TestClientStreamExpectation_ReturnError(t *testing.T) {
 	t.Parallel()
 
 	testCases := []struct {
@@ -596,11 +601,12 @@ func TestClientStreamRequest_ReturnError(t *testing.T) {
 		t.Run(tc.scenario, func(t *testing.T) {
 			t.Parallel()
 
-			r := &ClientStreamRequest{
-				baseRequest:   emptyBaseRequest(),
-				statusCode:    tc.currentCode,
-				statusMessage: tc.currentMessage,
+			r := &clientStreamExpectation{
+				baseExpectation: &baseExpectation{locker: &sync.Mutex{}},
 			}
+
+			r.statusCode = tc.currentCode
+			r.statusMessage = tc.currentMessage
 			r.ReturnError(tc.newCode, tc.newMessage)
 
 			assert.Equal(t, tc.expectedCode, r.statusCode)
@@ -609,7 +615,7 @@ func TestClientStreamRequest_ReturnError(t *testing.T) {
 	}
 }
 
-func TestClientStreamRequest_ReturnErrorf(t *testing.T) {
+func TestClientStreamExpectation_ReturnErrorf(t *testing.T) {
 	t.Parallel()
 
 	r := newCreateItemsRequest()
@@ -619,7 +625,7 @@ func TestClientStreamRequest_ReturnErrorf(t *testing.T) {
 	assert.Equal(t, "Item 42 not found", r.statusMessage)
 }
 
-func TestClientStreamRequest_Return(t *testing.T) {
+func TestClientStreamExpectation_Return(t *testing.T) {
 	t.Parallel()
 
 	const payload = `{"num_items": 1}`
@@ -690,7 +696,7 @@ func TestClientStreamRequest_Return(t *testing.T) {
 			r := newCreateItemsRequest()
 			r.Return(tc.output)
 
-			err := r.handle(context.Background(), tc.mockStreamer(t), out)
+			err := r.Handle(context.Background(), tc.mockStreamer(t), out)
 
 			xassert.EqualMessage(t, tc.expectedResult, out)
 			xassert.EqualError(t, tc.expectedError, err)
@@ -698,30 +704,30 @@ func TestClientStreamRequest_Return(t *testing.T) {
 	}
 }
 
-func TestClientStreamRequest_ReturnStatusError(t *testing.T) {
+func TestClientStreamExpectation_ReturnStatusError(t *testing.T) {
 	t.Parallel()
 
 	r := newCreateItemsRequest()
 	r.ReturnErrorf(codes.InvalidArgument, "invalid argument %q", "foobar")
 
-	err := r.handle(context.Background(), (*streamer.ClientStreamer)(nil), nil)
+	err := r.Handle(context.Background(), (*streamer.ClientStreamer)(nil), nil)
 	expectedError := status.Error(codes.InvalidArgument, `invalid argument "foobar"`)
 
 	assert.Equal(t, expectedError, err)
 }
 
-func TestClientStreamRequest_ReturnUnimplemented(t *testing.T) {
+func TestClientStreamExpectation_ReturnUnimplemented(t *testing.T) {
 	t.Parallel()
 
 	r := newCreateItemsRequest()
 
-	err := r.handle(context.Background(), (*streamer.ClientStreamer)(nil), nil)
+	err := r.Handle(context.Background(), (*streamer.ClientStreamer)(nil), nil)
 	expectedError := status.Error(codes.Unimplemented, "not implemented")
 
 	assert.Equal(t, expectedError, err)
 }
 
-func TestClientStreamRequest_Returnf(t *testing.T) {
+func TestClientStreamExpectation_Returnf(t *testing.T) {
 	t.Parallel()
 
 	in := test.MockCreateItemsStreamer(func(s *xmock.ServerStream) {
@@ -734,7 +740,7 @@ func TestClientStreamRequest_Returnf(t *testing.T) {
 	r.Returnf(`{"num_items": %d}`, 1)
 
 	out := &grpctest.CreateItemsResponse{}
-	err := r.handle(context.Background(), in, out)
+	err := r.Handle(context.Background(), in, out)
 
 	expected := &grpctest.CreateItemsResponse{NumItems: 1}
 
@@ -742,7 +748,7 @@ func TestClientStreamRequest_Returnf(t *testing.T) {
 	xassert.EqualMessage(t, expected, out)
 }
 
-func TestClientStreamRequest_ReturnJSON(t *testing.T) {
+func TestClientStreamExpectation_ReturnJSON(t *testing.T) {
 	t.Parallel()
 
 	in := test.MockCreateItemsStreamer(test.MockStreamSendCreateItemsResponseSuccess(1))(t)
@@ -754,7 +760,7 @@ func TestClientStreamRequest_ReturnJSON(t *testing.T) {
 	})
 
 	out := &grpctest.CreateItemsResponse{}
-	err := r.handle(context.Background(), in, out)
+	err := r.Handle(context.Background(), in, out)
 
 	expected := &grpctest.CreateItemsResponse{NumItems: 1}
 
@@ -762,7 +768,7 @@ func TestClientStreamRequest_ReturnJSON(t *testing.T) {
 	xassert.EqualMessage(t, expected, out)
 }
 
-func TestClientStreamRequest_ReturnJSON_Error(t *testing.T) {
+func TestClientStreamExpectation_ReturnJSON_Error(t *testing.T) {
 	t.Parallel()
 
 	in := test.NoMockClientStreamer(t)
@@ -770,23 +776,23 @@ func TestClientStreamRequest_ReturnJSON_Error(t *testing.T) {
 
 	r.ReturnJSON(make(chan struct{}))
 
-	err := r.handle(context.Background(), in, nil)
+	err := r.Handle(context.Background(), in, nil)
 	expected := status.Error(codes.Internal, "json: unsupported type: chan struct {}")
 
 	assert.Equal(t, expected, err)
 }
 
-func TestClientStreamRequest_ReturnFile_Success(t *testing.T) {
+func TestClientStreamExpectation_ReturnFile_Success(t *testing.T) {
 	t.Parallel()
 
 	in := test.MockCreateItemsStreamer(test.MockStreamSendCreateItemsResponseSuccess(1))(t)
 
 	r := newCreateItemsRequest()
 
-	r.ReturnFile("fixtures/client_stream_response.json")
+	r.ReturnFile("resources/fixtures/client_stream_response.json")
 
 	out := &grpctest.CreateItemsResponse{}
-	err := r.handle(context.Background(), in, out)
+	err := r.Handle(context.Background(), in, out)
 
 	expected := &grpctest.CreateItemsResponse{NumItems: 1}
 
@@ -794,17 +800,17 @@ func TestClientStreamRequest_ReturnFile_Success(t *testing.T) {
 	xassert.EqualMessage(t, expected, out)
 }
 
-func TestClientStreamRequest_ReturnFile_NotFound(t *testing.T) {
+func TestClientStreamExpectation_ReturnFile_NotFound(t *testing.T) {
 	t.Parallel()
 
 	r := newCreateItemsRequest()
 
 	assert.Panics(t, func() {
-		r.ReturnFile("fixtures/not_found.json")
+		r.ReturnFile("resources/fixtures/not_found.json")
 	})
 }
 
-func TestClientStreamRequest_Run(t *testing.T) {
+func TestClientStreamExpectation_Run(t *testing.T) {
 	t.Parallel()
 
 	out := &grpctest.CreateItemsResponse{}
@@ -837,7 +843,7 @@ func TestClientStreamRequest_Run(t *testing.T) {
 		return &grpctest.CreateItemsResponse{NumItems: cnt}, nil
 	})
 
-	err := r.handle(context.Background(), s, out)
+	err := r.Handle(context.Background(), s, out)
 
 	expected := &grpctest.CreateItemsResponse{NumItems: 2}
 
@@ -845,43 +851,43 @@ func TestClientStreamRequest_Run(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestClientStreamRequest_Once(t *testing.T) {
+func TestClientStreamExpectation_Once(t *testing.T) {
 	t.Parallel()
 
 	r := newCreateItemsRequest()
 	r.Once()
 
-	assert.Equal(t, RepeatedTime(1), r.repeatability)
+	assert.Equal(t, uint(1), r.RemainTimes())
 }
 
-func TestClientStreamRequest_Twice(t *testing.T) {
+func TestClientStreamExpectation_Twice(t *testing.T) {
 	t.Parallel()
 
 	r := newCreateItemsRequest()
 	r.Twice()
 
-	assert.Equal(t, RepeatedTime(2), r.repeatability)
+	assert.Equal(t, uint(2), r.RemainTimes())
 }
 
-func TestClientStreamRequest_UnlimitedTimes(t *testing.T) {
+func TestClientStreamExpectation_UnlimitedTimes(t *testing.T) {
 	t.Parallel()
 
 	r := newCreateItemsRequest()
 	r.UnlimitedTimes()
 
-	assert.Equal(t, UnlimitedTimes, r.repeatability)
+	assert.Equal(t, planner.UnlimitedTimes, r.RemainTimes())
 }
 
-func TestClientStreamRequest_Times(t *testing.T) {
+func TestClientStreamExpectation_Times(t *testing.T) {
 	t.Parallel()
 
 	r := newCreateItemsRequest()
 	r.Times(20)
 
-	assert.Equal(t, RepeatedTime(20), r.repeatability)
+	assert.Equal(t, uint(20), r.RemainTimes())
 }
 
-func TestClientStreamRequest_WaitUntil(t *testing.T) {
+func TestClientStreamExpectation_WaitUntil(t *testing.T) {
 	t.Parallel()
 
 	duration := 50 * time.Millisecond
@@ -892,16 +898,39 @@ func TestClientStreamRequest_WaitUntil(t *testing.T) {
 
 	r.WaitUntil(ch).ReturnError(codes.Internal, "time out")
 
-	err := r.handle(context.Background(), nil, nil)
+	err := r.Handle(context.Background(), nil, nil)
 
 	endTime := time.Now()
 
-	assert.Equal(t, ch, r.waitFor)
 	assert.GreaterOrEqual(t, endTime.Sub(startTime), duration)
 	assert.Error(t, err)
 }
 
-func TestClientStreamRequest_WaitTime(t *testing.T) {
+func TestClientStreamExpectation_WaitUntil_ContextTimeout(t *testing.T) {
+	t.Parallel()
+
+	expectedDuration := 20 * time.Millisecond
+
+	ctx, cancel := context.WithTimeout(context.Background(), expectedDuration)
+	defer cancel()
+
+	duration := 50 * time.Millisecond
+	r := newCreateItemsRequest()
+
+	startTime := time.Now()
+	ch := time.After(duration)
+
+	r.WaitUntil(ch).ReturnError(codes.Internal, "time out")
+
+	err := r.Handle(ctx, nil, nil)
+	endTime := time.Now()
+
+	assert.GreaterOrEqual(t, endTime.Sub(startTime), expectedDuration)
+	assert.Error(t, err)
+	assert.EqualError(t, err, `rpc error: code = Internal desc = context deadline exceeded`)
+}
+
+func TestClientStreamExpectation_WaitTime(t *testing.T) {
 	t.Parallel()
 
 	duration := 50 * time.Millisecond
@@ -909,37 +938,58 @@ func TestClientStreamRequest_WaitTime(t *testing.T) {
 	r.After(duration).ReturnError(codes.Internal, "time out")
 
 	startTime := time.Now()
-	err := r.handle(context.Background(), nil, nil)
+	err := r.Handle(context.Background(), nil, nil)
 	endTime := time.Now()
 
-	assert.Equal(t, duration, r.waitTime)
 	assert.GreaterOrEqual(t, endTime.Sub(startTime), duration)
 	assert.Error(t, err)
 }
 
-func TestClientStreamRequest_ServiceMethod(t *testing.T) {
+func TestClientStreamExpectation_WaitTime_ContextTimeout(t *testing.T) {
+	t.Parallel()
+
+	expectedDuration := 20 * time.Millisecond
+
+	ctx, cancel := context.WithTimeout(context.Background(), expectedDuration)
+	defer cancel()
+
+	duration := 50 * time.Millisecond
+	r := newCreateItemsRequest()
+	r.After(duration).ReturnError(codes.Internal, "time out")
+
+	startTime := time.Now()
+	err := r.Handle(ctx, nil, nil)
+	endTime := time.Now()
+
+	assert.GreaterOrEqual(t, endTime.Sub(startTime), expectedDuration)
+	assert.Error(t, err)
+	assert.EqualError(t, err, `rpc error: code = Internal desc = context deadline exceeded`)
+}
+
+func TestClientStreamExpectation_ServiceMethod(t *testing.T) {
 	t.Parallel()
 
 	r := newCreateItemsRequest()
 
-	actual := ServiceMethod(r)
+	actual := r.ServiceMethod()
 	expected := test.CreateItemsSvc()
 
 	assert.Equal(t, expected, actual)
 }
 
-func TestClientStreamRequest_HeaderMatcher(t *testing.T) {
+func TestClientStreamExpectation_HeaderMatcher(t *testing.T) {
 	t.Parallel()
 
-	r := newCreateItemsRequest().WithHeader("locale", "en-US")
+	r := newCreateItemsRequest()
+	r.WithHeader("locale", "en-US")
 
-	actual := HeaderMatcher(r)
+	actual := r.HeaderMatcher()
 	expected := xmatcher.HeaderMatcher{"locale": matcher.Match("en-US")}
 
 	assert.Equal(t, expected, actual)
 }
 
-func TestClientStreamRequest_PayloadMatcher(t *testing.T) {
+func TestClientStreamExpectation_PayloadMatcher(t *testing.T) {
 	t.Parallel()
 
 	const payload = `[{"id": 42, "locale": "en-US", "name": "Foobar"}]`
@@ -950,39 +1000,40 @@ func TestClientStreamRequest_PayloadMatcher(t *testing.T) {
 		Name:   "Foobar",
 	})(t)
 
-	r := newCreateItemsRequest().WithPayload(payload)
+	r := newCreateItemsRequest()
+	r.WithPayload(payload)
 
-	matched, err := PayloadMatcher(r).Match(in)
+	matched, err := r.PayloadMatcher().Match(in)
 
 	assert.True(t, matched)
 	assert.NoError(t, err)
 }
 
-func TestClientStreamRequest_Repeatability(t *testing.T) {
+func TestClientStreamExpectation_Repeatability(t *testing.T) {
 	t.Parallel()
 
 	r := newCreateItemsRequest()
 
-	assert.Equal(t, UnlimitedTimes, Repeatability(r))
+	assert.Equal(t, planner.UnlimitedTimes, r.RemainTimes())
 
-	SetRepeatability(r, 1)
+	r.Times(1)
 
-	assert.Equal(t, RepeatedTime(1), Repeatability(r))
+	assert.Equal(t, uint(1), r.RemainTimes())
 }
 
-func TestClientStreamRequest_Calls(t *testing.T) {
+func TestClientStreamExpectation_Fulfilled(t *testing.T) {
 	t.Parallel()
 
 	r := newCreateItemsRequest()
 
-	assert.Equal(t, 0, NumCalls(r))
+	assert.Equal(t, uint(0), r.FulfilledTimes())
 
-	CountCall(r)
+	r.Fulfilled()
 
-	assert.Equal(t, 1, NumCalls(r))
+	assert.Equal(t, uint(1), r.FulfilledTimes())
 }
 
-func TestClientStreamRequest_Handle(t *testing.T) {
+func TestClientStreamExpectation_Handle(t *testing.T) {
 	t.Parallel()
 
 	expected := &grpctest.CreateItemsResponse{NumItems: 2}
@@ -994,15 +1045,15 @@ func TestClientStreamRequest_Handle(t *testing.T) {
 		test.MockStreamSendCreateItemsResponseSuccess(2),
 	)(t)
 
-	err := Handle(context.Background(), r, in, &grpctest.CreateItemsResponse{})
+	err := r.Handle(context.Background(), in, &grpctest.CreateItemsResponse{})
 
 	assert.NoError(t, err)
 }
 
-func newCreateItemsRequest() *ClientStreamRequest {
+func newCreateItemsRequest() *clientStreamExpectation {
 	svc := test.CreateItemsSvc()
 
-	return NewClientStreamRequest(&sync.Mutex{}, &svc)
+	return newClientStreamExpectation(&svc)
 }
 
 func mockClientStreamerRecvMsgSuccess(items ...*grpctest.Item) func(t *testing.T) *streamer.ClientStreamer {

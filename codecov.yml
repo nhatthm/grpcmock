@@ -1,4 +1,5 @@
 ignore:
     - "features/**/*"
     - "internal/**/*"
+    - "request/*"
     - "options.go"
