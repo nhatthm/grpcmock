@@ -44,7 +44,7 @@ func TestInvokeUnary_DialError(t *testing.T) {
 		grpcmock.WithContextDialer(dialer),
 		grpcmock.WithInsecure(),
 	)
-	expected := `rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing dial error"`
+	expected := `rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing: dial error"`
 
 	assert.EqualError(t, err, expected)
 }
@@ -135,7 +135,7 @@ func TestInvokeServerStream_DialError(t *testing.T) {
 		grpcmock.WithContextDialer(dialer),
 		grpcmock.WithInsecure(),
 	)
-	expected := `rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing dial error"`
+	expected := `rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing: dial error"`
 
 	assert.EqualError(t, err, expected)
 }
@@ -261,7 +261,7 @@ func TestInvokeClientStream_DialError(t *testing.T) {
 		grpcmock.WithContextDialer(dialer),
 		grpcmock.WithInsecure(),
 	)
-	expected := `rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing dial error"`
+	expected := `rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing: dial error"`
 
 	assert.EqualError(t, err, expected)
 }
@@ -369,7 +369,7 @@ func TestInvokeBidirectionalStream_DialError(t *testing.T) {
 		grpcmock.WithContextDialer(dialer),
 		grpcmock.WithInsecure(),
 	)
-	expected := `rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing dial error"`
+	expected := `rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing: dial error"`
 
 	assert.EqualError(t, err, expected)
 }
