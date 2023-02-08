@@ -10,6 +10,7 @@ import (
 
 	"github.com/spf13/afero"
 	"go.nhat.io/matcher/v2"
+	"go.nhat.io/wait"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/encoding/protojson"
@@ -315,7 +316,7 @@ func (e *unaryExpectation) Run(handler func(ctx context.Context, in interface{})
 }
 
 func (e *unaryExpectation) Handle(ctx context.Context, in interface{}, out interface{}) error {
-	if err := e.delay(ctx); err != nil {
+	if err := e.waiter.Wait(ctx); err != nil {
 		return xerrors.StatusError(err)
 	}
 
@@ -368,7 +369,7 @@ func (e *unaryExpectation) WaitUntil(w <-chan time.Time) UnaryExpectation {
 	e.lock()
 	defer e.unlock()
 
-	e.delay = waitForSignal(w)
+	e.waiter = wait.ForSignal(w)
 
 	return e
 }
@@ -377,7 +378,7 @@ func (e *unaryExpectation) After(d time.Duration) UnaryExpectation {
 	e.lock()
 	defer e.unlock()
 
-	e.delay = waitForDuration(d)
+	e.waiter = wait.ForDuration(d)
 
 	return e
 }
@@ -388,7 +389,7 @@ func newUnaryExpectation(svc *service.Method) *unaryExpectation {
 		baseExpectation: &baseExpectation{
 			locker:      &sync.Mutex{},
 			fs:          afero.NewOsFs(),
-			delay:       noWait(),
+			waiter:      wait.NoWait,
 			serviceDesc: svc,
 		},
 		run: func(ctx context.Context, in interface{}) (interface{}, error) {

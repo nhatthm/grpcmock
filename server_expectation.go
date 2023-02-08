@@ -1,11 +1,10 @@
 package grpcmock
 
 import (
-	"context"
 	"sync"
-	"time"
 
 	"github.com/spf13/afero"
+	"go.nhat.io/wait"
 	"google.golang.org/grpc/codes"
 
 	xmatcher "go.nhat.io/grpcmock/matcher"
@@ -15,7 +14,7 @@ import (
 type baseExpectation struct {
 	locker sync.Locker
 	fs     afero.Fs
-	delay  delayer
+	waiter wait.Waiter
 
 	serviceDesc *service.Method
 
@@ -94,36 +93,4 @@ func (e *baseExpectation) FulfilledTimes() uint {
 	defer e.unlock()
 
 	return e.fulfilledTimes
-}
-
-type delayer func(ctx context.Context) error
-
-func noWait() delayer {
-	return func(ctx context.Context) error {
-		return ctx.Err()
-	}
-}
-
-func waitForSignal(c <-chan time.Time) delayer {
-	return func(ctx context.Context) error {
-		select {
-		case <-ctx.Done():
-			return ctx.Err()
-
-		case <-c:
-			return nil
-		}
-	}
-}
-
-func waitForDuration(d time.Duration) delayer {
-	return func(ctx context.Context) error {
-		select {
-		case <-ctx.Done():
-			return ctx.Err()
-
-		case <-time.After(d):
-			return nil
-		}
-	}
 }
