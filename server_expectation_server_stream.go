@@ -11,6 +11,7 @@ import (
 
 	"github.com/spf13/afero"
 	"go.nhat.io/matcher/v2"
+	"go.nhat.io/wait"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
@@ -389,7 +390,7 @@ func (e *serverStreamExpectation) Run(handler func(ctx context.Context, in inter
 }
 
 func (e *serverStreamExpectation) Handle(ctx context.Context, in interface{}, out interface{}) error {
-	if err := e.delay(ctx); err != nil {
+	if err := e.waiter.Wait(ctx); err != nil {
 		return xerrors.StatusError(err)
 	}
 
@@ -422,7 +423,7 @@ func (e *serverStreamExpectation) WaitUntil(w <-chan time.Time) ServerStreamExpe
 	e.lock()
 	defer e.unlock()
 
-	e.delay = waitForSignal(w)
+	e.waiter = wait.ForSignal(w)
 
 	return e
 }
@@ -431,7 +432,7 @@ func (e *serverStreamExpectation) After(d time.Duration) ServerStreamExpectation
 	e.lock()
 	defer e.unlock()
 
-	e.delay = waitForDuration(d)
+	e.waiter = wait.ForDuration(d)
 
 	return e
 }
@@ -442,7 +443,7 @@ func newServerStreamExpectation(svc *service.Method) *serverStreamExpectation {
 		baseExpectation: &baseExpectation{
 			locker:      &sync.Mutex{},
 			fs:          afero.NewOsFs(),
-			delay:       noWait(),
+			waiter:      wait.NoWait,
 			serviceDesc: svc,
 		},
 		run: func(context.Context, interface{}, grpc.ServerStream) error {
@@ -663,6 +664,6 @@ func stepReturnErrorf(code codes.Code, msg string, args ...interface{}) serverSt
 
 func stepWait(d time.Duration) serverStreamHandlerStepFunc {
 	return func(ctx context.Context, _ grpc.ServerStream) error {
-		return waitForDuration(d)(ctx)
+		return wait.ForDuration(d).Wait(ctx)
 	}
 }

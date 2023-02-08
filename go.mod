@@ -9,6 +9,7 @@ require (
 	github.com/swaggest/assertjson v1.7.0
 	go.nhat.io/aferomock v0.4.0
 	go.nhat.io/matcher/v2 v2.0.0
+	go.nhat.io/wait v0.1.0
 	google.golang.org/grpc v1.52.3
 	google.golang.org/protobuf v1.28.1
 )
@@ -19,6 +20,7 @@ require (
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/iancoleman/orderedmap v0.2.0 // indirect
+	github.com/kr/pretty v0.2.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/sergi/go-diff v1.3.1 // indirect
 	github.com/stretchr/objx v0.5.0 // indirect

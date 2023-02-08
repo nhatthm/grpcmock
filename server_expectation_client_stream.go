@@ -10,6 +10,7 @@ import (
 
 	"github.com/spf13/afero"
 	"go.nhat.io/matcher/v2"
+	"go.nhat.io/wait"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -290,7 +291,7 @@ func (e *clientStreamExpectation) Run(handler func(ctx context.Context, s grpc.S
 
 // Handle executes the GRPC request.
 func (e *clientStreamExpectation) Handle(ctx context.Context, in interface{}, out interface{}) error {
-	if err := e.delay(ctx); err != nil {
+	if err := e.waiter.Wait(ctx); err != nil {
 		return xerrors.StatusError(err)
 	}
 
@@ -345,7 +346,7 @@ func (e *clientStreamExpectation) WaitUntil(w <-chan time.Time) ClientStreamExpe
 	e.lock()
 	defer e.unlock()
 
-	e.delay = waitForSignal(w)
+	e.waiter = wait.ForSignal(w)
 
 	return e
 }
@@ -354,7 +355,7 @@ func (e *clientStreamExpectation) After(d time.Duration) ClientStreamExpectation
 	e.lock()
 	defer e.unlock()
 
-	e.delay = waitForDuration(d)
+	e.waiter = wait.ForDuration(d)
 
 	return e
 }
@@ -364,7 +365,7 @@ func newClientStreamExpectation(svc *service.Method) *clientStreamExpectation {
 	return &clientStreamExpectation{
 		baseExpectation: &baseExpectation{
 			locker:      &sync.Mutex{},
-			delay:       noWait(),
+			waiter:      wait.NoWait,
 			fs:          afero.NewOsFs(),
 			serviceDesc: svc,
 		},

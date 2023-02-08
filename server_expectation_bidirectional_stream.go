@@ -8,6 +8,7 @@ import (
 
 	"github.com/spf13/afero"
 	"go.nhat.io/matcher/v2"
+	"go.nhat.io/wait"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -207,7 +208,7 @@ func (e *bidirectionalStreamExpectation) Run(handler func(ctx context.Context, s
 }
 
 func (e *bidirectionalStreamExpectation) Handle(ctx context.Context, in interface{}, _ interface{}) error {
-	if err := e.delay(ctx); err != nil {
+	if err := e.waiter.Wait(ctx); err != nil {
 		return xerrors.StatusError(err)
 	}
 
@@ -285,7 +286,7 @@ func (e *bidirectionalStreamExpectation) WaitUntil(w <-chan time.Time) Bidirecti
 	e.lock()
 	defer e.unlock()
 
-	e.delay = waitForSignal(w)
+	e.waiter = wait.ForSignal(w)
 
 	return e
 }
@@ -301,7 +302,7 @@ func (e *bidirectionalStreamExpectation) After(d time.Duration) BidirectionalStr
 	e.lock()
 	defer e.unlock()
 
-	e.delay = waitForDuration(d)
+	e.waiter = wait.ForDuration(d)
 
 	return e
 }
@@ -312,7 +313,7 @@ func newBidirectionalStreamExpectation(svc *service.Method) *bidirectionalStream
 		baseExpectation: &baseExpectation{
 			locker:      &sync.Mutex{},
 			fs:          afero.NewOsFs(),
-			delay:       noWait(),
+			waiter:      wait.NoWait,
 			serviceDesc: svc,
 		},
 		run: func(context.Context, grpc.ServerStream) error {
