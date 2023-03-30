@@ -11,7 +11,7 @@ require (
 	go.nhat.io/matcher/v2 v2.0.0
 	go.nhat.io/wait v0.1.0
 	google.golang.org/grpc v1.54.0
-	google.golang.org/protobuf v1.29.1
+	google.golang.org/protobuf v1.30.0
 )
 
 require (
