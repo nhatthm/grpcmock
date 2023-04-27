@@ -6,7 +6,7 @@ require (
 	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0
 	github.com/spf13/afero v1.9.5
 	github.com/stretchr/testify v1.8.2
-	github.com/swaggest/assertjson v1.8.0
+	github.com/swaggest/assertjson v1.8.1
 	go.nhat.io/aferomock v0.4.0
 	go.nhat.io/matcher/v2 v2.0.0
 	go.nhat.io/wait v0.1.0
