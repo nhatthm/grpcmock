@@ -9,9 +9,6 @@ on:
       - v*
   workflow_dispatch:
 
-env:
-  MODULE_NAME: grpcmock
-
 jobs:
   notify:
     runs-on: ubuntu-latest
@@ -23,7 +20,7 @@ jobs:
 
       - id: vars
         run: |
-          make $GITHUB_OUTPUT
+          make "$GITHUB_OUTPUT"
 
       - name: notify ${{ matrix.registry }}
         uses: benc-uk/workflow-dispatch@v121

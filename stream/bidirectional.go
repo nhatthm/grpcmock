@@ -28,9 +28,5 @@ func SendAndRecvAll(sr SendReceiver, in interface{}, out interface{}) error {
 		return err
 	}
 
-	if err := <-errCh; err != nil {
-		return err
-	}
-
-	return nil
+	return <-errCh
 }

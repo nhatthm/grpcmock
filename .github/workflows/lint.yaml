@@ -23,7 +23,7 @@ jobs:
 
       - id: vars
         run: |
-          make $GITHUB_OUTPUT
+          make "$GITHUB_OUTPUT"
 
       - name: lint
         uses: golangci/golangci-lint-action@v3
