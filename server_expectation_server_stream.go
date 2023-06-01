@@ -558,22 +558,14 @@ func (f serverStreamHandlerStepFunc) execute(ctx context.Context, s grpc.ServerS
 
 func stepSendHeader(md metadata.MD) serverStreamHandlerStepFunc {
 	return func(_ context.Context, s grpc.ServerStream) error {
-		if err := s.SendHeader(md); err != nil {
-			return err
-		}
-
-		return nil
+		return s.SendHeader(md)
 	}
 }
 
 func stepSend(expectedType reflect.Type, msg interface{}) serverStreamHandlerStepFunc {
 	return func(_ context.Context, s grpc.ServerStream) error {
 		send := func(v interface{}) error {
-			if err := s.SendMsg(v); err != nil {
-				return err
-			}
-
-			return nil
+			return s.SendMsg(v)
 		}
 
 		if xreflect.UnwrapType(msg) == xreflect.UnwrapType(expectedType) {

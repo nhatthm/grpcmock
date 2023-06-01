@@ -16,11 +16,7 @@ func MatchRequest(ctx context.Context, expected Expectation, actual service.Meth
 		return err
 	}
 
-	if err := MatchPayload(ctx, expected, actual, in); err != nil {
-		return err
-	}
-
-	return nil
+	return MatchPayload(ctx, expected, actual, in)
 }
 
 // MatchService matches the service of a given request.
