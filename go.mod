@@ -6,7 +6,7 @@ require (
 	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0
 	github.com/spf13/afero v1.9.5
 	github.com/stretchr/testify v1.8.4
-	github.com/swaggest/assertjson v1.8.1
+	github.com/swaggest/assertjson v1.9.0
 	go.nhat.io/aferomock v0.4.0
 	go.nhat.io/matcher/v2 v2.0.0
 	go.nhat.io/wait v0.1.0
@@ -19,7 +19,7 @@ require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
-	github.com/iancoleman/orderedmap v0.2.0 // indirect
+	github.com/iancoleman/orderedmap v0.3.0 // indirect
 	github.com/kr/pretty v0.3.0 // indirect
 	github.com/mattn/go-isatty v0.0.16 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
