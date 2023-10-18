@@ -8,7 +8,7 @@ on:
 
 env:
   GO111MODULE: "on"
-  GO_LATEST_VERSION: "1.20.x"
+  GO_LATEST_VERSION: "1.21.x"
 
 jobs:
   test:
@@ -16,7 +16,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ ubuntu-latest, macos-latest ]
-        go-version: [ 1.18.x, 1.19.x, 1.20.x ]
+        go-version: [ 1.19.x, 1.20.x, 1.21.x ]
     runs-on: ${{ matrix.os }}
     steps:
       - name: Install Go

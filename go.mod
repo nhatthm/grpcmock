@@ -1,6 +1,6 @@
 module go.nhat.io/grpcmock
 
-go 1.17
+go 1.19
 
 require (
 	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0
