@@ -326,7 +326,7 @@ func TestInvoker_Timeout(t *testing.T) {
 
 			err := i.Invoke(context.Background())
 
-			assert.Equal(t, context.DeadlineExceeded, err)
+			assert.Equal(t, codes.DeadlineExceeded, status.Code(err))
 		})
 	}
 }
