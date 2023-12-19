@@ -4,7 +4,7 @@ import (
 	"fmt"
 )
 
-func recovered(v interface{}) string {
+func recovered(v any) string {
 	switch v := v.(type) {
 	case error:
 		return v.Error()

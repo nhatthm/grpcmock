@@ -63,7 +63,7 @@ func NewBidirectionalStreamRequest(locker sync.Locker, svc *service.Method) *Bid
 //
 //	Server.ExpectBidirectionalStream("grpctest.Service/TransformItems").
 //		WithHeader("Locale", "en-US")
-func (r *BidirectionalStreamRequest) WithHeader(header string, value interface{}) *BidirectionalStreamRequest {
+func (r *BidirectionalStreamRequest) WithHeader(header string, value any) *BidirectionalStreamRequest {
 	r.lock()
 	defer r.unlock()
 
@@ -79,8 +79,8 @@ func (r *BidirectionalStreamRequest) WithHeader(header string, value interface{}
 // WithHeaders sets a list of expected headers of the given request.
 //
 //	Server.ExpectBidirectionalStream("grpctest.Service/TransformItems").
-//		WithHeaders(map[string]interface{}{"Locale": "en-US"})
-func (r *BidirectionalStreamRequest) WithHeaders(headers map[string]interface{}) *BidirectionalStreamRequest {
+//		WithHeaders(map[string]any{"Locale": "en-US"})
+func (r *BidirectionalStreamRequest) WithHeaders(headers map[string]any) *BidirectionalStreamRequest {
 	for header, value := range headers {
 		r.WithHeader(header, value)
 	}
@@ -139,7 +139,7 @@ func (r *BidirectionalStreamRequest) ReturnError(code codes.Code, msg string) {
 //		ReturnErrorf(codes.NotFound, "Item %d not found", 42)
 //
 // See: BidirectionalStreamRequest.ReturnCode(), BidirectionalStreamRequest.ReturnErrorMessage(), BidirectionalStreamRequest.ReturnError().
-func (r *BidirectionalStreamRequest) ReturnErrorf(code codes.Code, format string, args ...interface{}) {
+func (r *BidirectionalStreamRequest) ReturnErrorf(code codes.Code, format string, args ...any) {
 	r.ReturnErrorMessage(fmt.Sprintf(format, args...))
 	r.ReturnCode(code)
 }
@@ -158,7 +158,7 @@ func (r *BidirectionalStreamRequest) Run(handler func(ctx context.Context, s grp
 }
 
 // handle executes the GRPC request.
-func (r *BidirectionalStreamRequest) handle(ctx context.Context, in interface{}, _ interface{}) error {
+func (r *BidirectionalStreamRequest) handle(ctx context.Context, in any, _ any) error {
 	// Block if specified.
 	if r.waitFor != nil {
 		<-r.waitFor

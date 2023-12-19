@@ -46,8 +46,8 @@ type InvokeOption func(c *invokeConfig)
 func InvokeUnary(
 	ctx context.Context,
 	method string,
-	in interface{},
-	out interface{},
+	in any,
+	out any,
 	opts ...InvokeOption,
 ) error {
 	ctx, conn, method, callOpts, err := prepInvoke(ctx, method, opts...)
@@ -59,10 +59,10 @@ func InvokeUnary(
 }
 
 // InvokeServerStream invokes a server-stream method.
-func InvokeServerStream(
+func InvokeServerStream( //nolint: dupl
 	ctx context.Context,
 	method string,
-	in interface{},
+	in any,
 	handle ClientStreamHandler,
 	opts ...InvokeOption,
 ) error {
@@ -90,11 +90,11 @@ func InvokeServerStream(
 }
 
 // InvokeClientStream invokes a client-stream method.
-func InvokeClientStream(
+func InvokeClientStream( //nolint: dupl
 	ctx context.Context,
 	method string,
 	handle ClientStreamHandler,
-	out interface{},
+	out any,
 	opts ...InvokeOption,
 ) error {
 	ctx, conn, method, callOpts, err := prepInvoke(ctx, method, opts...)
@@ -244,21 +244,21 @@ func WithCallOptions(opts ...grpc.CallOption) InvokeOption {
 }
 
 // SendAll sends everything to the stream.
-func SendAll(in interface{}) ClientStreamHandler {
+func SendAll(in any) ClientStreamHandler {
 	return func(s grpc.ClientStream) error {
 		return stream.SendAll(s, in)
 	}
 }
 
 // RecvAll reads everything from the stream and put into the output.
-func RecvAll(out interface{}) ClientStreamHandler {
+func RecvAll(out any) ClientStreamHandler {
 	return func(s grpc.ClientStream) error {
 		return stream.RecvAll(s, out)
 	}
 }
 
 // SendAndRecvAll sends and receives messages to and from grpc server in turn until server sends the io.EOF.
-func SendAndRecvAll(in interface{}, out interface{}) ClientStreamHandler {
+func SendAndRecvAll(in any, out any) ClientStreamHandler {
 	return func(s grpc.ClientStream) error {
 		return stream.SendAndRecvAll(s, in, out)
 	}

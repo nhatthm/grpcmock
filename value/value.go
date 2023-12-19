@@ -10,7 +10,7 @@ import (
 )
 
 // String returns the string value of the given object.
-func String(v interface{}) string {
+func String(v any) string {
 	switch v := v.(type) {
 	case []byte:
 		return string(v)
@@ -26,7 +26,7 @@ func String(v interface{}) string {
 }
 
 // Marshal marshals the given object.
-func Marshal(v interface{}) (string, error) {
+func Marshal(v any) (string, error) {
 	switch v := v.(type) {
 	case []byte:
 		return string(v), nil

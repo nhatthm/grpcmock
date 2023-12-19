@@ -23,8 +23,8 @@ type Method struct {
 	ServiceName string
 	MethodName  string
 	MethodType  Type
-	Input       interface{}
-	Output      interface{}
+	Input       any
+	Output      any
 }
 
 // FullName returns the full name of the service method.

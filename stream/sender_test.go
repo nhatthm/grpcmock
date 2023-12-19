@@ -19,7 +19,7 @@ func TestSendAll(t *testing.T) {
 	testCases := []struct {
 		scenario      string
 		mockStream    xmock.ClientStreamMocker
-		input         interface{}
+		input         any
 		expectedError string
 	}{
 		{

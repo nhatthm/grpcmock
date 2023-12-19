@@ -15,7 +15,7 @@ func TestFormatValueInline(t *testing.T) {
 
 	testCases := []struct {
 		scenario string
-		input    interface{}
+		input    any
 		expected string
 	}{
 		{
@@ -93,7 +93,7 @@ func TestFormatType(t *testing.T) {
 
 	testCases := []struct {
 		scenario string
-		input    interface{}
+		input    any
 		expected string
 	}{
 		{
@@ -152,7 +152,7 @@ func TestFormatValue(t *testing.T) {
 
 	testCases := []struct {
 		scenario string
-		input    interface{}
+		input    any
 		expected string
 	}{
 		{

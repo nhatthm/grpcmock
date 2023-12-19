@@ -42,7 +42,7 @@ func ExampleServer_WithPlanner() {
 			s.WithPlanner(p)
 
 			s.ExpectUnary("grpctest.ItemService/GetItem").
-				Run(func(context.Context, interface{}) (interface{}, error) {
+				Run(func(context.Context, any) (any, error) {
 					panic(`this never happens`)
 				})
 		},
@@ -231,7 +231,7 @@ func ExampleNewServer_unaryMethod_customHandler() {
 		func(s *grpcmock.Server) {
 			s.ExpectUnary("grpctest.ItemService/GetItem").
 				WithPayload(&grpctest.GetItemRequest{Id: 42}).
-				Run(func(ctx context.Context, in interface{}) (interface{}, error) {
+				Run(func(ctx context.Context, in any) (any, error) {
 					req := in.(*grpctest.GetItemRequest) // nolint: errcheck
 
 					var locale string
@@ -244,9 +244,9 @@ func ExampleNewServer_unaryMethod_customHandler() {
 					}
 
 					return &grpctest.Item{
-						Id:     req.Id,
+						Id:     req.GetId(),
 						Locale: locale,
-						Name:   fmt.Sprintf("Item #%d", req.Id),
+						Name:   fmt.Sprintf("Item #%d", req.GetId()),
 					}, nil
 				})
 		},
@@ -331,7 +331,7 @@ func ExampleNewServer_clientStreamMethod_customHandler() {
 		func(s *grpcmock.Server) {
 			s.ExpectClientStream("grpctest.ItemService/CreateItems").
 				WithPayload(grpcmock.MatchClientStreamMsgCount(3)).
-				Run(func(_ context.Context, s grpc.ServerStream) (interface{}, error) {
+				Run(func(_ context.Context, s grpc.ServerStream) (any, error) {
 					out := make([]*grpctest.Item, 0)
 
 					if err := stream.RecvAll(s, &out); err != nil {
@@ -341,7 +341,7 @@ func ExampleNewServer_clientStreamMethod_customHandler() {
 					cnt := int64(0)
 
 					for _, msg := range out {
-						if msg.Id > 40 {
+						if msg.GetId() > 40 {
 							cnt++
 						}
 					}
@@ -435,7 +435,7 @@ func ExampleNewServer_serverStreamMethod_customHandler() {
 		grpcmock.WithListener(buf),
 		func(s *grpcmock.Server) {
 			s.ExpectServerStream("grpctest.ItemService/ListItems").
-				Run(func(_ context.Context, _ interface{}, s grpc.ServerStream) error {
+				Run(func(_ context.Context, _ any, s grpc.ServerStream) error {
 					_ = s.SendMsg(&grpctest.Item{Id: 41, Name: "Item #41"}) // nolint: errcheck
 					_ = s.SendMsg(&grpctest.Item{Id: 42, Name: "Item #42"}) // nolint: errcheck
 
@@ -532,7 +532,7 @@ func ExampleNewServer_bidirectionalStreamMethod() {
 							return err
 						}
 
-						item.Name = fmt.Sprintf("Modified #%d", item.Id)
+						item.Name = fmt.Sprintf("Modified #%d", item.GetId())
 
 						if err := s.SendMsg(item); err != nil {
 							return err

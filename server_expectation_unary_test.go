@@ -37,7 +37,7 @@ func TestUnaryExpectation_WithHeaders(t *testing.T) {
 	t.Parallel()
 
 	r := newGetItemRequest()
-	r.WithHeaders(map[string]interface{}{"foo": "bar"})
+	r.WithHeaders(map[string]any{"foo": "bar"})
 
 	assert.Equal(t, xmatcher.HeaderMatcher{"foo": matcher.Exact("bar")}, r.requestHeader)
 
@@ -63,19 +63,19 @@ func TestUnaryExpectation_WithPayload_Match(t *testing.T) {
 
 	item42 := &grpctest.Item{Id: 42}
 
-	matchItemObject42 := func(v interface{}) (bool, error) {
+	matchItemObject42 := func(v any) (bool, error) {
 		in, ok := v.(*grpctest.Item)
 		if !ok {
 			return false, nil
 		}
 
-		return in.Id == 42, nil
+		return in.GetId() == 42, nil
 	}
 
 	testCases := []struct {
 		scenario string
-		payload  interface{}
-		input    interface{}
+		payload  any
+		input    any
 		matched  bool
 	}{
 		{
@@ -98,13 +98,13 @@ func TestUnaryExpectation_WithPayload_Match(t *testing.T) {
 		},
 		{
 			scenario: "map payload matches string input",
-			payload:  map[string]interface{}{"id": 42},
+			payload:  map[string]any{"id": 42},
 			input:    payload,
 			matched:  true,
 		},
 		{
 			scenario: "map payload matches object input",
-			payload:  map[string]interface{}{"id": 42},
+			payload:  map[string]any{"id": 42},
 			input:    item42,
 			matched:  true,
 		},
@@ -209,14 +209,14 @@ func TestUnaryExpectation_WithPayload_Match_Error(t *testing.T) {
 
 	testCases := []struct {
 		scenario string
-		payload  interface{}
+		payload  any
 	}{
 		{
 			scenario: "error with decoder",
 		},
 		{
 			scenario: "error without decoder",
-			payload:  func(interface{}) (bool, error) { return false, nil },
+			payload:  func(any) (bool, error) { return false, nil },
 		},
 	}
 
@@ -434,7 +434,7 @@ func TestUnaryExpectation_Return(t *testing.T) {
 
 	testCases := []struct {
 		scenario       string
-		output         interface{}
+		output         any
 		expectedResult *grpctest.Item
 		expectedError  error
 	}{
@@ -572,7 +572,7 @@ func TestUnaryExpectation_Returnf(t *testing.T) {
 	expected := &grpctest.Item{Id: 42}
 
 	xassert.EqualMessage(t, expected, output)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 }
 
 func TestUnaryExpectation_ReturnJSON(t *testing.T) {
@@ -582,14 +582,14 @@ func TestUnaryExpectation_ReturnJSON(t *testing.T) {
 
 	r := newGetItemRequest()
 
-	r.ReturnJSON(map[string]interface{}{"id": 42})
+	r.ReturnJSON(map[string]any{"id": 42})
 
 	err := r.Handle(context.Background(), nil, output)
 
 	expected := &grpctest.Item{Id: 42}
 
 	xassert.EqualMessage(t, expected, output)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 }
 
 func TestUnaryExpectation_Run(t *testing.T) {
@@ -598,7 +598,7 @@ func TestUnaryExpectation_Run(t *testing.T) {
 	output := (*grpctest.Item)(nil)
 
 	r := newGetItemRequest()
-	r.Run(func(_ context.Context, _ interface{}) (interface{}, error) {
+	r.Run(func(_ context.Context, _ any) (any, error) {
 		return nil, errors.New("internal server error")
 	})
 

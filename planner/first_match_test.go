@@ -120,7 +120,7 @@ func TestFirstMatch_Plan_Unary_MatchedRequestIsRemoved(t *testing.T) {
 
 	assert.NotNil(t, result)
 	assert.NoError(t, err)
-	assert.Len(t, p.Remain(), 0)
+	assert.Empty(t, p.Remain())
 }
 
 func TestFirstMatch_Plan_ClientStream_Error(t *testing.T) {
@@ -242,7 +242,7 @@ func TestFirstMatch_Plan_ClientStream_MatchedRequestIsRemoved(t *testing.T) {
 
 	assert.NotNil(t, result)
 	assert.NoError(t, err)
-	assert.Len(t, p.Remain(), 0)
+	assert.Empty(t, p.Remain())
 }
 
 func TestFirstMatch_Plan_ServerStream_Error(t *testing.T) {
@@ -354,7 +354,7 @@ func TestFirstMatch_Plan_ServerStream_MatchedRequestIsRemoved(t *testing.T) {
 
 	assert.NotNil(t, result)
 	assert.NoError(t, err)
-	assert.Len(t, p.Remain(), 0)
+	assert.Empty(t, p.Remain())
 }
 
 func TestFirstMatch_Plan_BidirectionalStream_Error(t *testing.T) {
@@ -461,7 +461,7 @@ func TestFirstMatch_Plan_BidirectionalStream_MatchedRequestIsRemoved(t *testing.
 
 	assert.NotNil(t, result)
 	assert.NoError(t, err)
-	assert.Len(t, p.Remain(), 0)
+	assert.Empty(t, p.Remain())
 }
 
 func TestFirstMatch_Empty(t *testing.T) {

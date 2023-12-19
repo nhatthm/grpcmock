@@ -13,7 +13,7 @@ func TestMatchClientStreamMsgCount(t *testing.T) {
 
 	testCases := []struct {
 		scenario       string
-		in             interface{}
+		in             any
 		expectedResult bool
 		expectedError  error
 	}{

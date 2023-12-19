@@ -46,12 +46,12 @@ func (c *ClientStream) Context() context.Context {
 }
 
 // SendMsg satisfies grpc.ClientStream.
-func (c *ClientStream) SendMsg(m interface{}) error {
+func (c *ClientStream) SendMsg(m any) error {
 	return c.Called(m).Error(0)
 }
 
 // RecvMsg satisfies grpc.ClientStream.
-func (c *ClientStream) RecvMsg(m interface{}) error {
+func (c *ClientStream) RecvMsg(m any) error {
 	return c.Called(m).Error(0)
 }
 

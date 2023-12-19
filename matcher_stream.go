@@ -11,7 +11,7 @@ import (
 func MatchClientStreamMsgCount(expected int) func() (string, matcher.MatchFn) {
 	return func() (string, matcher.MatchFn) {
 		return fmt.Sprintf("has %d message(s)", expected),
-			func(v interface{}) (bool, error) {
+			func(v any) (bool, error) {
 				val := reflect.ValueOf(v)
 
 				if val.Kind() != reflect.Slice {

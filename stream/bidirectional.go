@@ -7,7 +7,7 @@ type SendReceiver interface {
 }
 
 // SendAndRecvAll sends and receives messages until getting io.EOF.
-func SendAndRecvAll(sr SendReceiver, in interface{}, out interface{}) error {
+func SendAndRecvAll(sr SendReceiver, in any, out any) error {
 	errCh := make(chan error)
 
 	go func() {

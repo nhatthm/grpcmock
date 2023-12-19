@@ -18,8 +18,8 @@ type Invoker struct {
 	method     string
 	methodType service.Type
 
-	input  interface{}
-	output interface{}
+	input  any
+	output any
 	handle grpcmock.ClientStreamHandler
 
 	options []grpcmock.InvokeOption

@@ -34,9 +34,9 @@ func stepSendHeader(md metadata.MD) streamStepFunc {
 	}
 }
 
-func stepSend(expectedType reflect.Type, msg interface{}) streamStepFunc {
+func stepSend(expectedType reflect.Type, msg any) streamStepFunc {
 	return func(_ context.Context, s grpc.ServerStream) error {
-		send := func(v interface{}) error {
+		send := func(v any) error {
 			return s.SendMsg(v)
 		}
 
@@ -59,11 +59,11 @@ func stepSend(expectedType reflect.Type, msg interface{}) streamStepFunc {
 	}
 }
 
-func stepSendMany(msgType reflect.Type, msg interface{}) streamStepFunc { //nolint: cyclop
+func stepSendMany(msgType reflect.Type, msg any) streamStepFunc { //nolint: cyclop
 	return func(_ context.Context, s grpc.ServerStream) error {
 		expectedType := reflect.SliceOf(msgType)
 
-		sendMany := func(v interface{}) error {
+		sendMany := func(v any) error {
 			valueOf := reflect.ValueOf(v)
 
 			if valueOf.Type().Kind() == reflect.Ptr {
@@ -120,7 +120,7 @@ func stepSendMany(msgType reflect.Type, msg interface{}) streamStepFunc { //noli
 	}
 }
 
-func stepReturnErrorf(code codes.Code, msg string, args ...interface{}) streamStepFunc {
+func stepReturnErrorf(code codes.Code, msg string, args ...any) streamStepFunc {
 	return func(context.Context, grpc.ServerStream) error {
 		return status.Errorf(code, msg, args...)
 	}

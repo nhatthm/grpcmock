@@ -35,14 +35,14 @@ type UnaryExpectation interface {
 	//		WithHeader("Locale", "en-US")
 	//
 	// See: UnaryExpectation.WithHeaders().
-	WithHeader(header string, value interface{}) UnaryExpectation
+	WithHeader(header string, value any) UnaryExpectation
 	// WithHeaders sets a list of expected headers of the given request.
 	//
 	//	Server.ExpectUnary("grpctest.Service/GetItem").
-	//		WithHeaders(map[string]interface{}{"Locale": "en-US"})
+	//		WithHeaders(map[string]any{"Locale": "en-US"})
 	//
 	// See: UnaryExpectation.WithHeader().
-	WithHeaders(headers map[string]interface{}) UnaryExpectation
+	WithHeaders(headers map[string]any) UnaryExpectation
 	// WithPayload sets the expected payload of the given request. It could be []byte, string, or a matcher.Matcher.
 	//
 	//	Server.ExpectUnary("grpctest.Service/GetItem").
@@ -52,7 +52,7 @@ type UnaryExpectation interface {
 	//		WithPayload(&Item{Id: 41})
 	//
 	//	Server.ExpectUnary("grpctest.Service/GetItem").
-	//		WithPayload(func(actual interface{}) (bool, error) {
+	//		WithPayload(func(actual any) (bool, error) {
 	//			in, ok := actual.(*Item)
 	//			if !ok {
 	//				return false, nil
@@ -65,14 +65,14 @@ type UnaryExpectation interface {
 	//		WithPayload(&Item{Id: 41})
 	//
 	// See: UnaryExpectation.WithPayloadf().
-	WithPayload(in interface{}) UnaryExpectation
+	WithPayload(in any) UnaryExpectation
 	// WithPayloadf formats according to a format specifier and use it as the expected payload of the given request.
 	//
 	//	Server.ExpectUnary("grpctest.Service/GetItem").
 	//		WithPayloadf(`{"message": "hello %s"}`, "john")
 	//
 	// See: UnaryExpectation.WithPayload().
-	WithPayloadf(format string, args ...interface{}) UnaryExpectation
+	WithPayloadf(format string, args ...any) UnaryExpectation
 
 	// ReturnCode sets the response code.
 	//
@@ -101,28 +101,28 @@ type UnaryExpectation interface {
 	//		ReturnErrorf(codes.NotFound, "Item %d not found", 42)
 	//
 	// See: UnaryExpectation.ReturnCode(), UnaryExpectation.ReturnErrorMessage(), UnaryExpectation.ReturnError().
-	ReturnErrorf(code codes.Code, format string, args ...interface{})
+	ReturnErrorf(code codes.Code, format string, args ...any)
 	// Return sets the result to return to client.
 	//
 	//	Server.ExpectUnary("grpctest.Service/GetItem").
 	//		Return(`{"message": "hello world!"}`)
 	//
 	// See: UnaryExpectation.Returnf(), UnaryExpectation.ReturnJSON(), UnaryExpectation.ReturnFile().
-	Return(v interface{})
+	Return(v any)
 	// Returnf formats according to a format specifier and use it as the result to return to client.
 	//
 	//	Server.ExpectUnary("grpctest.Service/GetItem").
 	//		Returnf(`{"message": %q}`, "hello")
 	//
 	// See: UnaryExpectation.Return(), UnaryExpectation.ReturnJSON(), UnaryExpectation.ReturnFile().
-	Returnf(format string, args ...interface{})
+	Returnf(format string, args ...any)
 	// ReturnJSON marshals the object using json.Marshal and uses it as the result to return to client.
 	//
 	//	Server.ExpectUnary("grpctest.Service/GetItem").
 	//		ReturnJSON(map[string]string{"foo": "bar"})
 	//
 	// See: UnaryExpectation.Return(), UnaryExpectation.Returnf(), UnaryExpectation.ReturnFile().
-	ReturnJSON(v interface{})
+	ReturnJSON(v any)
 	// ReturnFile reads the file and uses its content as the result to return to client.
 	//
 	//	Server.ExpectUnary("grpctest.Service/GetItem").
@@ -134,10 +134,10 @@ type UnaryExpectation interface {
 	// Run sets a custom handler to handle the given request.
 	//
 	//	   Server.ExpectUnary("grpctest.Service/GetItem").
-	//			Run(func(ctx context.Context, in interface{}) (interface{}, error) {
+	//			Run(func(ctx context.Context, in any) (any, error) {
 	//				return &Item{}, nil
 	//			})
-	Run(handler func(ctx context.Context, in interface{}) (interface{}, error))
+	Run(handler func(ctx context.Context, in any) (any, error))
 
 	// Once indicates that the mock should only return the value once.
 	//
@@ -195,7 +195,7 @@ type unaryExpectation struct {
 	*baseExpectation
 
 	// Request handler.
-	run func(ctx context.Context, in interface{}) (interface{}, error)
+	run func(ctx context.Context, in any) (any, error)
 }
 
 func (e *unaryExpectation) HeaderMatcher() xmatcher.HeaderMatcher {
@@ -212,7 +212,7 @@ func (e *unaryExpectation) PayloadMatcher() *xmatcher.PayloadMatcher {
 	return e.requestPayload
 }
 
-func (e *unaryExpectation) WithHeader(header string, value interface{}) UnaryExpectation {
+func (e *unaryExpectation) WithHeader(header string, value any) UnaryExpectation {
 	e.lock()
 	defer e.unlock()
 
@@ -225,7 +225,7 @@ func (e *unaryExpectation) WithHeader(header string, value interface{}) UnaryExp
 	return e
 }
 
-func (e *unaryExpectation) WithHeaders(headers map[string]interface{}) UnaryExpectation {
+func (e *unaryExpectation) WithHeaders(headers map[string]any) UnaryExpectation {
 	for header, val := range headers {
 		e.WithHeader(header, val)
 	}
@@ -233,7 +233,7 @@ func (e *unaryExpectation) WithHeaders(headers map[string]interface{}) UnaryExpe
 	return e
 }
 
-func (e *unaryExpectation) WithPayload(in interface{}) UnaryExpectation {
+func (e *unaryExpectation) WithPayload(in any) UnaryExpectation {
 	e.lock()
 	defer e.unlock()
 
@@ -242,7 +242,7 @@ func (e *unaryExpectation) WithPayload(in interface{}) UnaryExpectation {
 	return e
 }
 
-func (e *unaryExpectation) WithPayloadf(format string, args ...interface{}) UnaryExpectation {
+func (e *unaryExpectation) WithPayloadf(format string, args ...any) UnaryExpectation {
 	return e.WithPayload(fmt.Sprintf(format, args...))
 }
 
@@ -273,25 +273,25 @@ func (e *unaryExpectation) ReturnError(code codes.Code, msg string) {
 	e.ReturnCode(code)
 }
 
-func (e *unaryExpectation) ReturnErrorf(code codes.Code, format string, args ...interface{}) {
+func (e *unaryExpectation) ReturnErrorf(code codes.Code, format string, args ...any) {
 	e.ReturnErrorMessage(fmt.Sprintf(format, args...))
 	e.ReturnCode(code)
 }
 
-func (e *unaryExpectation) Return(v interface{}) {
+func (e *unaryExpectation) Return(v any) {
 	e.ReturnCode(codes.OK)
-	e.Run(func(context.Context, interface{}) (interface{}, error) {
+	e.Run(func(context.Context, any) (any, error) {
 		return v, nil
 	})
 }
 
-func (e *unaryExpectation) Returnf(format string, args ...interface{}) {
+func (e *unaryExpectation) Returnf(format string, args ...any) {
 	e.Return(fmt.Sprintf(format, args...))
 }
 
-func (e *unaryExpectation) ReturnJSON(v interface{}) {
+func (e *unaryExpectation) ReturnJSON(v any) {
 	e.ReturnCode(codes.OK)
-	e.Run(func(context.Context, interface{}) (interface{}, error) {
+	e.Run(func(context.Context, any) (any, error) {
 		return json.Marshal(v)
 	})
 }
@@ -303,19 +303,19 @@ func (e *unaryExpectation) ReturnFile(filePath string) {
 	must.NotFail(err)
 
 	e.ReturnCode(codes.OK)
-	e.Run(func(context.Context, interface{}) (interface{}, error) {
+	e.Run(func(context.Context, any) (any, error) {
 		return afero.ReadFile(e.fs, filePath)
 	})
 }
 
-func (e *unaryExpectation) Run(handler func(ctx context.Context, in interface{}) (interface{}, error)) {
+func (e *unaryExpectation) Run(handler func(ctx context.Context, in any) (any, error)) {
 	e.lock()
 	defer e.unlock()
 
 	e.run = handler
 }
 
-func (e *unaryExpectation) Handle(ctx context.Context, in interface{}, out interface{}) error {
+func (e *unaryExpectation) Handle(ctx context.Context, in any, out any) error {
 	if err := e.waiter.Wait(ctx); err != nil {
 		return xerrors.StatusError(err)
 	}
@@ -392,7 +392,7 @@ func newUnaryExpectation(svc *service.Method) *unaryExpectation {
 			waiter:      wait.NoWait,
 			serviceDesc: svc,
 		},
-		run: func(ctx context.Context, in interface{}) (interface{}, error) {
+		run: func(ctx context.Context, in any) (any, error) {
 			return nil, status.Error(codes.Unimplemented, "not implemented")
 		},
 	}

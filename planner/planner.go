@@ -15,7 +15,7 @@ type Planner interface {
 	// Expect adds a new expectation.
 	Expect(expect Expectation)
 	// Plan decides how a request matches an expectation.
-	Plan(ctx context.Context, req service.Method, in interface{}) (Expectation, error)
+	Plan(ctx context.Context, req service.Method, in any) (Expectation, error)
 	// Remain returns remain expectations.
 	Remain() []Expectation
 	// Reset removes all the expectations.

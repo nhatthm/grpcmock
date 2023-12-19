@@ -8,7 +8,7 @@
     - [Register a service](#register-a-service)
         - [Register a Golang service](#register-a-golang-service)
             - [With `RegisterService(registerFunction)`](#with-registerserviceregisterfunction)
-            - [With `RegisterServiceFromInstance(id string, instance interface{})`](#with-registerservicefrominstanceid-string-instance-interface)
+            - [With `RegisterServiceFromInstance(id string, instance any)`](#with-registerservicefrominstanceid-string-instance-interface)
         - [Register a random service](#register-a-random-service)
 - [Match a value](#match-a-value)
     - [Exact](#exact)
@@ -233,7 +233,7 @@ func TestServer(t *testing.T) {
 
 [<sub><sup>[table of contents]</sup></sub>](#table-of-contents)
 
-##### With `RegisterServiceFromInstance(id string, instance interface{})`
+##### With `RegisterServiceFromInstance(id string, instance any)`
 
 In the generated code, you can find something like this:
 
@@ -343,7 +343,7 @@ func TestServer(t *testing.T) {
 `grpcmock` is using [`go.nhat.io/matcher/v2`](https://github.com/nhatthm/go-matcher) for matching values and that makes `grpcmock` more powerful and convenient
 than ever. When writing expectations for the header or the payload, you can use any kind of matchers for your needs.
 
-For example, the `UnaryRequest.WithHeader(header string, value interface{})` means you expect a header that matches a value, you can put any of these into
+For example, the `UnaryRequest.WithHeader(header string, value any)` means you expect a header that matches a value, you can put any of these into
 the `value`
 
 |          Type          | Explanation                            | Example                                               |
@@ -409,7 +409,7 @@ You can use your own matcher as long as it implements the [`matcher.Matcher`](ht
 
 There are 2 methods for matching the headers:
 
-`UnaryRequest.WithHeader(header string, value interface{})`
+`UnaryRequest.WithHeader(header string, value any)`
 
 It checks whether a header matches the given `value`. The `value` could be `string`, `[]byte`, or a [`matcher.Matcher`](#match-a-value). If the `value` is
 a `string` or a `[]byte`, the header is checked by using the [`matcher.Exact`](#exact).
@@ -442,7 +442,7 @@ func TestServer(t *testing.T) {
 
 [<sub><sup>[table of contents]</sup></sub>](#table-of-contents)
 
-`UnaryRequest.WithHeaders(headers map[string]interface{})`
+`UnaryRequest.WithHeaders(headers map[string]any)`
 
 Similar to `WithHeader()`, this method checks for multiple headers. For example:
 
@@ -461,7 +461,7 @@ func TestServer(t *testing.T) {
 		grpcmock.RegisterService(RegisterItemServiceServer),
 		func(s *grpcmock.Server) {
 			s.ExpectUnary("grpctest.Service/GetItem").
-				WithHeaders(map[string]interface{}{
+				WithHeaders(map[string]any{
 					"locale":  regexp.MustCompile(`-US$`),
 					"country": "US",
 				})
@@ -480,15 +480,15 @@ There are 2 methods for matching the request payload:
 
 | Method                                             | Explanation                                                                                                            |
 |:---------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------|
-| `WithPayload(in interface{})`                      | Match the incoming payload with an expectation. See the table below for the supported types.                           |
-| `WithPayloadf(format string, args ...interface{})` | An old school `fmt.Sprintf()` call will be made with `format` and `args`. The result will be passed to `WithPayload()` |
+| `WithPayload(in any)`                      | Match the incoming payload with an expectation. See the table below for the supported types.                           |
+| `WithPayloadf(format string, args ...any)` | An old school `fmt.Sprintf()` call will be made with `format` and `args`. The result will be passed to `WithPayload()` |
 
 | `in` Type                           | Matcher                    | Explanation                                                     |
 |:------------------------------------|:---------------------------|:----------------------------------------------------------------|
 | `string`, `[]byte`                  | [`matcher.JSON`](#json)    | Match the payload with a json string.                           |
 | `*regexp.Regexp`                    | [`matcher.Regex`](#regexp) | Match the payload using Regular Expressions.                    |
 | [`matcher.Matcher`](#match-a-value) | The same matcher           | Match the payload using the provided matcher.                   |
-| `func(interface{}) (bool, error)`   | The same matcher           | Match the payload using a custom matcher.                       |
+| `func(any) (bool, error)`   | The same matcher           | Match the payload using a custom matcher.                       |
 | Others                              | [`matcher.JSON`](#json)    | `in` is marshaled to `string` and matched using `matcher.JSON`. |
 
 For example:
@@ -513,7 +513,7 @@ func TestServer(t *testing.T) {
 				WithPayload(&GetItemRequest{Id: 41})
 
 			s.ExpectUnary("grpctest.Service/GetItem").
-				WithPayload(func(actual interface{}) (bool, error) {
+				WithPayload(func(actual any) (bool, error) {
 					in, ok := actual.(*Item)
 					if !ok {
 						return false, nil
@@ -549,7 +549,7 @@ There are 4 methods, they are straightforward:
 | `ReturnCode(code codes.Code)`                                       | Change status code. If it is `codes.OK`, the error message is removed.                           |
 | `ReturnErrorMessage(msg string)`                                    | Change error message. Tf the current status code is `codes.OK`, it's changed to `codes.Internal` |
 | `ReturnError(code codes.Code, msg string)`                          | Change status code and error message. If the code is `codes.OK`, the error message is removed.   |
-| `ReturnErrorf(code codes.Code, format string, args ...interface{})` | Same as `ReturnError` but with the support of `fmt.Sprintf()                                     |
+| `ReturnErrorf(code codes.Code, format string, args ...any)` | Same as `ReturnError` but with the support of `fmt.Sprintf()                                     |
 
 For example:
 
@@ -584,10 +584,10 @@ There are 4 methods:
 
 | Method                                        | Explanation                                                                                                                                                          |
 |:----------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `Return(v interface{})`                       | The response is a `string`, a `[]byte` or an object of the same type of the method. If it's a `string` or `[]byte`, the response will be unmarshalled to the object. |
-| `Returnf(format string, args ...interface{})` | Same as `Return()`, but with support for formatting using `fmt.Sprintf()`                                                                                            |
+| `Return(v any)`                       | The response is a `string`, a `[]byte` or an object of the same type of the method. If it's a `string` or `[]byte`, the response will be unmarshalled to the object. |
+| `Returnf(format string, args ...any)` | Same as `Return()`, but with support for formatting using `fmt.Sprintf()`                                                                                            |
 | `ReturnFile(filePath string)`                 | The response is the content of given file, read by `io.ReadFile()`                                                                                                   |
-| `ReturnJSON(v interface{})`                   | The input is marshalled by `json.Marshal(v)` and then unmarshalled to an object of the same type of the method.                                                      |
+| `ReturnJSON(v any)`                   | The input is marshalled by `json.Marshal(v)` and then unmarshalled to an object of the same type of the method.                                                      |
 
 ```go
 package main
@@ -617,9 +617,9 @@ func TestServer(t *testing.T) {
 			s.ExpectUnary("grpctest.Service/GetItem").
 				ReturnFile("resources/fixtures/item41.json")
 
-			// map[string]interface{} --json.Marshal()--> []byte --json.Unmarshal()--> &Item{}
+			// map[string]any --json.Marshal()--> []byte --json.Unmarshal()--> &Item{}
 			s.ExpectUnary("grpctest.Service/GetItem").
-				ReturnJSON(map[string]interface{}{"id": 41}) // `{"id": 41}`
+				ReturnJSON(map[string]any{"id": 41}) // `{"id": 41}`
 		},
 	)(t)
 
@@ -649,7 +649,7 @@ func TestServer(t *testing.T) {
 		grpcmock.RegisterService(RegisterItemServiceServer),
 		func(s *grpcmock.Server) {
 			s.ExpectUnary("grpctest.Service/GetItem").
-				Run(func(ctx context.Context, in interface{}) (interface{}, error) {
+				Run(func(ctx context.Context, in any) (any, error) {
 					var locale string
 
 					if md, ok := metadata.FromIncomingContext(ctx); ok {
@@ -681,7 +681,7 @@ func TestServer(t *testing.T) {
 
 There are 2 methods for matching the headers:
 
-`ClientStreamRequest.WithHeader(header string, value interface{})`
+`ClientStreamRequest.WithHeader(header string, value any)`
 
 It checks whether a header matches the given `value`. The `value` could be `string`, `[]byte`, or a [`matcher.Matcher`](#match-a-value). If the `value` is
 a `string` or a `[]byte`, the header is checked by using the [`matcher.Exact`](#exact).
@@ -714,7 +714,7 @@ func TestServer(t *testing.T) {
 
 [<sub><sup>[table of contents]</sup></sub>](#table-of-contents)
 
-`ClientStreamRequest.WithHeaders(headers map[string]interface{})`
+`ClientStreamRequest.WithHeaders(headers map[string]any)`
 
 Similar to `WithHeader()`, this method checks for multiple headers. For example:
 
@@ -733,7 +733,7 @@ func TestServer(t *testing.T) {
 		grpcmock.RegisterService(RegisterItemServiceServer),
 		func(s *grpcmock.Server) {
 			s.ExpectClientStream("grpctest.Service/CreateItems").
-				WithHeaders(map[string]interface{}{
+				WithHeaders(map[string]any{
 					"locale":  regexp.MustCompile(`-US$`),
 					"country": "US",
 				})
@@ -752,8 +752,8 @@ There are 2 methods for matching the request payload:
 
 | Method                                             | Explanation                                                                                                            |
 |:---------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------|
-| `WithPayload(in interface{})`                      | Match the incoming payload with an expectation. See the table below for the supported types.                           |
-| `WithPayloadf(format string, args ...interface{})` | An old school `fmt.Sprintf()` call will be made with `format` and `args`. The result will be passed to `WithPayload()` |
+| `WithPayload(in any)`                      | Match the incoming payload with an expectation. See the table below for the supported types.                           |
+| `WithPayloadf(format string, args ...any)` | An old school `fmt.Sprintf()` call will be made with `format` and `args`. The result will be passed to `WithPayload()` |
 
 _* The incoming `payload` is tee from the stream until `io.EOF`._
 
@@ -762,7 +762,7 @@ _* The incoming `payload` is tee from the stream until `io.EOF`._
 | `string`, `[]byte`                   | [`matcher.JSON`](#json)    | Match the payload with a json string.                                            |
 | `*regexp.Regexp`                     | [`matcher.Regex`](#regexp) | Match the payload using Regular Expressions.                                     |
 | [`matcher.Matcher`](#match-a-value)  | The same matcher           | Match the payload using the provided matcher.                                    |
-| `func(in interface{}) (bool, error)` | The same matcher           | Match the payload using a custom matcher.                                        |
+| `func(in any) (bool, error)` | The same matcher           | Match the payload using a custom matcher.                                        |
 | Others                               | [`matcher.JSON`](#json)    | `in` is marshaled to `string` and matched with the payload using `matcher.JSON`. |
 
 For example:
@@ -787,7 +787,7 @@ func TestServer(t *testing.T) {
 				WithPayload([]*Item{{Id: 41}})
 
 			s.ExpectClientStream("grpctest.Service/CreateItems").
-				WithPayload(func(in interface{}) (bool, error) {
+				WithPayload(func(in any) (bool, error) {
 					items, ok := in.([]*Item)
 					if !ok {
 						return false, nil
@@ -823,7 +823,7 @@ There are 4 methods, they are straightforward:
 | `ReturnCode(code codes.Code)`                                       | Change status code. If it is `codes.OK`, the error message is removed.                           |
 | `ReturnErrorMessage(msg string)`                                    | Change error message. Tf the current status code is `codes.OK`, it's changed to `codes.Internal` |
 | `ReturnError(code codes.Code, msg string)`                          | Change status code and error message. If the code is `codes.OK`, the error message is removed.   |
-| `ReturnErrorf(code codes.Code, format string, args ...interface{})` | Same as `ReturnError` but with the support of `fmt.Sprintf()                                     |
+| `ReturnErrorf(code codes.Code, format string, args ...any)` | Same as `ReturnError` but with the support of `fmt.Sprintf()                                     |
 
 For example:
 
@@ -858,10 +858,10 @@ There are 4 methods:
 
 | Method                                        | Explanation                                                                                                                                                          |
 |:----------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `Return(v interface{})`                       | The response is a `string`, a `[]byte` or an object of the same type of the method. If it's a `string` or `[]byte`, the response will be unmarshalled to the object. |
-| `Returnf(format string, args ...interface{})` | Same as `Return()`, but with support for formatting using `fmt.Sprintf()`                                                                                            |
+| `Return(v any)`                       | The response is a `string`, a `[]byte` or an object of the same type of the method. If it's a `string` or `[]byte`, the response will be unmarshalled to the object. |
+| `Returnf(format string, args ...any)` | Same as `Return()`, but with support for formatting using `fmt.Sprintf()`                                                                                            |
 | `ReturnFile(filePath string)`                 | The response is the content of given file, read by `io.ReadFile()`                                                                                                   |
-| `ReturnJSON(v interface{})`                   | The input is marshalled by `json.Marshal(v)` and then unmarshalled to an object of the same type of the method.                                                      |
+| `ReturnJSON(v any)`                   | The input is marshalled by `json.Marshal(v)` and then unmarshalled to an object of the same type of the method.                                                      |
 
 ```go
 package main
@@ -891,9 +891,9 @@ func TestServer(t *testing.T) {
 			s.ExpectClientStream("grpctest.Service/CreateItems").
 				ReturnFile("resources/fixtures/create_items_response.json")
 
-			// map[string]interface{} --json.Marshal()--> []byte --json.Unmarshal()--> &CreateItemsResponse{}
+			// map[string]any --json.Marshal()--> []byte --json.Unmarshal()--> &CreateItemsResponse{}
 			s.ExpectClientStream("grpctest.Service/CreateItems").
-				ReturnJSON(map[string]interface{}{"num_items": 41}) // `{"num_items": 5}`
+				ReturnJSON(map[string]any{"num_items": 41}) // `{"num_items": 5}`
 		},
 	)(t)
 
@@ -926,7 +926,7 @@ func TestServer(t *testing.T) {
 		func(s *grpcmock.Server) {
 			s.ExpectClientStream("grpctest.Service/CreateItems").
 				WithPayload(grpcmock.MatchClientStreamMsgCount(3)).
-				Run(func(_ context.Context, s grpc.ServerStream) (interface{}, error) {
+				Run(func(_ context.Context, s grpc.ServerStream) (any, error) {
 					out := make([]*Item, 0)
 
 					if err := stream.RecvAll(s, &out); err != nil {
@@ -958,7 +958,7 @@ func TestServer(t *testing.T) {
 
 There are 2 methods for matching the headers:
 
-`ServerStreamRequest.WithHeader(header string, value interface{})`
+`ServerStreamRequest.WithHeader(header string, value any)`
 
 It checks whether a header matches the given `value`. The `value` could be `string`, `[]byte`, or a [`matcher.Matcher`](#match-a-value). If the `value` is
 a `string` or a `[]byte`, the header is checked by using the [`matcher.Exact`](#exact).
@@ -991,7 +991,7 @@ func TestServer(t *testing.T) {
 
 [<sub><sup>[table of contents]</sup></sub>](#table-of-contents)
 
-`ServerStreamRequest.WithHeaders(headers map[string]interface{})`
+`ServerStreamRequest.WithHeaders(headers map[string]any)`
 
 Similar to `WithHeader()`, this method checks for multiple headers. For example:
 
@@ -1010,7 +1010,7 @@ func TestServer(t *testing.T) {
 		grpcmock.RegisterService(RegisterItemServiceServer),
 		func(s *grpcmock.Server) {
 			s.ExpectServerStream("grpctest.Service/ListItems").
-				WithHeaders(map[string]interface{}{
+				WithHeaders(map[string]any{
 					"locale":  regexp.MustCompile(`-US$`),
 					"country": "US",
 				})
@@ -1029,15 +1029,15 @@ There are 2 methods for matching the request payload:
 
 | Method                                             | Explanation                                                                                                            |
 |:---------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------|
-| `WithPayload(in interface{})`                      | Match the incoming payload with an expectation. See the table below for the supported types.                           |
-| `WithPayloadf(format string, args ...interface{})` | An old school `fmt.Sprintf()` call will be made with `format` and `args`. The result will be passed to `WithPayload()` |
+| `WithPayload(in any)`                      | Match the incoming payload with an expectation. See the table below for the supported types.                           |
+| `WithPayloadf(format string, args ...any)` | An old school `fmt.Sprintf()` call will be made with `format` and `args`. The result will be passed to `WithPayload()` |
 
 | `in` Type                           | Matcher                    | Explanation                                                     |
 |:------------------------------------|:---------------------------|:----------------------------------------------------------------|
 | `string`, `[]byte`                  | [`matcher.JSON`](#json)    | Match the payload with a json string.                           |
 | `*regexp.Regexp`                    | [`matcher.Regex`](#regexp) | Match the payload using Regular Expressions.                    |
 | [`matcher.Matcher`](#match-a-value) | The same matcher           | Match the payload using the provided matcher.                   |
-| `func(interface{}) (bool, error)`   | The same matcher           | Match the payload using a custom matcher.                       |
+| `func(any) (bool, error)`   | The same matcher           | Match the payload using a custom matcher.                       |
 | Others                              | [`matcher.JSON`](#json)    | `in` is marshaled to `string` and matched using `matcher.JSON`. |
 
 For example:
@@ -1063,7 +1063,7 @@ func TestServer(t *testing.T) {
 				WithPayload(&ListItemRequest{})
 
 			s.ExpectServerStream("grpctest.Service/ListItems").
-				WithPayload(func(actual interface{}) (bool, error) {
+				WithPayload(func(actual any) (bool, error) {
 					if _, ok := actual.(*ListItemRequest); !ok {
 						return false, nil
 					}
@@ -1098,7 +1098,7 @@ There are 4 methods, they are straightforward:
 | `ReturnCode(code codes.Code)`                                       | Change status code. If it is `codes.OK`, the error message is removed.                           |
 | `ReturnErrorMessage(msg string)`                                    | Change error message. Tf the current status code is `codes.OK`, it's changed to `codes.Internal` |
 | `ReturnError(code codes.Code, msg string)`                          | Change status code and error message. If the code is `codes.OK`, the error message is removed.   |
-| `ReturnErrorf(code codes.Code, format string, args ...interface{})` | Same as `ReturnError` but with the support of `fmt.Sprintf()                                     |
+| `ReturnErrorf(code codes.Code, format string, args ...any)` | Same as `ReturnError` but with the support of `fmt.Sprintf()                                     |
 
 For example:
 
@@ -1133,10 +1133,10 @@ There are 4 methods:
 
 | Method                                        | Explanation                                                                                                                                                                |
 |:----------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `Return(v interface{})`                       | The response is a `string`, a `[]byte` or a slice of objects of the same type of the method. If it's a `string` or `[]byte`, the response will be unmarshalled to a slice. |
-| `Returnf(format string, args ...interface{})` | Same as `Return()`, but with support for formatting using `fmt.Sprintf()`                                                                                                  |
+| `Return(v any)`                       | The response is a `string`, a `[]byte` or a slice of objects of the same type of the method. If it's a `string` or `[]byte`, the response will be unmarshalled to a slice. |
+| `Returnf(format string, args ...any)` | Same as `Return()`, but with support for formatting using `fmt.Sprintf()`                                                                                                  |
 | `ReturnFile(filePath string)`                 | The response is the content of given file, read by `io.ReadFile()`                                                                                                         |
-| `ReturnJSON(v interface{})`                   | The input is marshalled by `json.Marshal(v)` and then unmarshalled to a slice of objects of the same type of the method.                                                   |
+| `ReturnJSON(v any)`                   | The input is marshalled by `json.Marshal(v)` and then unmarshalled to a slice of objects of the same type of the method.                                                   |
 
 ```go
 package main
@@ -1166,9 +1166,9 @@ func TestServer(t *testing.T) {
 			s.ExpectUnary("grpctest.Service/ListItems").
 				ReturnFile("resources/fixtures/items.json")
 
-			// []map[string]interface{} --json.Marshal()--> []byte --json.Unmarshal()--> []*Item{}
+			// []map[string]any --json.Marshal()--> []byte --json.Unmarshal()--> []*Item{}
 			s.ExpectUnary("grpctest.Service/ListItems").
-				ReturnJSON([]map[string]interface{}{{"id": 41}}) // [{"id": 41}]
+				ReturnJSON([]map[string]any{{"id": 41}}) // [{"id": 41}]
 		},
 	)(t)
 
@@ -1186,9 +1186,9 @@ With `ServerStreamRequest.ReturnStream()`, you can customize the behaviors of th
 |:----------------------------------------------------------------------------------------------------------------|:--------------------------------------------------|
 | `AddHeader(key, value string)`<br/>`SetHeader(header map[string]string)`                                        | Set one or many header without sending to client. |
 | `SendHeader()`                                                                                                  | Send all set header to client.                    |
-| `Send(v interface{})`                                                                                           | Send a single message to client.                  |
-| `SendMany(v interface{})`                                                                                       | Send multiple messages to client.                 |
-| `ReturnError(code codes.Code, msg string)`<br/>`ReturnErrorf(code codes.Code, msg string, args ...interface{})` | Return an error to client                         |
+| `Send(v any)`                                                                                           | Send a single message to client.                  |
+| `SendMany(v any)`                                                                                       | Send multiple messages to client.                 |
+| `ReturnError(code codes.Code, msg string)`<br/>`ReturnErrorf(code codes.Code, msg string, args ...any)` | Return an error to client                         |
 
 _* All the steps executes sequentially._
 
@@ -1244,7 +1244,7 @@ func TestServer(t *testing.T) {
 		grpcmock.RegisterService(RegisterItemServiceServer),
 		func(s *grpcmock.Server) {
 			s.ExpectServerStream("grpctest.Service/ListItems").
-				Run(func(_ context.Context, _ interface{}, s grpc.ServerStream) error {
+				Run(func(_ context.Context, _ any, s grpc.ServerStream) error {
 					_ = s.SendMsg(&Item{Id: 41, Name: "Item #41"})
 					_ = s.SendMsg(&Item{Id: 42, Name: "Item #42"})
 
@@ -1265,7 +1265,7 @@ func TestServer(t *testing.T) {
 
 There are 2 methods for matching the headers:
 
-`BidirectionalStreamRequest.WithHeader(header string, value interface{})`
+`BidirectionalStreamRequest.WithHeader(header string, value any)`
 
 It checks whether a header matches the given `value`. The `value` could be `string`, `[]byte`, or a [`matcher.Matcher`](#match-a-value). If the `value` is
 a `string` or a `[]byte`, the header is checked by using the [`matcher.Exact`](#exact).
@@ -1298,7 +1298,7 @@ func TestServer(t *testing.T) {
 
 [<sub><sup>[table of contents]</sup></sub>](#table-of-contents)
 
-`BidirectionalStreamRequest.WithHeaders(headers map[string]interface{})`
+`BidirectionalStreamRequest.WithHeaders(headers map[string]any)`
 
 Similar to `WithHeader()`, this method checks for multiple headers. For example:
 
@@ -1317,7 +1317,7 @@ func TestServer(t *testing.T) {
 		grpcmock.RegisterService(RegisterItemServiceServer),
 		func(s *grpcmock.Server) {
 			s.ExpectBidirectionalStream("grpctest.Service/TransformItems").
-				WithHeaders(map[string]interface{}{
+				WithHeaders(map[string]any{
 					"locale":  regexp.MustCompile(`-US$`),
 					"country": "US",
 				})
@@ -1346,7 +1346,7 @@ There are 4 methods, they are straightforward:
 | `ReturnCode(code codes.Code)`                                       | Change status code. If it is `codes.OK`, the error message is removed.                           |
 | `ReturnErrorMessage(msg string)`                                    | Change error message. Tf the current status code is `codes.OK`, it's changed to `codes.Internal` |
 | `ReturnError(code codes.Code, msg string)`                          | Change status code and error message. If the code is `codes.OK`, the error message is removed.   |
-| `ReturnErrorf(code codes.Code, format string, args ...interface{})` | Same as `ReturnError` but with the support of `fmt.Sprintf()                                     |
+| `ReturnErrorf(code codes.Code, format string, args ...any)` | Same as `ReturnError` but with the support of `fmt.Sprintf()                                     |
 
 For example:
 
@@ -1449,7 +1449,7 @@ type Planner interface {
 	// Expect adds a new expectation.
 	Expect(expect request.Request)
 	// Plan decides how a request matches an expectation.
-	Plan(ctx context.Context, req service.Method, in interface{}) (request.Request, error)
+	Plan(ctx context.Context, req service.Method, in any) (request.Request, error)
 	// Remain returns remain expectations.
 	Remain() []request.Request
 	// Reset removes all the expectations.

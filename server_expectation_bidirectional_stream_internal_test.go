@@ -39,7 +39,7 @@ func TestBidirectionalStreamExpectation_WithHeaders(t *testing.T) {
 	t.Parallel()
 
 	r := newTransformItemsRequest()
-	r.WithHeaders(map[string]interface{}{"foo": "bar"})
+	r.WithHeaders(map[string]any{"foo": "bar"})
 
 	assert.Equal(t, xmatcher.HeaderMatcher{"foo": matcher.Exact("bar")}, r.requestHeader)
 
@@ -236,7 +236,7 @@ func TestBidirectionalStreamExpectation_Run_Success(t *testing.T) {
 				return err
 			}
 
-			item.Name = fmt.Sprintf("Modified #%d", item.Id)
+			item.Name = fmt.Sprintf("Modified #%d", item.GetId())
 
 			if err := s.SendMsg(item); err != nil {
 				return err

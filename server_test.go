@@ -172,7 +172,7 @@ func TestServer_ExpectUnary_Success(t *testing.T) {
 
 	_, d := mockItemServiceServer(t, func(s *grpcmock.Server) {
 		s.ExpectUnary(grpcTestServiceGetItem).
-			Run(func(ctx context.Context, in interface{}) (interface{}, error) {
+			Run(func(ctx context.Context, in any) (any, error) {
 				var locale string
 
 				if md, ok := metadata.FromIncomingContext(ctx); ok {
@@ -184,7 +184,7 @@ func TestServer_ExpectUnary_Success(t *testing.T) {
 				p := in.(*grpctest.GetItemRequest) // nolint: errcheck
 
 				result := testSrv.BuildItem().
-					WithID(p.Id).
+					WithID(p.GetId()).
 					WithLocale(locale).
 					WithName("Foobar").
 					New()
@@ -375,7 +375,7 @@ func TestServer_ExpectClientStream_Success(t *testing.T) {
 		s.ExpectClientStream(grpcTestServiceCreateItems).
 			WithHeader(`locale`, `en-US`).
 			WithPayload([]*grpctest.Item{{Id: 42}}).
-			Run(func(_ context.Context, s grpc.ServerStream) (interface{}, error) {
+			Run(func(_ context.Context, s grpc.ServerStream) (any, error) {
 				cnt := int64(0)
 
 				for {
@@ -410,7 +410,7 @@ func TestServer_ExpectClientStream_CustomMatcher_Success(t *testing.T) {
 		s.ExpectClientStream(grpcTestServiceCreateItems).
 			WithHeader(`locale`, `en-US`).
 			WithPayload(grpcmock.MatchClientStreamMsgCount(1)).
-			Run(func(_ context.Context, s grpc.ServerStream) (interface{}, error) {
+			Run(func(_ context.Context, s grpc.ServerStream) (any, error) {
 				cnt := int64(0)
 
 				for {
@@ -459,7 +459,7 @@ Error: expected request payload: has 2 message(s), received: [{"id":42}]
 
 	assert.Nil(t, actual)
 	assert.Error(t, err)
-	assert.Equal(t, status.Convert(err).Message(), expected)
+	assert.Equal(t, expected, status.Convert(err).Message())
 }
 
 func TestServer_ExpectClientStream_CustomStreamMatcher_Mismatched(t *testing.T) {
@@ -467,7 +467,7 @@ func TestServer_ExpectClientStream_CustomStreamMatcher_Mismatched(t *testing.T) 
 
 	_, d := mockItemServiceServer(grpcmock.NoOpT(), func(s *grpcmock.Server) {
 		s.ExpectClientStream(grpcTestServiceCreateItems).
-			WithPayload(func(interface{}) (bool, error) {
+			WithPayload(func(any) (bool, error) {
 				return false, nil
 			})
 	})
@@ -485,7 +485,7 @@ Error: payload does not match expectation, received: [{"id":42}]
 
 	assert.Nil(t, actual)
 	assert.Error(t, err)
-	assert.Equal(t, status.Convert(err).Message(), expected)
+	assert.Equal(t, expected, status.Convert(err).Message())
 }
 
 func TestServer_ExpectBidirectionalStream_Unexpected(t *testing.T) {
@@ -564,7 +564,7 @@ func TestServer_ExpectBidirectionalStream_Success(t *testing.T) {
 						return err
 					}
 
-					item.Name = fmt.Sprintf("Modified #%d", item.Id)
+					item.Name = fmt.Sprintf("Modified #%d", item.GetId())
 
 					if err := s.SendMsg(item); err != nil {
 						return err

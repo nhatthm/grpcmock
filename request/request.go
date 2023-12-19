@@ -20,7 +20,7 @@ type Request interface {
 	service() service.Method
 	headerMatcher() matcher.HeaderMatcher
 	payloadMatcher() *matcher.PayloadMatcher
-	handle(ctx context.Context, in interface{}, out interface{}) error
+	handle(ctx context.Context, in any, out any) error
 	getRepeatability() RepeatedTime
 	setRepeatability(i RepeatedTime)
 	numCalls() int
@@ -28,7 +28,7 @@ type Request interface {
 }
 
 // Handler handles a grpc request.
-type Handler func(ctx context.Context, in interface{}, out interface{}) error
+type Handler func(ctx context.Context, in any, out any) error
 
 // RepeatedTime represents a number of times that a request could be repeated.
 //
@@ -87,6 +87,6 @@ func NumCalls(r Request) int {
 // Handle handles the request.
 //
 // Deprecated: The function will be removed in the future.
-func Handle(ctx context.Context, r Request, in interface{}, out interface{}) error {
+func Handle(ctx context.Context, r Request, in any, out any) error {
 	return r.handle(ctx, in, out)
 }

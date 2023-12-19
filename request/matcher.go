@@ -12,7 +12,7 @@ import (
 	"go.nhat.io/grpcmock/value"
 )
 
-func matchUnaryPayload(in interface{}) *xmatcher.PayloadMatcher {
+func matchUnaryPayload(in any) *xmatcher.PayloadMatcher {
 	switch v := in.(type) {
 	case []byte, string:
 		return xmatcher.Payload(matcher.JSON(value.String(in)), decodeUnaryPayload)
@@ -29,11 +29,11 @@ func matchUnaryPayload(in interface{}) *xmatcher.PayloadMatcher {
 	return xmatcher.Payload(matcher.JSON(in), decodeUnaryPayload)
 }
 
-func matchServerStreamPayload(in interface{}) *xmatcher.PayloadMatcher {
+func matchServerStreamPayload(in any) *xmatcher.PayloadMatcher {
 	return matchUnaryPayload(in)
 }
 
-func matchClientStreamPayload(in interface{}) *xmatcher.PayloadMatcher {
+func matchClientStreamPayload(in any) *xmatcher.PayloadMatcher {
 	switch v := in.(type) {
 	case []byte, string:
 		return xmatcher.Payload(matcher.JSON(value.String(v)), decodeClientStreamPayload)
@@ -54,7 +54,7 @@ func matchClientStreamPayload(in interface{}) *xmatcher.PayloadMatcher {
 }
 
 func matchClientStreamPayloadWithCustomMatcher(expected string, match xmatcher.MatchFn) *xmatcher.PayloadMatcher {
-	return xmatcher.Payload(xmatcher.Fn(expected, func(actual interface{}) (bool, error) {
+	return xmatcher.Payload(xmatcher.Fn(expected, func(actual any) (bool, error) {
 		in, err := streamer.ClientStreamerPayload(actual.(*streamer.ClientStreamer))
 		// This should never happen because the PayloadMatcher will read the stream first.
 		// If there is an error while reading the stream, it is caught inside the PayloadMatcher.
@@ -64,7 +64,7 @@ func matchClientStreamPayloadWithCustomMatcher(expected string, match xmatcher.M
 	}), nil)
 }
 
-func decodeUnaryPayload(in interface{}) (string, error) {
+func decodeUnaryPayload(in any) (string, error) {
 	switch v := in.(type) {
 	case []byte:
 		return string(v), nil
@@ -81,6 +81,6 @@ func decodeUnaryPayload(in interface{}) (string, error) {
 	return string(data), nil
 }
 
-func decodeClientStreamPayload(in interface{}) (string, error) {
+func decodeClientStreamPayload(in any) (string, error) {
 	return value.Marshal(in)
 }

@@ -26,7 +26,7 @@ func (b expectationBuilder) WithServiceMethod(serviceMethod service.Method) expe
 	return b
 }
 
-func (b expectationBuilder) WithHeader(header string, value interface{}) expectationBuilder {
+func (b expectationBuilder) WithHeader(header string, value any) expectationBuilder {
 	headerMatcher := make(xmatcher.HeaderMatcher, len(b.headerMatcher))
 	for header, value := range b.headerMatcher {
 		headerMatcher[header] = value
@@ -39,7 +39,7 @@ func (b expectationBuilder) WithHeader(header string, value interface{}) expecta
 }
 
 // nolint: wsl
-func (b expectationBuilder) WithPayload(in interface{}) expectationBuilder {
+func (b expectationBuilder) WithPayload(in any) expectationBuilder {
 	switch b.serviceMethod.MethodType {
 	case service.TypeUnary:
 		b.payloadMatcher = xmatcher.UnaryPayload(in)

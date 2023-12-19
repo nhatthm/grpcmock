@@ -36,11 +36,11 @@ func (_m *Planner) IsEmpty() bool {
 }
 
 // Plan provides a mock function with given fields: ctx, req, in
-func (_m *Planner) Plan(ctx context.Context, req service.Method, in interface{}) (planner.Expectation, error) {
+func (_m *Planner) Plan(ctx context.Context, req service.Method, in any) (planner.Expectation, error) {
 	ret := _m.Called(ctx, req, in)
 
 	var r0 planner.Expectation
-	if rf, ok := ret.Get(0).(func(context.Context, service.Method, interface{}) planner.Expectation); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, service.Method, any) planner.Expectation); ok {
 		r0 = rf(ctx, req, in)
 	} else {
 		if ret.Get(0) != nil {
@@ -49,7 +49,7 @@ func (_m *Planner) Plan(ctx context.Context, req service.Method, in interface{})
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, service.Method, interface{}) error); ok {
+	if rf, ok := ret.Get(1).(func(context.Context, service.Method, any) error); ok {
 		r1 = rf(ctx, req, in)
 	} else {
 		r1 = ret.Error(1)

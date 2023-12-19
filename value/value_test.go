@@ -22,7 +22,7 @@ func TestString_Success(t *testing.T) {
 
 	testCases := []struct {
 		scenario string
-		input    interface{}
+		input    any
 		expected string
 	}{
 		{
@@ -66,7 +66,7 @@ func TestMarshal(t *testing.T) {
 
 	testCases := []struct {
 		scenario       string
-		in             interface{}
+		in             any
 		expectedResult string
 		expectedError  string
 	}{

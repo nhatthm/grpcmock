@@ -57,7 +57,7 @@ func (h *serverStreamHandler) SendHeader() *serverStreamHandler {
 }
 
 // Send sends a single message.
-func (h *serverStreamHandler) Send(v interface{}) *serverStreamHandler {
+func (h *serverStreamHandler) Send(v any) *serverStreamHandler {
 	h.addStep(streamStepFunc(func(ctx context.Context, s grpc.ServerStream) error {
 		return stepSend(h.outputType, v)(ctx, s)
 	}))
@@ -66,7 +66,7 @@ func (h *serverStreamHandler) Send(v interface{}) *serverStreamHandler {
 }
 
 // SendMany send multiple messages.
-func (h *serverStreamHandler) SendMany(v interface{}) *serverStreamHandler {
+func (h *serverStreamHandler) SendMany(v any) *serverStreamHandler {
 	h.addStep(streamStepFunc(func(ctx context.Context, s grpc.ServerStream) error {
 		return stepSendMany(h.outputType, v)(ctx, s)
 	}))

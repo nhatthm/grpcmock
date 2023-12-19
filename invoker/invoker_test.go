@@ -62,7 +62,7 @@ func TestInvoker_Invoke_Unary_Success(t *testing.T) {
 		actualRequest = request
 
 		response := &grpctest.Item{
-			Id:     request.Id,
+			Id:     request.GetId(),
 			Locale: locale,
 			Name:   "Foobar",
 		}
@@ -234,7 +234,7 @@ func TestInvoker_Invoke_BidirectionalStream_Success(t *testing.T) {
 				return err
 			}
 
-			msg.Name = fmt.Sprintf("Modified %s", msg.Name)
+			msg.Name = fmt.Sprintf("Modified %s", msg.GetName())
 
 			if err := srv.SendMsg(msg); err != nil {
 				return err

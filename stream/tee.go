@@ -7,7 +7,7 @@ type teeReceiver struct {
 	s Sender
 }
 
-func (r *teeReceiver) RecvMsg(m interface{}) error {
+func (r *teeReceiver) RecvMsg(m any) error {
 	if err := r.r.RecvMsg(m); err != nil {
 		return err
 	}

@@ -39,8 +39,8 @@ func TestRecvAll(t *testing.T) {
 	testCases := []struct {
 		scenario       string
 		mockStream     xmock.ClientStreamMocker
-		output         interface{}
-		expectedOutput interface{}
+		output         any
+		expectedOutput any
 		expectedError  string
 	}{
 		{

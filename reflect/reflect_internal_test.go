@@ -14,7 +14,7 @@ func TestImplementsContext(t *testing.T) {
 
 	testCases := []struct {
 		scenario string
-		input    interface{}
+		input    any
 		expected bool
 	}{
 		{
@@ -52,7 +52,7 @@ func TestImplementsError(t *testing.T) {
 
 	testCases := []struct {
 		scenario string
-		input    interface{}
+		input    any
 		expected bool
 	}{
 		{

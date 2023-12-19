@@ -29,7 +29,7 @@ func (m *firstMatch) Expect(expect Expectation) {
 	m.expectations = append(m.expectations, expect)
 }
 
-func (m *firstMatch) Plan(ctx context.Context, req service.Method, in interface{}) (Expectation, error) {
+func (m *firstMatch) Plan(ctx context.Context, req service.Method, in any) (Expectation, error) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 

@@ -34,7 +34,7 @@ type ServerStreamRequest struct {
 	waitTime time.Duration
 
 	// Request handler.
-	run func(ctx context.Context, in interface{}, s grpc.ServerStream) error
+	run func(ctx context.Context, in any, s grpc.ServerStream) error
 
 	// requestHeader is a list of expected headers of the given request.
 	requestHeader xmatcher.HeaderMatcher
@@ -58,7 +58,7 @@ func NewServerStreamRequest(locker sync.Locker, svc *service.Method) *ServerStre
 			fs:          afero.NewOsFs(),
 		},
 
-		run: func(context.Context, interface{}, grpc.ServerStream) error {
+		run: func(context.Context, any, grpc.ServerStream) error {
 			return status.Error(codes.Unimplemented, "not implemented")
 		},
 	}
@@ -70,7 +70,7 @@ func NewServerStreamRequest(locker sync.Locker, svc *service.Method) *ServerStre
 //		WithHeader("Locale", "en-US")
 //
 //nolint:unparam
-func (r *ServerStreamRequest) WithHeader(header string, value interface{}) *ServerStreamRequest {
+func (r *ServerStreamRequest) WithHeader(header string, value any) *ServerStreamRequest {
 	r.lock()
 	defer r.unlock()
 
@@ -86,8 +86,8 @@ func (r *ServerStreamRequest) WithHeader(header string, value interface{}) *Serv
 // WithHeaders sets a list of expected headers of the given request.
 //
 //	Server.ExpectServerStream("grpctest.Service/ListItems").
-//		WithHeaders(map[string]interface{}{"Locale": "en-US"})
-func (r *ServerStreamRequest) WithHeaders(headers map[string]interface{}) *ServerStreamRequest {
+//		WithHeaders(map[string]any{"Locale": "en-US"})
+func (r *ServerStreamRequest) WithHeaders(headers map[string]any) *ServerStreamRequest {
 	for header, value := range headers {
 		r.WithHeader(header, value)
 	}
@@ -101,7 +101,7 @@ func (r *ServerStreamRequest) WithHeaders(headers map[string]interface{}) *Serve
 //		WithPayload(`{"message": "hello world!"}`)
 //
 // See: ServerStreamRequest.WithPayloadf().
-func (r *ServerStreamRequest) WithPayload(in interface{}) *ServerStreamRequest {
+func (r *ServerStreamRequest) WithPayload(in any) *ServerStreamRequest {
 	r.lock()
 	defer r.unlock()
 
@@ -116,7 +116,7 @@ func (r *ServerStreamRequest) WithPayload(in interface{}) *ServerStreamRequest {
 //		WithPayloadf(`{"message": "hello %s"}`, "john")
 //
 // See: ServerStreamRequest.WithPayload().
-func (r *ServerStreamRequest) WithPayloadf(format string, args ...interface{}) *ServerStreamRequest {
+func (r *ServerStreamRequest) WithPayloadf(format string, args ...any) *ServerStreamRequest {
 	return r.WithPayload(fmt.Sprintf(format, args...))
 }
 
@@ -171,7 +171,7 @@ func (r *ServerStreamRequest) ReturnError(code codes.Code, msg string) {
 //		ReturnErrorf(codes.NotFound, "Item %d not found", 42)
 //
 // See: ServerStreamRequest.ReturnCode(), ServerStreamRequest.ReturnErrorMessage(), ServerStreamRequest.ReturnError().
-func (r *ServerStreamRequest) ReturnErrorf(code codes.Code, format string, args ...interface{}) {
+func (r *ServerStreamRequest) ReturnErrorf(code codes.Code, format string, args ...any) {
 	r.ReturnErrorMessage(fmt.Sprintf(format, args...))
 	r.ReturnCode(code)
 }
@@ -182,9 +182,9 @@ func (r *ServerStreamRequest) ReturnErrorf(code codes.Code, format string, args 
 //		Return(`[{"id": 42}]`)
 //
 // See: ServerStreamRequest.Returnf(), ServerStreamRequest.ReturnJSON(), ServerStreamRequest.ReturnFile(), ServerStreamRequest.ReturnStream().
-func (r *ServerStreamRequest) Return(v interface{}) {
+func (r *ServerStreamRequest) Return(v any) {
 	r.ReturnCode(codes.OK)
-	r.Run(func(ctx context.Context, _ interface{}, s grpc.ServerStream) error {
+	r.Run(func(ctx context.Context, _ any, s grpc.ServerStream) error {
 		return newServerStreamHandler(s.(*streamer.ServerStreamer)).
 			SendMany(v).
 			handle(ctx)
@@ -197,7 +197,7 @@ func (r *ServerStreamRequest) Return(v interface{}) {
 //		Returnf(`[{"id": %d}]`, 42)
 //
 // See: ServerStreamRequest.Return(), ServerStreamRequest.ReturnJSON(), ServerStreamRequest.ReturnFile(), ServerStreamRequest.ReturnStream().
-func (r *ServerStreamRequest) Returnf(format string, args ...interface{}) {
+func (r *ServerStreamRequest) Returnf(format string, args ...any) {
 	r.Return(fmt.Sprintf(format, args...))
 }
 
@@ -207,9 +207,9 @@ func (r *ServerStreamRequest) Returnf(format string, args ...interface{}) {
 //		ReturnJSON([]map[string]string{{"foo": "bar"}})
 //
 // See: ServerStreamRequest.Return(), ServerStreamRequest.Returnf(), ServerStreamRequest.ReturnFile(), ServerStreamRequest.ReturnStream().
-func (r *ServerStreamRequest) ReturnJSON(v interface{}) {
+func (r *ServerStreamRequest) ReturnJSON(v any) {
 	r.ReturnCode(codes.OK)
-	r.Run(func(ctx context.Context, _ interface{}, s grpc.ServerStream) error {
+	r.Run(func(ctx context.Context, _ any, s grpc.ServerStream) error {
 		d, err := json.Marshal(v)
 		if err != nil {
 			return status.Error(codes.Internal, err.Error())
@@ -234,7 +234,7 @@ func (r *ServerStreamRequest) ReturnFile(filePath string) {
 	must.NotFail(err)
 
 	r.ReturnCode(codes.OK)
-	r.Run(func(ctx context.Context, _ interface{}, s grpc.ServerStream) error {
+	r.Run(func(ctx context.Context, _ any, s grpc.ServerStream) error {
 		d, err := afero.ReadFile(r.fs, filePath)
 		if err != nil {
 			return status.Error(codes.Internal, err.Error())
@@ -262,7 +262,7 @@ func (r *ServerStreamRequest) ReturnStream() *serverStreamHandler { //nolint: re
 	h := &serverStreamHandler{}
 
 	r.ReturnCode(codes.OK)
-	r.Run(func(ctx context.Context, _ interface{}, s grpc.ServerStream) error {
+	r.Run(func(ctx context.Context, _ any, s grpc.ServerStream) error {
 		return h.withStreamer(s.(*streamer.ServerStreamer)).
 			handle(ctx)
 	})
@@ -273,12 +273,12 @@ func (r *ServerStreamRequest) ReturnStream() *serverStreamHandler { //nolint: re
 // Run sets a custom handler to handle the given request.
 //
 //	   Server.ExpectServerStream("grpc.Service/ListItems").
-//			Run(func(ctx context.Context, in interface{}, srv interface{}) error {
+//			Run(func(ctx context.Context, in any, srv any) error {
 //				srv := out.(grpc.ServerStreamer)
 //
 //				return srv.SendMsg(grpctest.Item{Id: 42})
 //			})
-func (r *ServerStreamRequest) Run(handler func(ctx context.Context, in interface{}, s grpc.ServerStream) error) {
+func (r *ServerStreamRequest) Run(handler func(ctx context.Context, in any, s grpc.ServerStream) error) {
 	r.lock()
 	defer r.unlock()
 
@@ -286,7 +286,7 @@ func (r *ServerStreamRequest) Run(handler func(ctx context.Context, in interface
 }
 
 // Handle handles the GRPC request.
-func (r *ServerStreamRequest) handle(ctx context.Context, in interface{}, out interface{}) error {
+func (r *ServerStreamRequest) handle(ctx context.Context, in any, out any) error {
 	// Block if specified.
 	if r.waitFor != nil {
 		<-r.waitFor

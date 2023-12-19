@@ -51,7 +51,7 @@ func TeeClientStreamer(s *ClientStreamer) *ClientStreamer {
 }
 
 // ClientStreamerPayload tees the stream till io.EOF and return the payload.
-func ClientStreamerPayload(s *ClientStreamer) (interface{}, error) {
+func ClientStreamerPayload(s *ClientStreamer) (any, error) {
 	s = TeeClientStreamer(s)
 	out := xreflect.NewSlicePtr(s.InputType())
 
