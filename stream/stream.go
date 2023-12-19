@@ -9,9 +9,9 @@ import (
 // Stream is an interface wrapper around grpc.ClientStream and grpc.ServerStream.
 type Stream interface {
 	Context() context.Context
-	SetHeader(metadata.MD) error
-	SendHeader(metadata.MD) error
-	SetTrailer(metadata.MD)
+	SetHeader(md metadata.MD) error
+	SendHeader(md metadata.MD) error
+	SetTrailer(md metadata.MD)
 
 	SendReceiver
 }
@@ -41,7 +41,7 @@ func (s *WrappedStream) WithReceiver(rc Receiver) *WrappedStream {
 }
 
 // SendMsg satisfies Stream interface.
-func (s *WrappedStream) SendMsg(m interface{}) error {
+func (s *WrappedStream) SendMsg(m any) error {
 	if s.sender == nil {
 		return s.Stream.SendMsg(m)
 	}
@@ -50,7 +50,7 @@ func (s *WrappedStream) SendMsg(m interface{}) error {
 }
 
 // RecvMsg satisfies Stream interface.
-func (s *WrappedStream) RecvMsg(m interface{}) error {
+func (s *WrappedStream) RecvMsg(m any) error {
 	if s.receiver == nil {
 		return s.Stream.RecvMsg(m)
 	}

@@ -7,7 +7,7 @@ import (
 )
 
 // MatchRequest checks whether a request is matched.
-func MatchRequest(ctx context.Context, expected Expectation, actual service.Method, in interface{}) error {
+func MatchRequest(ctx context.Context, expected Expectation, actual service.Method, in any) error {
 	if err := MatchService(ctx, expected, actual, in); err != nil {
 		return err
 	}
@@ -20,7 +20,7 @@ func MatchRequest(ctx context.Context, expected Expectation, actual service.Meth
 }
 
 // MatchService matches the service of a given request.
-func MatchService(ctx context.Context, expected Expectation, actual service.Method, in interface{}) (err error) {
+func MatchService(ctx context.Context, expected Expectation, actual service.Method, in any) (err error) {
 	svc := expected.ServiceMethod()
 
 	if svc.FullName() != actual.FullName() {
@@ -33,7 +33,7 @@ func MatchService(ctx context.Context, expected Expectation, actual service.Meth
 }
 
 // MatchHeader matches the header of a given request.
-func MatchHeader(ctx context.Context, expected Expectation, actual service.Method, in interface{}) (err error) {
+func MatchHeader(ctx context.Context, expected Expectation, actual service.Method, in any) (err error) {
 	header := expected.HeaderMatcher()
 	if len(header) == 0 {
 		return nil
@@ -55,7 +55,7 @@ func MatchHeader(ctx context.Context, expected Expectation, actual service.Metho
 }
 
 // MatchPayload matches the payload of a given request.
-func MatchPayload(ctx context.Context, expected Expectation, actual service.Method, in interface{}) (err error) {
+func MatchPayload(ctx context.Context, expected Expectation, actual service.Method, in any) (err error) {
 	m := expected.PayloadMatcher()
 	if m == nil {
 		return nil

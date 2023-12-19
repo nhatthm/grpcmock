@@ -10,11 +10,11 @@ import (
 
 // Receiver is an interface wrapper around grpc.ClientStream and grpc.ServerStream.
 type Receiver interface {
-	RecvMsg(m interface{}) error
+	RecvMsg(m any) error
 }
 
 // RecvAll reads all messages using a receiver until io.EOF.
-func RecvAll(r Receiver, out interface{}) error {
+func RecvAll(r Receiver, out any) error {
 	outType, err := xreflect.UnwrapPtrSliceType(out)
 	if err != nil {
 		return err
@@ -63,6 +63,6 @@ func newSliceMessageValue(t reflect.Type, v reflect.Value) reflect.Value {
 	return result
 }
 
-func appendMessage(s reflect.Value, v interface{}) reflect.Value {
+func appendMessage(s reflect.Value, v any) reflect.Value {
 	return reflect.Append(s, newSliceMessageValue(s.Type().Elem(), xreflect.UnwrapValue(v)))
 }

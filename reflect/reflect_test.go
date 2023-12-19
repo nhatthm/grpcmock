@@ -12,22 +12,22 @@ import (
 	"go.nhat.io/grpcmock/test/grpctest"
 )
 
-type testServer interface { //nolint: interfacebloat
+type testServer interface { //nolint: inamedparam,interfacebloat
 	// RPC Methods.
-	GetItem(context.Context, getItemRequest) (getItemResponse, error)
+	GetItem(context.Context, getItemRequest) (getItemResponse, error) //nolint: inamedparam
 
 	// Methods that are not RPC.
 	NoArgAndNoReturn()
-	HasOnlyOneArg(interface{})
-	HasMoreThanTwoArgs(interface{}, interface{}, interface{})
-	FirstArgIsNotContext(interface{}, interface{})
-	SecondArgIsNotAStruct(context.Context, interface{})
-	NoReturn(context.Context, struct{})
-	HasOnlyOneReturn(context.Context, struct{}) interface{}
-	HasMoreThanTwoReturn(context.Context, struct{}) (interface{}, interface{}, interface{})
-	FirstReturnIsNotAStruct(context.Context, struct{}) (interface{}, error)
-	SecondReturnIsNotAnError(context.Context, struct{}) (struct{}, interface{})
-	unexportedMethod(context.Context, getItemRequest) (getItemResponse, error)
+	HasOnlyOneArg(any)                                                         //nolint: inamedparam
+	HasMoreThanTwoArgs(any, any, any)                                          //nolint: inamedparam
+	FirstArgIsNotContext(any, any)                                             //nolint: inamedparam
+	SecondArgIsNotAStruct(context.Context, any)                                //nolint: inamedparam
+	NoReturn(context.Context, struct{})                                        //nolint: inamedparam
+	HasOnlyOneReturn(context.Context, struct{}) any                            //nolint: inamedparam
+	HasMoreThanTwoReturn(context.Context, struct{}) (any, any, any)            //nolint: inamedparam
+	FirstReturnIsNotAStruct(context.Context, struct{}) (any, error)            //nolint: inamedparam
+	SecondReturnIsNotAnError(context.Context, struct{}) (struct{}, any)        //nolint: inamedparam
+	unexportedMethod(context.Context, getItemRequest) (getItemResponse, error) //nolint: inamedparam
 }
 
 type getItemRequest struct{}
@@ -39,7 +39,7 @@ func TestBuildServiceMethods(t *testing.T) {
 
 	testCases := []struct {
 		scenario string
-		service  interface{}
+		service  any
 		expected []xreflect.ServiceMethod
 	}{
 		{
@@ -107,7 +107,7 @@ func TestIsNil(t *testing.T) {
 
 	testCases := []struct {
 		scenario string
-		input    interface{}
+		input    any
 		expected bool
 	}{
 		{
@@ -150,7 +150,7 @@ func TestIsPtr(t *testing.T) {
 
 	testCases := []struct {
 		scenario string
-		input    interface{}
+		input    any
 		expected bool
 	}{
 		{
@@ -199,7 +199,7 @@ func TestUnwrapType(t *testing.T) {
 
 	testCases := []struct {
 		scenario string
-		input    interface{}
+		input    any
 	}{
 		{
 			scenario: "input is a value",
@@ -238,7 +238,7 @@ func TestUnwrapValue(t *testing.T) {
 
 	testCases := []struct {
 		scenario string
-		input    interface{}
+		input    any
 	}{
 		{
 			scenario: "input is a value",
@@ -302,7 +302,7 @@ func TestNewSlicePre(t *testing.T) {
 
 	testCases := []struct {
 		scenario string
-		v        interface{}
+		v        any
 	}{
 		{
 			scenario: "type of value",
@@ -343,9 +343,9 @@ func TestSetPtrValue(t *testing.T) {
 
 	testCases := []struct {
 		scenario       string
-		dst            interface{}
-		value          interface{}
-		expectedResult interface{}
+		dst            any
+		value          any
+		expectedResult any
 		expectedError  string
 	}{
 		{
@@ -406,8 +406,8 @@ func TestPtrValue(t *testing.T) {
 
 	testCases := []struct {
 		scenario string
-		value    interface{}
-		expected interface{}
+		value    any
+		expected any
 	}{
 		{
 			scenario: "not a pointer",
@@ -446,10 +446,10 @@ func TestParseRegisterFunc(t *testing.T) {
 
 	testCases := []struct {
 		scenario            string
-		input               interface{}
+		input               any
 		expectedError       string
 		expectedServiceDesc grpc.ServiceDesc
-		expectedInstance    interface{}
+		expectedInstance    any
 	}{
 		{
 			scenario:      "nil",
@@ -519,7 +519,7 @@ func TestUnwrapPtrSliceType(t *testing.T) {
 
 	testCases := []struct {
 		scenario       string
-		input          interface{}
+		input          any
 		expectedResult reflect.Type
 		expectedError  string
 	}{

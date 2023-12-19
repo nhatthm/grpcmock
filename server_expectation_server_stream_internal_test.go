@@ -45,7 +45,7 @@ func TestServerStreamExpectation_WithHeaders(t *testing.T) {
 	t.Parallel()
 
 	r := newListItemsRequest()
-	r.WithHeaders(map[string]interface{}{"foo": "bar"})
+	r.WithHeaders(map[string]any{"foo": "bar"})
 
 	assert.Equal(t, xmatcher.HeaderMatcher{"foo": matcher.Exact("bar")}, r.requestHeader)
 
@@ -71,19 +71,19 @@ func TestServerStreamExpectation_WithPayload_Match(t *testing.T) {
 
 	item42 := &grpctest.Item{Id: 42}
 
-	matchItemObject42 := func(v interface{}) (bool, error) {
+	matchItemObject42 := func(v any) (bool, error) {
 		in, ok := v.(*grpctest.Item)
 		if !ok {
 			return false, nil
 		}
 
-		return in.Id == 42, nil
+		return in.GetId() == 42, nil
 	}
 
 	testCases := []struct {
 		scenario string
-		payload  interface{}
-		input    interface{}
+		payload  any
+		input    any
 		matched  bool
 	}{
 		{
@@ -106,13 +106,13 @@ func TestServerStreamExpectation_WithPayload_Match(t *testing.T) {
 		},
 		{
 			scenario: "map payload matches string input",
-			payload:  map[string]interface{}{"id": 42},
+			payload:  map[string]any{"id": 42},
 			input:    payload,
 			matched:  true,
 		},
 		{
 			scenario: "map payload matches object input",
-			payload:  map[string]interface{}{"id": 42},
+			payload:  map[string]any{"id": 42},
 			input:    item42,
 			matched:  true,
 		},
@@ -217,14 +217,14 @@ func TestServerStreamExpectation_WithPayload_Match_Error(t *testing.T) {
 
 	testCases := []struct {
 		scenario string
-		payload  interface{}
+		payload  any
 	}{
 		{
 			scenario: "error with decoder",
 		},
 		{
 			scenario: "error without decoder",
-			payload:  func(interface{}) (bool, error) { return false, nil },
+			payload:  func(any) (bool, error) { return false, nil },
 		},
 	}
 
@@ -437,7 +437,7 @@ func TestServerStreamExpectation_Return(t *testing.T) {
 	testCases := []struct {
 		scenario      string
 		mockStreamer  func(t *testing.T) *streamer.ServerStreamer
-		output        interface{}
+		output        any
 		expectedError error
 	}{
 		{
@@ -600,7 +600,7 @@ func TestServerStreamExpectation_ReturnUnknownError(t *testing.T) {
 
 	r := newListItemsRequest()
 
-	r.Run(func(context.Context, interface{}, grpc.ServerStream) error {
+	r.Run(func(context.Context, any, grpc.ServerStream) error {
 		return errors.New("unknown error")
 	})
 
@@ -625,7 +625,7 @@ func TestServerStreamExpectation_Returnf(t *testing.T) {
 
 	err := r.Handle(context.Background(), nil, stream)
 
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 }
 
 func TestServerStreamExpectation_ReturnJSON(t *testing.T) {
@@ -639,7 +639,7 @@ func TestServerStreamExpectation_ReturnJSON(t *testing.T) {
 
 	r := newListItemsRequest()
 
-	r.ReturnJSON([]map[string]interface{}{{
+	r.ReturnJSON([]map[string]any{{
 		"id":     42,
 		"locale": "en-US",
 		"name":   "Foobar",
@@ -647,7 +647,7 @@ func TestServerStreamExpectation_ReturnJSON(t *testing.T) {
 
 	err := r.Handle(context.Background(), nil, stream)
 
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 }
 
 func TestServerStreamExpectation_ReturnJSON_Error(t *testing.T) {
@@ -724,7 +724,7 @@ func TestServerStreamExpectation_Run(t *testing.T) {
 	)(t)
 
 	r := newListItemsRequest()
-	r.Run(func(_ context.Context, _ interface{}, s grpc.ServerStream) error {
+	r.Run(func(_ context.Context, _ any, s grpc.ServerStream) error {
 		_ = s.SendMsg(&grpctest.Item{Id: 41, Name: "Item #41"}) // nolint: errcheck
 		_ = s.SendMsg(&grpctest.Item{Id: 42, Name: "Item #42"}) // nolint: errcheck
 
@@ -1200,7 +1200,7 @@ func TestStepSend(t *testing.T) {
 	testCases := []struct {
 		scenario         string
 		mockServerStream xmock.ServerStreamMocker
-		msg              interface{}
+		msg              any
 		expectedError    string
 	}{
 		{
@@ -1277,7 +1277,7 @@ func TestStepSendMany(t *testing.T) {
 	testCases := []struct {
 		scenario         string
 		mockServerStream xmock.ServerStreamMocker
-		msg              interface{}
+		msg              any
 		expectedError    string
 	}{
 		{

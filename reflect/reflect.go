@@ -44,22 +44,22 @@ const (
 // ServiceMethod provides all information about a service method.
 type ServiceMethod struct {
 	Name           string
-	Input          interface{}
-	Output         interface{}
+	Input          any
+	Output         any
 	IsClientStream bool
 	IsServerStream bool
 }
 
-type serviceRegistrarFunc func(desc *grpc.ServiceDesc, impl interface{})
+type serviceRegistrarFunc func(desc *grpc.ServiceDesc, impl any)
 
-func (f serviceRegistrarFunc) RegisterService(desc *grpc.ServiceDesc, impl interface{}) {
+func (f serviceRegistrarFunc) RegisterService(desc *grpc.ServiceDesc, impl any) {
 	f(desc, impl)
 }
 
 // FindServiceMethods finds all the service methods using reflection on the server.
 //
 //	reflect.FindServiceMethods((*grpctest.ItemServiceServer)(nil))
-func FindServiceMethods(svc interface{}) []ServiceMethod {
+func FindServiceMethods(svc any) []ServiceMethod {
 	typeOf := UnwrapType(svc)
 	numMethods := typeOf.NumMethod()
 	result := make([]ServiceMethod, 0, numMethods)
@@ -246,20 +246,20 @@ func isStruct(t reflect.Type) bool {
 	return UnwrapType(t).Kind() == reflect.Struct
 }
 
-func isInterface(v interface{}) bool {
+func isInterface(v any) bool {
 	return UnwrapType(v).Kind() == reflect.Interface
 }
 
-func methodInput(method reflect.Method, position int) interface{} {
+func methodInput(method reflect.Method, position int) any {
 	return New(method.Type.In(position))
 }
 
-func methodOutput(method reflect.Method, position int) interface{} {
+func methodOutput(method reflect.Method, position int) any {
 	return New(method.Type.Out(position))
 }
 
 // IsNil checks whether the given value is nil.
-func IsNil(v interface{}) bool {
+func IsNil(v any) bool {
 	if v == nil {
 		return true
 	}
@@ -270,14 +270,14 @@ func IsNil(v interface{}) bool {
 }
 
 // IsPtr checks whether the input is a pointer and not nil.
-func IsPtr(v interface{}) bool {
+func IsPtr(v any) bool {
 	typeOf := reflect.TypeOf(v)
 
 	return !IsNil(v) && typeOf.Kind() == reflect.Ptr
 }
 
 // IsSlice checks whether the input is a slice.
-func IsSlice(v interface{}) bool {
+func IsSlice(v any) bool {
 	typeOf := reflect.TypeOf(v)
 
 	return typeOf != nil && typeOf.Kind() == reflect.Slice
@@ -285,7 +285,7 @@ func IsSlice(v interface{}) bool {
 
 // UnwrapType returns a reflect.Type of the given input. If the type is a pointer, UnwrapType will return the underlay
 // type.
-func UnwrapType(v interface{}) reflect.Type {
+func UnwrapType(v any) reflect.Type {
 	var t reflect.Type
 
 	t, ok := v.(reflect.Type)
@@ -301,7 +301,7 @@ func UnwrapType(v interface{}) reflect.Type {
 }
 
 // UnwrapPtrSliceType checks whether the given value is a pointer of a slice and return the type.
-func UnwrapPtrSliceType(v interface{}) (reflect.Type, error) {
+func UnwrapPtrSliceType(v any) (reflect.Type, error) {
 	typeOfPtr := reflect.TypeOf(v)
 
 	if typeOfPtr == nil || typeOfPtr.Kind() != reflect.Ptr {
@@ -319,7 +319,7 @@ func UnwrapPtrSliceType(v interface{}) (reflect.Type, error) {
 
 // UnwrapValue returns a reflect.Value of the given input. If the value is a pointer, UnwrapValue will return the underlay
 // value.
-func UnwrapValue(v interface{}) reflect.Value {
+func UnwrapValue(v any) reflect.Value {
 	var val reflect.Value
 
 	val, ok := v.(reflect.Value)
@@ -335,19 +335,19 @@ func UnwrapValue(v interface{}) reflect.Value {
 }
 
 // New creates a pointer to a new object of a given type.
-func New(v interface{}) interface{} {
+func New(v any) any {
 	return reflect.New(UnwrapType(v)).Interface()
 }
 
 // NewZero creates a pointer to a nil object of a given type.
-func NewZero(v interface{}) interface{} {
+func NewZero(v any) any {
 	valueOf := reflect.New(UnwrapType(v))
 
 	return reflect.Zero(valueOf.Type()).Interface()
 }
 
 // NewValue creates a pointer to the unwrapped value.
-func NewValue(value interface{}) interface{} {
+func NewValue(value any) any {
 	valueOf := reflect.New(UnwrapType(value))
 
 	valueOf.Elem().Set(UnwrapValue(value))
@@ -356,7 +356,7 @@ func NewValue(value interface{}) interface{} {
 }
 
 // NewSlicePtr creates a pointer to a slice of the pointer of the unwrapped value.
-func NewSlicePtr(value interface{}) interface{} {
+func NewSlicePtr(value any) any {
 	slice := reflect.MakeSlice(reflect.SliceOf(reflect.New(UnwrapType(value)).Type()), 0, 0)
 
 	outVal := reflect.New(slice.Type())
@@ -366,7 +366,7 @@ func NewSlicePtr(value interface{}) interface{} {
 }
 
 // SetPtrValue sets value for a pointer.
-func SetPtrValue(ptr interface{}, v interface{}) {
+func SetPtrValue(ptr any, v any) {
 	typeOf := reflect.TypeOf(ptr)
 
 	if typeOf == nil {
@@ -386,7 +386,7 @@ func SetPtrValue(ptr interface{}, v interface{}) {
 }
 
 // PtrValue ensures the value is a pointer. If it is not, a new pointer to the value is returned.
-func PtrValue(v interface{}) interface{} {
+func PtrValue(v any) any {
 	typeOf := reflect.TypeOf(v)
 
 	if typeOf == nil {
@@ -404,7 +404,7 @@ func PtrValue(v interface{}) interface{} {
 }
 
 // ParseRegisterFunc parses te register function and returns the service description and the interface of the server.
-func ParseRegisterFunc(v interface{}) (grpc.ServiceDesc, interface{}) {
+func ParseRegisterFunc(v any) (grpc.ServiceDesc, any) {
 	typeOf := reflect.TypeOf(v)
 
 	if typeOf == nil || typeOf.Kind() != reflect.Func {
@@ -420,7 +420,7 @@ func ParseRegisterFunc(v interface{}) (grpc.ServiceDesc, interface{}) {
 
 	serviceDesc := (*grpc.ServiceDesc)(nil)
 
-	sr := serviceRegistrarFunc(func(desc *grpc.ServiceDesc, _ interface{}) {
+	sr := serviceRegistrarFunc(func(desc *grpc.ServiceDesc, _ any) {
 		serviceDesc = desc
 	})
 

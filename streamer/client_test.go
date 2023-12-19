@@ -66,7 +66,7 @@ func TestTeeClientStreamer(t *testing.T) {
 
 	// Changing the item from the wrapped stream does not affect the one from buffer.
 	item1.Id = 1
-	assert.NotEqual(t, item1.Id, item2.Id)
+	assert.NotEqual(t, item1.GetId(), item2.GetId())
 
 	// Buffer is empty so next recv will get EOF.
 	err = clientStream.RecvMsg(&grpctest.Item{})

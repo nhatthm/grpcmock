@@ -29,7 +29,7 @@ func (s *sequence) Expect(expect Expectation) {
 	s.expectations = append(s.expectations, expect)
 }
 
-func (s *sequence) Plan(ctx context.Context, req service.Method, in interface{}) (Expectation, error) {
+func (s *sequence) Plan(ctx context.Context, req service.Method, in any) (Expectation, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 

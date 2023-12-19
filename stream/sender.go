@@ -9,7 +9,7 @@ import (
 
 // Sender is an interface wrapper around grpc.ClientStream and grpc.ServerStream.
 type Sender interface {
-	SendMsg(m interface{}) error
+	SendMsg(m any) error
 }
 
 // SendCloser is an interface wrapper around grpc.ClientStream.
@@ -20,7 +20,7 @@ type SendCloser interface {
 }
 
 // SendAll sends all the messages from a given input.
-func SendAll(s Sender, in interface{}) error {
+func SendAll(s Sender, in any) error {
 	if !xreflect.IsSlice(in) {
 		return fmt.Errorf("%w: %T", xreflect.ErrIsNotSlice, in)
 	}

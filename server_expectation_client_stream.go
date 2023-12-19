@@ -37,14 +37,14 @@ type ClientStreamExpectation interface {
 	//		WithHeader("Locale", "en-US")
 	//
 	// See: ClientStreamExpectation.WithHeaders().
-	WithHeader(header string, value interface{}) ClientStreamExpectation
+	WithHeader(header string, value any) ClientStreamExpectation
 	// WithHeaders sets a list of expected headers of the given request.
 	//
 	//	Server.ExpectClientStream("grpctest.Service/CreateItems").
-	//		WithHeaders(map[string]interface{}{"Locale": "en-US"})
+	//		WithHeaders(map[string]any{"Locale": "en-US"})
 	//
 	// See: ClientStreamExpectation.WithHeader().
-	WithHeaders(headers map[string]interface{}) ClientStreamExpectation
+	WithHeaders(headers map[string]any) ClientStreamExpectation
 	// WithPayload sets the expected payload of the given request. It could be a JSON []byte, JSON string, an object (that will be marshaled),
 	// or a custom matcher.
 	//
@@ -52,14 +52,14 @@ type ClientStreamExpectation interface {
 	//		WithPayload(`[{"name": "Foobar"}]`)
 	//
 	// See: ClientStreamExpectation.WithPayloadf().
-	WithPayload(in interface{}) ClientStreamExpectation
+	WithPayload(in any) ClientStreamExpectation
 	// WithPayloadf formats according to a format specifier and use it as the expected payload of the given request.
 	//
 	//	Server.ExpectClientStream("grpctest.Service/CreateItems").
 	//		WithPayloadf(`[{"name": %q}]`, "Foobar")
 	//
 	// See: ClientStreamExpectation.WithPayload().
-	WithPayloadf(format string, args ...interface{}) ClientStreamExpectation
+	WithPayloadf(format string, args ...any) ClientStreamExpectation
 
 	// ReturnCode sets the response code.
 	//
@@ -88,29 +88,29 @@ type ClientStreamExpectation interface {
 	//		ReturnErrorf(codes.NotFound, "Item %d not found", 42)
 	//
 	// See: ClientStreamExpectation.ReturnCode(), ClientStreamExpectation.ReturnErrorMessage(), ClientStreamExpectation.ReturnError().
-	ReturnErrorf(code codes.Code, format string, args ...interface{})
+	ReturnErrorf(code codes.Code, format string, args ...any)
 	// Return sets the result to return to client.
 	//
 	//	Server.ExpectClientStream("grpc.Service/CreateItems").
 	//		Return(`{"num_items": 1}`)
 	//
 	// See: ClientStreamExpectation.Returnf(), ClientStreamExpectation.ReturnJSON(), ClientStreamExpectation.ReturnFile().
-	Return(v interface{})
+	Return(v any)
 	// Returnf formats according to a format specifier and use it as the result to return to client.
 	//
 	//	Server.ExpectClientStream("grpc.Service/CreateItems").
 	//		Returnf(`{"num_items": %d}`, 1)
 	//
 	// See: ClientStreamExpectation.Return(), ClientStreamExpectation.ReturnJSON(), ClientStreamExpectation.ReturnFile().
-	Returnf(format string, args ...interface{})
+	Returnf(format string, args ...any)
 
 	// ReturnJSON marshals the object using json.Marshal and uses it as the result to return to client.
 	//
 	//	Server.ExpectClientStream("grpc.Service/CreateItems").
-	//		ReturnJSON(map[string]interface{}{"num_items": 1})
+	//		ReturnJSON(map[string]any{"num_items": 1})
 	//
 	// See: ClientStreamExpectation.Return(), ClientStreamExpectation.Returnf(), ClientStreamExpectation.ReturnFile().
-	ReturnJSON(v interface{})
+	ReturnJSON(v any)
 	// ReturnFile reads the file and uses its content as the result to return to client.
 	//
 	//	Server.ExpectUnary("grpctest.Service/CreateItems").
@@ -122,10 +122,10 @@ type ClientStreamExpectation interface {
 	// Run sets a custom handler to handle the given request.
 	//
 	//	   Server.ExpectClientStream("grpc.Service/CreateItems").
-	//			Run(func(context.Context, grpc.ServerStreamer) (interface{}, error) {
+	//			Run(func(context.Context, grpc.ServerStreamer) (any, error) {
 	//				return &grpctest.CreateItemsResponse{NumItems: 1}, nil
 	//			})
-	Run(handler func(ctx context.Context, s grpc.ServerStream) (interface{}, error))
+	Run(handler func(ctx context.Context, s grpc.ServerStream) (any, error))
 
 	// Once indicates that the mock should only return the value once.
 	//
@@ -183,10 +183,10 @@ type clientStreamExpectation struct {
 	*baseExpectation
 
 	// Request handler.
-	run func(ctx context.Context, s grpc.ServerStream) (interface{}, error)
+	run func(ctx context.Context, s grpc.ServerStream) (any, error)
 }
 
-func (e *clientStreamExpectation) WithHeader(header string, value interface{}) ClientStreamExpectation {
+func (e *clientStreamExpectation) WithHeader(header string, value any) ClientStreamExpectation {
 	e.lock()
 	defer e.unlock()
 
@@ -199,7 +199,7 @@ func (e *clientStreamExpectation) WithHeader(header string, value interface{}) C
 	return e
 }
 
-func (e *clientStreamExpectation) WithHeaders(headers map[string]interface{}) ClientStreamExpectation {
+func (e *clientStreamExpectation) WithHeaders(headers map[string]any) ClientStreamExpectation {
 	for header, val := range headers {
 		e.WithHeader(header, val)
 	}
@@ -207,7 +207,7 @@ func (e *clientStreamExpectation) WithHeaders(headers map[string]interface{}) Cl
 	return e
 }
 
-func (e *clientStreamExpectation) WithPayload(in interface{}) ClientStreamExpectation {
+func (e *clientStreamExpectation) WithPayload(in any) ClientStreamExpectation {
 	e.lock()
 	defer e.unlock()
 
@@ -216,7 +216,7 @@ func (e *clientStreamExpectation) WithPayload(in interface{}) ClientStreamExpect
 	return e
 }
 
-func (e *clientStreamExpectation) WithPayloadf(format string, args ...interface{}) ClientStreamExpectation {
+func (e *clientStreamExpectation) WithPayloadf(format string, args ...any) ClientStreamExpectation {
 	return e.WithPayload(fmt.Sprintf(format, args...))
 }
 
@@ -247,25 +247,25 @@ func (e *clientStreamExpectation) ReturnError(code codes.Code, msg string) {
 	e.ReturnCode(code)
 }
 
-func (e *clientStreamExpectation) ReturnErrorf(code codes.Code, format string, args ...interface{}) {
+func (e *clientStreamExpectation) ReturnErrorf(code codes.Code, format string, args ...any) {
 	e.ReturnErrorMessage(fmt.Sprintf(format, args...))
 	e.ReturnCode(code)
 }
 
-func (e *clientStreamExpectation) Return(v interface{}) {
+func (e *clientStreamExpectation) Return(v any) {
 	e.ReturnCode(codes.OK)
-	e.Run(func(context.Context, grpc.ServerStream) (interface{}, error) {
+	e.Run(func(context.Context, grpc.ServerStream) (any, error) {
 		return v, nil
 	})
 }
 
-func (e *clientStreamExpectation) Returnf(format string, args ...interface{}) {
+func (e *clientStreamExpectation) Returnf(format string, args ...any) {
 	e.Return(fmt.Sprintf(format, args...))
 }
 
-func (e *clientStreamExpectation) ReturnJSON(v interface{}) {
+func (e *clientStreamExpectation) ReturnJSON(v any) {
 	e.ReturnCode(codes.OK)
-	e.Run(func(context.Context, grpc.ServerStream) (interface{}, error) {
+	e.Run(func(context.Context, grpc.ServerStream) (any, error) {
 		return json.Marshal(v)
 	})
 }
@@ -277,12 +277,12 @@ func (e *clientStreamExpectation) ReturnFile(filePath string) {
 	must.NotFail(err)
 
 	e.ReturnCode(codes.OK)
-	e.Run(func(context.Context, grpc.ServerStream) (interface{}, error) {
+	e.Run(func(context.Context, grpc.ServerStream) (any, error) {
 		return afero.ReadFile(e.fs, filePath)
 	})
 }
 
-func (e *clientStreamExpectation) Run(handler func(ctx context.Context, s grpc.ServerStream) (interface{}, error)) {
+func (e *clientStreamExpectation) Run(handler func(ctx context.Context, s grpc.ServerStream) (any, error)) {
 	e.lock()
 	defer e.unlock()
 
@@ -290,7 +290,7 @@ func (e *clientStreamExpectation) Run(handler func(ctx context.Context, s grpc.S
 }
 
 // Handle executes the GRPC request.
-func (e *clientStreamExpectation) Handle(ctx context.Context, in interface{}, out interface{}) error {
+func (e *clientStreamExpectation) Handle(ctx context.Context, in any, out any) error {
 	if err := e.waiter.Wait(ctx); err != nil {
 		return xerrors.StatusError(err)
 	}
@@ -369,7 +369,7 @@ func newClientStreamExpectation(svc *service.Method) *clientStreamExpectation {
 			fs:          afero.NewOsFs(),
 			serviceDesc: svc,
 		},
-		run: func(context.Context, grpc.ServerStream) (interface{}, error) {
+		run: func(context.Context, grpc.ServerStream) (any, error) {
 			return nil, status.Error(codes.Unimplemented, "not implemented")
 		},
 	}

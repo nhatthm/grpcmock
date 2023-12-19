@@ -96,7 +96,7 @@ func TestInvokeUnary_Success(t *testing.T) {
 		actualRequest = request
 
 		response := test.BuildItem().
-			WithID(request.Id).
+			WithID(request.GetId()).
 			WithLocale(locale).
 			WithName("Foobar").
 			New()
@@ -433,7 +433,7 @@ func TestInvokeBidirectionalStream_Success(t *testing.T) {
 				return err
 			}
 
-			msg.Name = fmt.Sprintf("Modified %s", msg.Name)
+			msg.Name = fmt.Sprintf("Modified %s", msg.GetName())
 
 			if err := srv.SendMsg(msg); err != nil {
 				return err
@@ -480,7 +480,7 @@ func TestSendAll(t *testing.T) {
 	testCases := []struct {
 		scenario      string
 		mockStream    xmock.ClientStreamMocker
-		input         interface{}
+		input         any
 		expectedError string
 	}{
 		{
@@ -554,8 +554,8 @@ func TestRecvAll(t *testing.T) {
 	testCases := []struct {
 		scenario       string
 		mockStream     xmock.ClientStreamMocker
-		output         interface{}
-		expectedOutput interface{}
+		output         any
+		expectedOutput any
 		expectedError  string
 	}{
 		{

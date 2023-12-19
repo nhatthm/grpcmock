@@ -11,7 +11,7 @@ import (
 )
 
 // EqualMessage asserts that two proto messages are equal.
-func EqualMessage(t assert.TestingT, expected, actual proto.Message, msgAndArgs ...interface{}) bool {
+func EqualMessage(t assert.TestingT, expected, actual proto.Message, msgAndArgs ...any) bool {
 	if proto.Equal(expected, actual) {
 		return true
 	}
@@ -20,7 +20,7 @@ func EqualMessage(t assert.TestingT, expected, actual proto.Message, msgAndArgs 
 }
 
 // EqualError asserts that two grpc errors are equal.
-func EqualError(t assert.TestingT, expected, actual error, msgAndArgs ...interface{}) bool {
+func EqualError(t assert.TestingT, expected, actual error, msgAndArgs ...any) bool {
 	if st, _ := status.FromError(actual); st != nil {
 		actual = status.Error(st.Code(), sanitizeErrorMessage(st.Message()))
 	}
@@ -29,7 +29,7 @@ func EqualError(t assert.TestingT, expected, actual error, msgAndArgs ...interfa
 }
 
 // EqualErrorMessage asserts that the grpc error message is equal.
-func EqualErrorMessage(t assert.TestingT, actual error, expected string, msgAndArgs ...interface{}) bool {
+func EqualErrorMessage(t assert.TestingT, actual error, expected string, msgAndArgs ...any) bool {
 	if st, _ := status.FromError(actual); st != nil {
 		actual = status.Error(st.Code(), sanitizeErrorMessage(st.Message()))
 	}
@@ -38,7 +38,7 @@ func EqualErrorMessage(t assert.TestingT, actual error, expected string, msgAndA
 }
 
 // JSONEq compares 2 json objects.
-func JSONEq(t assert.TestingT, expected, actual interface{}, msgAndArgs ...interface{}) bool {
+func JSONEq(t assert.TestingT, expected, actual any, msgAndArgs ...any) bool {
 	if !assert.IsType(t, expected, actual) {
 		return false
 	}

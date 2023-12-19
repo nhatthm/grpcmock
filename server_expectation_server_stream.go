@@ -39,28 +39,28 @@ type ServerStreamExpectation interface {
 	//		WithHeader("Locale", "en-US")
 	//
 	// See: ServerStreamExpectation.WithHeaders().
-	WithHeader(header string, value interface{}) ServerStreamExpectation
+	WithHeader(header string, value any) ServerStreamExpectation
 	// WithHeaders sets a list of expected headers of the given request.
 	//
 	//	Server.ExpectServerStream("grpctest.Service/ListItems").
-	//		WithHeaders(map[string]interface{}{"Locale": "en-US"})
+	//		WithHeaders(map[string]any{"Locale": "en-US"})
 	//
 	// See: ServerStreamExpectation.WithHeader().
-	WithHeaders(headers map[string]interface{}) ServerStreamExpectation
+	WithHeaders(headers map[string]any) ServerStreamExpectation
 	// WithPayload sets the expected payload of the given request. It could be a JSON []byte, JSON string, or a slice of objects (that will be marshaled).
 	//
 	//	Server.ExpectServerStream("grpctest.Service/ListItems").
 	//		WithPayload(`{"message": "hello world!"}`)
 	//
 	// See: ServerStreamExpectation.WithPayloadf().
-	WithPayload(in interface{}) ServerStreamExpectation
+	WithPayload(in any) ServerStreamExpectation
 	// WithPayloadf formats according to a format specifier and use it as the expected payload of the given request.
 	//
 	//	Server.ExpectServerStream("grpctest.Service/ListItems").
 	//		WithPayloadf(`{"message": "hello %s"}`, "john")
 	//
 	// See: ServerStreamExpectation.WithPayload().
-	WithPayloadf(format string, args ...interface{}) ServerStreamExpectation
+	WithPayloadf(format string, args ...any) ServerStreamExpectation
 
 	// ReturnCode sets the response code.
 	//
@@ -89,28 +89,28 @@ type ServerStreamExpectation interface {
 	//		ReturnErrorf(codes.NotFound, "Item %d not found", 42)
 	//
 	// See: ServerStreamExpectation.ReturnCode(), ServerStreamExpectation.ReturnErrorMessage(), ServerStreamExpectation.ReturnError().
-	ReturnErrorf(code codes.Code, format string, args ...interface{})
+	ReturnErrorf(code codes.Code, format string, args ...any)
 	// Return sets the result to return to client.
 	//
 	//	Server.ExpectServerStream("grpc.Service/ListItems").
 	//		Return(`[{"id": 42}]`)
 	//
 	// See: ServerStreamExpectation.Returnf(), ServerStreamExpectation.ReturnJSON(), ServerStreamExpectation.ReturnFile(), ServerStreamExpectation.ReturnStream().
-	Return(v interface{})
+	Return(v any)
 	// Returnf formats according to a format specifier and use it as the result to return to client.
 	//
 	//	Server.ExpectServerStream("grpc.Service/ListItems").
 	//		Returnf(`[{"id": %d}]`, 42)
 	//
 	// See: ServerStreamExpectation.Return(), ServerStreamExpectation.ReturnJSON(), ServerStreamExpectation.ReturnFile(), ServerStreamExpectation.ReturnStream().
-	Returnf(format string, args ...interface{})
+	Returnf(format string, args ...any)
 	// ReturnJSON marshals the object using json.Marshal and uses it as the result to return to client.
 	//
 	//	Server.ExpectServerStream("grpc.Service/ListItems").
 	//		ReturnJSON([]map[string]string{{"foo": "bar"}})
 	//
 	// See: ServerStreamExpectation.Return(), ServerStreamExpectation.Returnf(), ServerStreamExpectation.ReturnFile(), ServerStreamExpectation.ReturnStream().
-	ReturnJSON(v interface{})
+	ReturnJSON(v any)
 	// ReturnFile reads the file and uses its content as the result to return to client.
 	//
 	//	Server.ExpectServerStream("grpc.Service/ListItems").
@@ -134,12 +134,12 @@ type ServerStreamExpectation interface {
 	// Run sets a custom handler to handle the given request.
 	//
 	//	   Server.ExpectServerStream("grpc.Service/ListItems").
-	//			Run(func(ctx context.Context, in interface{}, srv interface{}) error {
+	//			Run(func(ctx context.Context, in any, srv any) error {
 	//				srv := out.(grpc.ServerStreamer)
 	//
 	//				return srv.SendMsg(grpctest.Item{Id: 42})
 	//			})
-	Run(handler func(ctx context.Context, in interface{}, s grpc.ServerStream) error)
+	Run(handler func(ctx context.Context, in any, s grpc.ServerStream) error)
 
 	// Once indicates that the mock should only return the value once.
 	//
@@ -208,9 +208,9 @@ type ServerStreamHandler interface {
 	// SendHeader sends the header.
 	SendHeader() ServerStreamHandler
 	// Send sends a single message.
-	Send(v interface{}) ServerStreamHandler
+	Send(v any) ServerStreamHandler
 	// SendMany send multiple messages.
-	SendMany(v interface{}) ServerStreamHandler
+	SendMany(v any) ServerStreamHandler
 	// ReturnError sets the response error.
 	//
 	// See: ServerStreamHandler.ReturnErrorf().
@@ -218,14 +218,14 @@ type ServerStreamHandler interface {
 	// ReturnErrorf sets the response error.
 	//
 	// See: ServerStreamHandler.ReturnError().
-	ReturnErrorf(code codes.Code, msg string, args ...interface{})
+	ReturnErrorf(code codes.Code, msg string, args ...any)
 }
 
 type serverStreamExpectation struct {
 	*baseExpectation
 
 	// Request handler.
-	run func(ctx context.Context, in interface{}, s grpc.ServerStream) error
+	run func(ctx context.Context, in any, s grpc.ServerStream) error
 
 	// requestHeader is a list of expected headers of the given request.
 	requestHeader xmatcher.HeaderMatcher
@@ -252,7 +252,7 @@ func (e *serverStreamExpectation) PayloadMatcher() *xmatcher.PayloadMatcher {
 	return e.requestPayload
 }
 
-func (e *serverStreamExpectation) WithHeader(header string, value interface{}) ServerStreamExpectation {
+func (e *serverStreamExpectation) WithHeader(header string, value any) ServerStreamExpectation {
 	e.lock()
 	defer e.unlock()
 
@@ -265,7 +265,7 @@ func (e *serverStreamExpectation) WithHeader(header string, value interface{}) S
 	return e
 }
 
-func (e *serverStreamExpectation) WithHeaders(headers map[string]interface{}) ServerStreamExpectation {
+func (e *serverStreamExpectation) WithHeaders(headers map[string]any) ServerStreamExpectation {
 	for header, val := range headers {
 		e.WithHeader(header, val)
 	}
@@ -273,7 +273,7 @@ func (e *serverStreamExpectation) WithHeaders(headers map[string]interface{}) Se
 	return e
 }
 
-func (e *serverStreamExpectation) WithPayload(in interface{}) ServerStreamExpectation {
+func (e *serverStreamExpectation) WithPayload(in any) ServerStreamExpectation {
 	e.lock()
 	defer e.unlock()
 
@@ -282,7 +282,7 @@ func (e *serverStreamExpectation) WithPayload(in interface{}) ServerStreamExpect
 	return e
 }
 
-func (e *serverStreamExpectation) WithPayloadf(format string, args ...interface{}) ServerStreamExpectation {
+func (e *serverStreamExpectation) WithPayloadf(format string, args ...any) ServerStreamExpectation {
 	return e.WithPayload(fmt.Sprintf(format, args...))
 }
 
@@ -313,14 +313,14 @@ func (e *serverStreamExpectation) ReturnError(code codes.Code, msg string) {
 	e.ReturnCode(code)
 }
 
-func (e *serverStreamExpectation) ReturnErrorf(code codes.Code, format string, args ...interface{}) {
+func (e *serverStreamExpectation) ReturnErrorf(code codes.Code, format string, args ...any) {
 	e.ReturnErrorMessage(fmt.Sprintf(format, args...))
 	e.ReturnCode(code)
 }
 
-func (e *serverStreamExpectation) Return(v interface{}) {
+func (e *serverStreamExpectation) Return(v any) {
 	e.ReturnCode(codes.OK)
-	e.Run(func(ctx context.Context, _ interface{}, s grpc.ServerStream) error {
+	e.Run(func(ctx context.Context, _ any, s grpc.ServerStream) error {
 		h := newServerStreamHandler(s.(*streamer.ServerStreamer))
 
 		h.SendMany(v)
@@ -329,13 +329,13 @@ func (e *serverStreamExpectation) Return(v interface{}) {
 	})
 }
 
-func (e *serverStreamExpectation) Returnf(format string, args ...interface{}) {
+func (e *serverStreamExpectation) Returnf(format string, args ...any) {
 	e.Return(fmt.Sprintf(format, args...))
 }
 
-func (e *serverStreamExpectation) ReturnJSON(v interface{}) {
+func (e *serverStreamExpectation) ReturnJSON(v any) {
 	e.ReturnCode(codes.OK)
-	e.Run(func(ctx context.Context, _ interface{}, s grpc.ServerStream) error {
+	e.Run(func(ctx context.Context, _ any, s grpc.ServerStream) error {
 		d, err := json.Marshal(v)
 		if err != nil {
 			return status.Error(codes.Internal, err.Error())
@@ -356,7 +356,7 @@ func (e *serverStreamExpectation) ReturnFile(filePath string) {
 	must.NotFail(err)
 
 	e.ReturnCode(codes.OK)
-	e.Run(func(ctx context.Context, _ interface{}, s grpc.ServerStream) error {
+	e.Run(func(ctx context.Context, _ any, s grpc.ServerStream) error {
 		d, err := afero.ReadFile(e.fs, filePath)
 		if err != nil {
 			return status.Error(codes.Internal, err.Error())
@@ -374,7 +374,7 @@ func (e *serverStreamExpectation) ReturnStream() ServerStreamHandler { //nolint:
 	h := &serverStreamHandler{}
 
 	e.ReturnCode(codes.OK)
-	e.Run(func(ctx context.Context, _ interface{}, s grpc.ServerStream) error {
+	e.Run(func(ctx context.Context, _ any, s grpc.ServerStream) error {
 		return h.withStreamer(s.(*streamer.ServerStreamer)).
 			handle(ctx)
 	})
@@ -382,14 +382,14 @@ func (e *serverStreamExpectation) ReturnStream() ServerStreamHandler { //nolint:
 	return h
 }
 
-func (e *serverStreamExpectation) Run(handler func(ctx context.Context, in interface{}, s grpc.ServerStream) error) {
+func (e *serverStreamExpectation) Run(handler func(ctx context.Context, in any, s grpc.ServerStream) error) {
 	e.lock()
 	defer e.unlock()
 
 	e.run = handler
 }
 
-func (e *serverStreamExpectation) Handle(ctx context.Context, in interface{}, out interface{}) error {
+func (e *serverStreamExpectation) Handle(ctx context.Context, in any, out any) error {
 	if err := e.waiter.Wait(ctx); err != nil {
 		return xerrors.StatusError(err)
 	}
@@ -446,7 +446,7 @@ func newServerStreamExpectation(svc *service.Method) *serverStreamExpectation {
 			waiter:      wait.NoWait,
 			serviceDesc: svc,
 		},
-		run: func(context.Context, interface{}, grpc.ServerStream) error {
+		run: func(context.Context, any, grpc.ServerStream) error {
 			return status.Error(codes.Unimplemented, "not implemented")
 		},
 	}
@@ -517,7 +517,7 @@ func (h *serverStreamHandler) SendHeader() ServerStreamHandler {
 	return h
 }
 
-func (h *serverStreamHandler) Send(v interface{}) ServerStreamHandler {
+func (h *serverStreamHandler) Send(v any) ServerStreamHandler {
 	h.addStep(serverStreamHandlerStepFunc(func(ctx context.Context, s grpc.ServerStream) error {
 		return stepSend(h.outputType, v)(ctx, s)
 	}))
@@ -525,7 +525,7 @@ func (h *serverStreamHandler) Send(v interface{}) ServerStreamHandler {
 	return h
 }
 
-func (h *serverStreamHandler) SendMany(v interface{}) ServerStreamHandler {
+func (h *serverStreamHandler) SendMany(v any) ServerStreamHandler {
 	h.addStep(serverStreamHandlerStepFunc(func(ctx context.Context, s grpc.ServerStream) error {
 		return stepSendMany(h.outputType, v)(ctx, s)
 	}))
@@ -537,7 +537,7 @@ func (h *serverStreamHandler) ReturnError(code codes.Code, msg string) {
 	h.addStep(stepReturnErrorf(code, msg))
 }
 
-func (h *serverStreamHandler) ReturnErrorf(code codes.Code, msg string, args ...interface{}) {
+func (h *serverStreamHandler) ReturnErrorf(code codes.Code, msg string, args ...any) {
 	h.addStep(stepReturnErrorf(code, msg, args...))
 }
 
@@ -562,9 +562,9 @@ func stepSendHeader(md metadata.MD) serverStreamHandlerStepFunc {
 	}
 }
 
-func stepSend(expectedType reflect.Type, msg interface{}) serverStreamHandlerStepFunc {
+func stepSend(expectedType reflect.Type, msg any) serverStreamHandlerStepFunc {
 	return func(_ context.Context, s grpc.ServerStream) error {
-		send := func(v interface{}) error {
+		send := func(v any) error {
 			return s.SendMsg(v)
 		}
 
@@ -587,11 +587,11 @@ func stepSend(expectedType reflect.Type, msg interface{}) serverStreamHandlerSte
 	}
 }
 
-func stepSendMany(msgType reflect.Type, msg interface{}) serverStreamHandlerStepFunc { //nolint: cyclop
+func stepSendMany(msgType reflect.Type, msg any) serverStreamHandlerStepFunc { //nolint: cyclop
 	return func(_ context.Context, s grpc.ServerStream) error {
 		expectedType := reflect.SliceOf(msgType)
 
-		sendMany := func(v interface{}) error {
+		sendMany := func(v any) error {
 			valueOf := reflect.ValueOf(v)
 
 			if valueOf.Type().Kind() == reflect.Ptr {
@@ -648,7 +648,7 @@ func stepSendMany(msgType reflect.Type, msg interface{}) serverStreamHandlerStep
 	}
 }
 
-func stepReturnErrorf(code codes.Code, msg string, args ...interface{}) serverStreamHandlerStepFunc {
+func stepReturnErrorf(code codes.Code, msg string, args ...any) serverStreamHandlerStepFunc {
 	return func(context.Context, grpc.ServerStream) error {
 		return status.Errorf(code, msg, args...)
 	}

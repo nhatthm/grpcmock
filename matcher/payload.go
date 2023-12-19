@@ -16,7 +16,7 @@ const initActual = "<could not decode>"
 var _ matcher.Matcher = (*PayloadMatcher)(nil)
 
 // PayloadDecoder decodes an input for matching.
-type PayloadDecoder func(in interface{}) (string, error)
+type PayloadDecoder func(in any) (string, error)
 
 // PayloadMatcher matches a payload of a grpc request.
 type PayloadMatcher struct {
@@ -31,8 +31,8 @@ func (m *PayloadMatcher) Matcher() matcher.Matcher {
 }
 
 // Match satisfies matcher.Matcher interface.
-func (m *PayloadMatcher) Match(in interface{}) (bool, error) {
-	var v interface{}
+func (m *PayloadMatcher) Match(in any) (bool, error) {
+	var v any
 
 	m.actual = initActual
 
@@ -76,7 +76,7 @@ func Payload(m matcher.Matcher, decode PayloadDecoder) *PayloadMatcher {
 }
 
 // UnaryPayload initiates a new payload matcher for a unary request.
-func UnaryPayload(in interface{}) *PayloadMatcher {
+func UnaryPayload(in any) *PayloadMatcher {
 	switch v := in.(type) {
 	case []byte, string:
 		return Payload(matcher.JSON(value.String(in)), decodeUnaryPayload)
@@ -94,12 +94,12 @@ func UnaryPayload(in interface{}) *PayloadMatcher {
 }
 
 // ServerStreamPayload initiates a new payload matcher for a server stream request.
-func ServerStreamPayload(in interface{}) *PayloadMatcher {
+func ServerStreamPayload(in any) *PayloadMatcher {
 	return UnaryPayload(in)
 }
 
 // ClientStreamPayload initiates a new payload matcher for a client stream request.
-func ClientStreamPayload(in interface{}) *PayloadMatcher {
+func ClientStreamPayload(in any) *PayloadMatcher {
 	switch v := in.(type) {
 	case []byte, string:
 		return Payload(matcher.JSON(value.String(v)), decodeClientStreamPayload)
@@ -120,7 +120,7 @@ func ClientStreamPayload(in interface{}) *PayloadMatcher {
 }
 
 func matchClientStreamPayloadWithCustomMatcher(expected string, match MatchFn) *PayloadMatcher {
-	return Payload(Fn(expected, func(actual interface{}) (bool, error) {
+	return Payload(Fn(expected, func(actual any) (bool, error) {
 		in, err := streamer.ClientStreamerPayload(actual.(*streamer.ClientStreamer))
 		// This should never happen because the PayloadMatcher will read the stream first.
 		// If there is an error while reading the stream, it is caught inside the PayloadMatcher.
@@ -130,7 +130,7 @@ func matchClientStreamPayloadWithCustomMatcher(expected string, match MatchFn) *
 	}), nil)
 }
 
-func decodeUnaryPayload(in interface{}) (string, error) {
+func decodeUnaryPayload(in any) (string, error) {
 	switch v := in.(type) {
 	case []byte:
 		return string(v), nil
@@ -147,6 +147,6 @@ func decodeUnaryPayload(in interface{}) (string, error) {
 	return string(data), nil
 }
 
-func decodeClientStreamPayload(in interface{}) (string, error) {
+func decodeClientStreamPayload(in any) (string, error) {
 	return value.Marshal(in)
 }

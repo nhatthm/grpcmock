@@ -20,10 +20,10 @@ type Error struct {
 	expected      Expectation
 	actual        service.Method
 	actualHeader  map[string]string
-	actualPayload interface{}
+	actualPayload any
 
 	messageFormat string
-	messageArgs   []interface{}
+	messageArgs   []any
 }
 
 func (e Error) formatExpected(w io.Writer) {
@@ -50,7 +50,7 @@ func (e Error) Error() string {
 }
 
 // NewError creates a new Error.
-func NewError(ctx context.Context, expected Expectation, req service.Method, in interface{}, messageFormat string, messageArgs ...interface{}) *Error {
+func NewError(ctx context.Context, expected Expectation, req service.Method, in any, messageFormat string, messageArgs ...any) *Error {
 	var actualHeader map[string]string
 
 	expectedHeader := expected.HeaderMatcher()
@@ -67,7 +67,7 @@ func NewError(ctx context.Context, expected Expectation, req service.Method, in 
 		}
 	}
 
-	var actualPayload interface{}
+	var actualPayload any
 
 	if in != nil {
 		in, err := value.Marshal(in)
@@ -89,7 +89,7 @@ func NewError(ctx context.Context, expected Expectation, req service.Method, in 
 }
 
 // UnexpectedRequestError returns an error because of the unexpected request.
-func UnexpectedRequestError(m service.Method, in interface{}) error {
+func UnexpectedRequestError(m service.Method, in any) error {
 	payload, err := value.Marshal(in)
 	if err != nil {
 		return status.Errorf(codes.FailedPrecondition, "unexpected request received: %q, unable to decode payload: %s", m.FullName(), err.Error())

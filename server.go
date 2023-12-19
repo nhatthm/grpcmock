@@ -296,7 +296,7 @@ func (s *Server) Close() error {
 	return s.closeServer()
 }
 
-func (s *Server) handleRequest(ctx context.Context, svc service.Method, in interface{}, out interface{}) error {
+func (s *Server) handleRequest(ctx context.Context, svc service.Method, in any, out any) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -317,7 +317,7 @@ func (s *Server) handleRequest(ctx context.Context, svc service.Method, in inter
 	s.Requests = append(s.Requests, expected)
 
 	h, _ := expected.(interface { //nolint: errcheck
-		Handle(ctx context.Context, in interface{}, out interface{}) error
+		Handle(ctx context.Context, in any, out any) error
 	})
 
 	err = h.Handle(ctx, in, out)
@@ -330,7 +330,7 @@ func (s *Server) registerServiceMethod(svc service.Method) {
 	s.services[svc.FullName()] = &svc
 }
 
-func (s *Server) registerService(id string, svc interface{}) {
+func (s *Server) registerService(id string, svc any) {
 	for _, method := range xreflect.FindServiceMethods(svc) {
 		s.registerServiceMethod(service.Method{
 			ServiceName: id,
@@ -344,7 +344,7 @@ func (s *Server) registerService(id string, svc interface{}) {
 
 func buildGRPCServer(
 	services map[string]*service.Method,
-	handler func(ctx context.Context, svc service.Method, in interface{}, out interface{}) error,
+	handler func(ctx context.Context, svc service.Method, in any, out any) error,
 	opts ...grpc.ServerOption,
 ) (*grpc.Server, func() error) {
 	srv := grpc.NewServer(opts...)
@@ -381,7 +381,7 @@ func closeGRPCServer(srv *grpc.Server, timeout time.Duration) error {
 
 func buildServiceDescriptions(
 	services map[string]*service.Method,
-	handler func(ctx context.Context, svc service.Method, in interface{}, out interface{}) error,
+	handler func(ctx context.Context, svc service.Method, in any, out any) error,
 ) []*grpc.ServiceDesc {
 	result := make([]*grpc.ServiceDesc, 0, len(services))
 	list := make(map[string]*grpc.ServiceDesc, len(services))
@@ -426,16 +426,16 @@ func buildServiceDescriptions(
 
 func newUnaryHandler(
 	svc service.Method,
-	handle func(ctx context.Context, svc service.Method, in interface{}, out interface{}) error,
-) func(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	return func(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	handle func(ctx context.Context, svc service.Method, in any, out any) error,
+) func(srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor) (any, error) {
+	return func(srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor) (any, error) {
 		in := xreflect.New(svc.Input)
 
 		if err := dec(in); err != nil {
 			return xreflect.NewZero(svc.Output), xerrors.StatusError(err)
 		}
 
-		intercept := func(ctx context.Context, in interface{}) (interface{}, error) {
+		intercept := func(ctx context.Context, in any) (any, error) {
 			out := xreflect.New(svc.Output)
 
 			if err := handle(ctx, svc, in, out); err != nil {
@@ -454,7 +454,7 @@ func newUnaryHandler(
 			FullMethod: svc.FullName(),
 		}
 
-		return interceptor(ctx, in, info, func(ctx context.Context, req interface{}) (interface{}, error) {
+		return interceptor(ctx, in, info, func(ctx context.Context, req any) (any, error) {
 			return intercept(ctx, req)
 		})
 	}
@@ -462,12 +462,12 @@ func newUnaryHandler(
 
 func newStreamHandler(
 	svc service.Method,
-	handle func(ctx context.Context, svc service.Method, in interface{}, out interface{}) error,
-) func(_ interface{}, s grpc.ServerStream) error {
-	return func(_ interface{}, s grpc.ServerStream) error {
+	handle func(ctx context.Context, svc service.Method, in any, out any) error,
+) func(_ any, s grpc.ServerStream) error {
+	return func(_ any, s grpc.ServerStream) error {
 		var (
-			in  interface{}
-			out interface{}
+			in  any
+			out any
 		)
 
 		// nolint: exhaustive
@@ -520,7 +520,7 @@ func WithPlanner(p planner.Planner) ServerOption {
 //	)(t)
 //
 // See: RegisterServiceFromInstance(), RegisterServiceFromMethods().
-func RegisterService(registerFunc interface{}) ServerOption {
+func RegisterService(registerFunc any) ServerOption {
 	return func(s *Server) {
 		serviceDesc, svc := xreflect.ParseRegisterFunc(registerFunc)
 
@@ -539,7 +539,7 @@ func RegisterService(registerFunc interface{}) ServerOption {
 //	)(t)
 //
 // See: RegisterService(), RegisterServiceFromMethods().
-func RegisterServiceFromInstance(id string, svc interface{}) ServerOption {
+func RegisterServiceFromInstance(id string, svc any) ServerOption {
 	return func(s *Server) {
 		s.registerService(id, svc)
 	}

@@ -23,15 +23,15 @@ func TestPayloadMatcher_Match(t *testing.T) {
 	testCases := []struct {
 		scenario       string
 		matcher        matcher.Matcher
-		decoder        func(in interface{}) (string, error)
-		payload        interface{}
+		decoder        func(in any) (string, error)
+		payload        any
 		expectedResult bool
 		expectedActual string
 		expectedError  error
 	}{
 		{
 			scenario: "decoder error",
-			decoder: func(interface{}) (string, error) {
+			decoder: func(any) (string, error) {
 				return "", errors.New("decode error")
 			},
 			expectedActual: expectedActual,
@@ -40,7 +40,7 @@ func TestPayloadMatcher_Match(t *testing.T) {
 		{
 			scenario: "decoder success but mismatched",
 			matcher:  matcher.Exact(`payload`),
-			decoder: func(interface{}) (string, error) {
+			decoder: func(any) (string, error) {
 				return "foobar", nil
 			},
 			expectedActual: `foobar`,
@@ -48,7 +48,7 @@ func TestPayloadMatcher_Match(t *testing.T) {
 		{
 			scenario: "decoder success and mismatched",
 			matcher:  matcher.Exact(`payload`),
-			decoder: func(interface{}) (string, error) {
+			decoder: func(any) (string, error) {
 				return "payload", nil
 			},
 			expectedResult: true,
@@ -107,8 +107,8 @@ func TestUnaryPayload(t *testing.T) {
 
 	testCases := []struct {
 		scenario       string
-		matcherInput   interface{}
-		actualInput    interface{}
+		matcherInput   any
+		actualInput    any
 		expectedResult bool
 		expectedError  string
 	}{
@@ -247,7 +247,7 @@ func TestUnaryPayload(t *testing.T) {
 		// ==== custom matcher ====
 		{
 			scenario: "struct - matched",
-			matcherInput: func(interface{}) (bool, error) {
+			matcherInput: func(any) (bool, error) {
 				return true, nil
 			},
 			actualInput:    []byte(correctPayload),
@@ -255,7 +255,7 @@ func TestUnaryPayload(t *testing.T) {
 		},
 		{
 			scenario: "struct - mismatched",
-			matcherInput: func(interface{}) (bool, error) {
+			matcherInput: func(any) (bool, error) {
 				return false, nil
 			},
 			actualInput:    []byte(correctPayload),
@@ -343,8 +343,8 @@ func TestServerStreamPayload(t *testing.T) {
 
 	testCases := []struct {
 		scenario       string
-		matcherInput   interface{}
-		actualInput    interface{}
+		matcherInput   any
+		actualInput    any
 		expectedResult bool
 		expectedError  string
 	}{
@@ -483,7 +483,7 @@ func TestServerStreamPayload(t *testing.T) {
 		// ==== custom matcher ====
 		{
 			scenario: "struct - matched",
-			matcherInput: func(interface{}) (bool, error) {
+			matcherInput: func(any) (bool, error) {
 				return true, nil
 			},
 			actualInput:    []byte(correctPayload),
@@ -491,7 +491,7 @@ func TestServerStreamPayload(t *testing.T) {
 		},
 		{
 			scenario: "struct - mismatched",
-			matcherInput: func(interface{}) (bool, error) {
+			matcherInput: func(any) (bool, error) {
 				return false, nil
 			},
 			actualInput:    []byte(correctPayload),
@@ -579,8 +579,8 @@ func TestClientStreamPayload(t *testing.T) {
 
 	testCases := []struct {
 		scenario       string
-		matcherInput   interface{}
-		actualInput    interface{}
+		matcherInput   any
+		actualInput    any
 		expectedResult bool
 		expectedError  string
 	}{
@@ -791,7 +791,7 @@ func TestClientStreamPayload_Stream(t *testing.T) {
 
 	testCases := []struct {
 		scenario       string
-		matcherInput   interface{}
+		matcherInput   any
 		input          *grpctest.Item
 		expectedResult bool
 		expectedError  string
@@ -834,7 +834,7 @@ func TestClientStreamPayload_Stream(t *testing.T) {
 		},
 		{
 			scenario: "fn - match",
-			matcherInput: func(interface{}) (bool, error) {
+			matcherInput: func(any) (bool, error) {
 				return true, nil
 			},
 			input:          item1,
@@ -842,7 +842,7 @@ func TestClientStreamPayload_Stream(t *testing.T) {
 		},
 		{
 			scenario: "fn - mismatch",
-			matcherInput: func(interface{}) (bool, error) {
+			matcherInput: func(any) (bool, error) {
 				return false, nil
 			},
 			input:          item1,
@@ -851,7 +851,7 @@ func TestClientStreamPayload_Stream(t *testing.T) {
 		{
 			scenario: "provider - match",
 			matcherInput: func() (string, xmatcher.MatchFn) {
-				return "", func(interface{}) (bool, error) {
+				return "", func(any) (bool, error) {
 					return true, nil
 				}
 			},
@@ -861,7 +861,7 @@ func TestClientStreamPayload_Stream(t *testing.T) {
 		{
 			scenario: "provider - mismatch",
 			matcherInput: func() (string, xmatcher.MatchFn) {
-				return "", func(interface{}) (bool, error) {
+				return "", func(any) (bool, error) {
 					return false, nil
 				}
 			},

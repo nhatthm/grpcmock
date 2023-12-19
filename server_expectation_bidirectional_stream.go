@@ -30,14 +30,14 @@ type BidirectionalStreamExpectation interface {
 	//		WithHeader("Locale", "en-US")
 	//
 	// See: BidirectionalStreamExpectation.WithHeaders().
-	WithHeader(header string, value interface{}) BidirectionalStreamExpectation
+	WithHeader(header string, value any) BidirectionalStreamExpectation
 	// WithHeaders sets a list of expected headers of the given request.
 	//
 	//	Server.ExpectBidirectionalStream("grpctest.Service/TransformItems").
-	//		WithHeaders(map[string]interface{}{"Locale": "en-US"})
+	//		WithHeaders(map[string]any{"Locale": "en-US"})
 	//
 	// See: BidirectionalStreamExpectation.WithHeader().
-	WithHeaders(headers map[string]interface{}) BidirectionalStreamExpectation
+	WithHeaders(headers map[string]any) BidirectionalStreamExpectation
 
 	// ReturnCode sets the response code.
 	//
@@ -66,7 +66,7 @@ type BidirectionalStreamExpectation interface {
 	//		ReturnErrorf(codes.NotFound, "Item %d not found", 42)
 	//
 	// See: BidirectionalStreamExpectation.ReturnCode(), BidirectionalStreamExpectation.ReturnErrorMessage(), BidirectionalStreamExpectation.ReturnError().
-	ReturnErrorf(code codes.Code, format string, args ...interface{})
+	ReturnErrorf(code codes.Code, format string, args ...any)
 
 	// Run sets a custom handler to handle the given request.
 	//
@@ -147,7 +147,7 @@ type bidirectionalStreamExpectation struct {
 	run func(ctx context.Context, s grpc.ServerStream) error
 }
 
-func (e *bidirectionalStreamExpectation) WithHeader(header string, value interface{}) BidirectionalStreamExpectation {
+func (e *bidirectionalStreamExpectation) WithHeader(header string, value any) BidirectionalStreamExpectation {
 	e.lock()
 	defer e.unlock()
 
@@ -160,7 +160,7 @@ func (e *bidirectionalStreamExpectation) WithHeader(header string, value interfa
 	return e
 }
 
-func (e *bidirectionalStreamExpectation) WithHeaders(headers map[string]interface{}) BidirectionalStreamExpectation {
+func (e *bidirectionalStreamExpectation) WithHeaders(headers map[string]any) BidirectionalStreamExpectation {
 	for header, value := range headers {
 		e.WithHeader(header, value)
 	}
@@ -195,7 +195,7 @@ func (e *bidirectionalStreamExpectation) ReturnError(code codes.Code, msg string
 	e.ReturnCode(code)
 }
 
-func (e *bidirectionalStreamExpectation) ReturnErrorf(code codes.Code, format string, args ...interface{}) {
+func (e *bidirectionalStreamExpectation) ReturnErrorf(code codes.Code, format string, args ...any) {
 	e.ReturnErrorMessage(fmt.Sprintf(format, args...))
 	e.ReturnCode(code)
 }
@@ -207,7 +207,7 @@ func (e *bidirectionalStreamExpectation) Run(handler func(ctx context.Context, s
 	e.run = handler
 }
 
-func (e *bidirectionalStreamExpectation) Handle(ctx context.Context, in interface{}, _ interface{}) error {
+func (e *bidirectionalStreamExpectation) Handle(ctx context.Context, in any, _ any) error {
 	if err := e.waiter.Wait(ctx); err != nil {
 		return xerrors.StatusError(err)
 	}

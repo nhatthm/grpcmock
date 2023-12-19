@@ -36,7 +36,7 @@ type UnaryRequest struct {
 	waitTime time.Duration
 
 	// Request handler.
-	run func(ctx context.Context, in interface{}) (interface{}, error)
+	run func(ctx context.Context, in any) (any, error)
 
 	// requestHeader is a list of expected headers of the given request.
 	requestHeader xmatcher.HeaderMatcher
@@ -60,7 +60,7 @@ func NewUnaryRequest(locker sync.Locker, svc *service.Method) *UnaryRequest {
 			fs:          afero.NewOsFs(),
 		},
 
-		run: func(ctx context.Context, in interface{}) (interface{}, error) {
+		run: func(ctx context.Context, in any) (any, error) {
 			return nil, status.Error(codes.Unimplemented, "not implemented")
 		},
 	}
@@ -72,7 +72,7 @@ func NewUnaryRequest(locker sync.Locker, svc *service.Method) *UnaryRequest {
 //		WithHeader("Locale", "en-US")
 //
 // nolint: unparam
-func (r *UnaryRequest) WithHeader(header string, value interface{}) *UnaryRequest {
+func (r *UnaryRequest) WithHeader(header string, value any) *UnaryRequest {
 	r.lock()
 	defer r.unlock()
 
@@ -88,8 +88,8 @@ func (r *UnaryRequest) WithHeader(header string, value interface{}) *UnaryReques
 // WithHeaders sets a list of expected headers of the given request.
 //
 //	Server.ExpectUnary("grpctest.Service/GetItem").
-//		WithHeaders(map[string]interface{}{"Locale": "en-US"})
-func (r *UnaryRequest) WithHeaders(headers map[string]interface{}) *UnaryRequest {
+//		WithHeaders(map[string]any{"Locale": "en-US"})
+func (r *UnaryRequest) WithHeaders(headers map[string]any) *UnaryRequest {
 	for header, val := range headers {
 		r.WithHeader(header, val)
 	}
@@ -106,7 +106,7 @@ func (r *UnaryRequest) WithHeaders(headers map[string]interface{}) *UnaryRequest
 //		WithPayload(&Item{Id: 41})
 //
 //	Server.ExpectUnary("grpctest.Service/GetItem").
-//		WithPayload(func(actual interface{}) (bool, error) {
+//		WithPayload(func(actual any) (bool, error) {
 //			in, ok := actual.(*Item)
 //			if !ok {
 //				return false, nil
@@ -117,7 +117,7 @@ func (r *UnaryRequest) WithHeaders(headers map[string]interface{}) *UnaryRequest
 //
 //	Server.ExpectUnary("grpctest.Service/GetItem").
 //		WithPayload(&Item{Id: 41})
-func (r *UnaryRequest) WithPayload(in interface{}) *UnaryRequest {
+func (r *UnaryRequest) WithPayload(in any) *UnaryRequest {
 	r.lock()
 	defer r.unlock()
 
@@ -130,7 +130,7 @@ func (r *UnaryRequest) WithPayload(in interface{}) *UnaryRequest {
 //
 //	Server.ExpectUnary("grpctest.Service/GetItem").
 //		WithPayloadf(`{"message": "hello %s"}`, "john")
-func (r *UnaryRequest) WithPayloadf(format string, args ...interface{}) *UnaryRequest {
+func (r *UnaryRequest) WithPayloadf(format string, args ...any) *UnaryRequest {
 	return r.WithPayload(fmt.Sprintf(format, args...))
 }
 
@@ -177,7 +177,7 @@ func (r *UnaryRequest) ReturnError(code codes.Code, msg string) {
 //
 //	Server.ExpectUnary("grpctest.Service/GetItem").
 //		ReturnErrorf(codes.NotFound, "Item %d not found", 42)
-func (r *UnaryRequest) ReturnErrorf(code codes.Code, format string, args ...interface{}) {
+func (r *UnaryRequest) ReturnErrorf(code codes.Code, format string, args ...any) {
 	r.ReturnErrorMessage(fmt.Sprintf(format, args...))
 	r.ReturnCode(code)
 }
@@ -186,9 +186,9 @@ func (r *UnaryRequest) ReturnErrorf(code codes.Code, format string, args ...inte
 //
 //	Server.ExpectUnary("grpctest.Service/GetItem").
 //		Return(`{"message": "hello world!"}`)
-func (r *UnaryRequest) Return(v interface{}) {
+func (r *UnaryRequest) Return(v any) {
 	r.ReturnCode(codes.OK)
-	r.Run(func(context.Context, interface{}) (interface{}, error) {
+	r.Run(func(context.Context, any) (any, error) {
 		return v, nil
 	})
 }
@@ -197,7 +197,7 @@ func (r *UnaryRequest) Return(v interface{}) {
 //
 //	Server.ExpectUnary("grpctest.Service/GetItem").
 //		Returnf(`{"message": %q}`, "hello")
-func (r *UnaryRequest) Returnf(format string, args ...interface{}) {
+func (r *UnaryRequest) Returnf(format string, args ...any) {
 	r.Return(fmt.Sprintf(format, args...))
 }
 
@@ -205,9 +205,9 @@ func (r *UnaryRequest) Returnf(format string, args ...interface{}) {
 //
 //	Server.ExpectUnary("grpctest.Service/GetItem").
 //		ReturnJSON(map[string]string{"foo": "bar"})
-func (r *UnaryRequest) ReturnJSON(v interface{}) {
+func (r *UnaryRequest) ReturnJSON(v any) {
 	r.ReturnCode(codes.OK)
-	r.Run(func(context.Context, interface{}) (interface{}, error) {
+	r.Run(func(context.Context, any) (any, error) {
 		return json.Marshal(v)
 	})
 }
@@ -223,7 +223,7 @@ func (r *UnaryRequest) ReturnFile(filePath string) {
 	must.NotFail(err)
 
 	r.ReturnCode(codes.OK)
-	r.Run(func(context.Context, interface{}) (interface{}, error) {
+	r.Run(func(context.Context, any) (any, error) {
 		return afero.ReadFile(r.fs, filePath)
 	})
 }
@@ -231,10 +231,10 @@ func (r *UnaryRequest) ReturnFile(filePath string) {
 // Run sets a custom handler to handle the given request.
 //
 //	   Server.ExpectUnary("grpctest.Service/GetItem").
-//			Run(func(ctx context.Context, in interface{}) (interface{}, error) {
+//			Run(func(ctx context.Context, in any) (any, error) {
 //				return &Item{}, nil
 //			})
-func (r *UnaryRequest) Run(handler func(ctx context.Context, in interface{}) (interface{}, error)) {
+func (r *UnaryRequest) Run(handler func(ctx context.Context, in any) (any, error)) {
 	r.lock()
 	defer r.unlock()
 
@@ -242,7 +242,7 @@ func (r *UnaryRequest) Run(handler func(ctx context.Context, in interface{}) (in
 }
 
 // handle executes the GRPC request.
-func (r *UnaryRequest) handle(ctx context.Context, in interface{}, out interface{}) error {
+func (r *UnaryRequest) handle(ctx context.Context, in any, out any) error {
 	// Block if specified.
 	if r.waitFor != nil {
 		<-r.waitFor

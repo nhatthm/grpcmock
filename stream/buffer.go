@@ -14,7 +14,7 @@ var _ SendReceiver = (*Buffer)(nil)
 
 // Buffer is a buffer of sending and receiving messages.
 type Buffer struct {
-	buf []interface{}
+	buf []any
 }
 
 // Len returns the current length of the buffer.
@@ -23,7 +23,7 @@ func (b *Buffer) Len() int {
 }
 
 // SendMsg persists the message into the Buffer.
-func (b *Buffer) SendMsg(m interface{}) error {
+func (b *Buffer) SendMsg(m any) error {
 	if !xreflect.IsPtr(m) {
 		if xreflect.IsNil(m) {
 			return fmt.Errorf("send msg error: %w", xreflect.ErrPtrIsNil)
@@ -42,7 +42,7 @@ func (b *Buffer) SendMsg(m interface{}) error {
 }
 
 // RecvMsg returns the messages in buffer.
-func (b *Buffer) RecvMsg(m interface{}) error {
+func (b *Buffer) RecvMsg(m any) error {
 	if !xreflect.IsPtr(m) {
 		if xreflect.IsNil(m) {
 			return fmt.Errorf("recv msg error: %w", xreflect.ErrPtrIsNil)

@@ -38,7 +38,7 @@ type ClientStreamRequest struct {
 	waitTime time.Duration
 
 	// Request handler.
-	run func(ctx context.Context, s grpc.ServerStream) (interface{}, error)
+	run func(ctx context.Context, s grpc.ServerStream) (any, error)
 
 	// requestHeader is a list of expected headers of the given request.
 	requestHeader xmatcher.HeaderMatcher
@@ -62,7 +62,7 @@ func NewClientStreamRequest(locker sync.Locker, svc *service.Method) *ClientStre
 			fs:          afero.NewOsFs(),
 		},
 
-		run: func(context.Context, grpc.ServerStream) (interface{}, error) {
+		run: func(context.Context, grpc.ServerStream) (any, error) {
 			return nil, status.Error(codes.Unimplemented, "not implemented")
 		},
 	}
@@ -72,7 +72,7 @@ func NewClientStreamRequest(locker sync.Locker, svc *service.Method) *ClientStre
 //
 //	Server.ExpectClientStream("grpctest.Service/CreateItems").
 //		WithHeader("Locale", "en-US")
-func (r *ClientStreamRequest) WithHeader(header string, value interface{}) *ClientStreamRequest {
+func (r *ClientStreamRequest) WithHeader(header string, value any) *ClientStreamRequest {
 	r.lock()
 	defer r.unlock()
 
@@ -88,8 +88,8 @@ func (r *ClientStreamRequest) WithHeader(header string, value interface{}) *Clie
 // WithHeaders sets a list of expected headers of the given request.
 //
 //	Server.ExpectClientStream("grpctest.Service/CreateItems").
-//		WithHeaders(map[string]interface{}{"Locale": "en-US"})
-func (r *ClientStreamRequest) WithHeaders(headers map[string]interface{}) *ClientStreamRequest {
+//		WithHeaders(map[string]any{"Locale": "en-US"})
+func (r *ClientStreamRequest) WithHeaders(headers map[string]any) *ClientStreamRequest {
 	for header, value := range headers {
 		r.WithHeader(header, value)
 	}
@@ -104,7 +104,7 @@ func (r *ClientStreamRequest) WithHeaders(headers map[string]interface{}) *Clien
 //		WithPayload(`[{"name": "Foobar"}]`)
 //
 // See: ClientStreamRequest.WithPayloadf().
-func (r *ClientStreamRequest) WithPayload(in interface{}) *ClientStreamRequest {
+func (r *ClientStreamRequest) WithPayload(in any) *ClientStreamRequest {
 	r.lock()
 	defer r.unlock()
 
@@ -119,7 +119,7 @@ func (r *ClientStreamRequest) WithPayload(in interface{}) *ClientStreamRequest {
 //		WithPayloadf(`[{"name": %q}]`, "Foobar")
 //
 // See: ClientStreamRequest.WithPayload().
-func (r *ClientStreamRequest) WithPayloadf(format string, args ...interface{}) *ClientStreamRequest {
+func (r *ClientStreamRequest) WithPayloadf(format string, args ...any) *ClientStreamRequest {
 	return r.WithPayload(fmt.Sprintf(format, args...))
 }
 
@@ -174,7 +174,7 @@ func (r *ClientStreamRequest) ReturnError(code codes.Code, msg string) {
 //		ReturnErrorf(codes.NotFound, "Item %d not found", 42)
 //
 // See: ClientStreamRequest.ReturnCode(), ClientStreamRequest.ReturnErrorMessage(), ClientStreamRequest.ReturnError().
-func (r *ClientStreamRequest) ReturnErrorf(code codes.Code, format string, args ...interface{}) {
+func (r *ClientStreamRequest) ReturnErrorf(code codes.Code, format string, args ...any) {
 	r.ReturnErrorMessage(fmt.Sprintf(format, args...))
 	r.ReturnCode(code)
 }
@@ -185,9 +185,9 @@ func (r *ClientStreamRequest) ReturnErrorf(code codes.Code, format string, args 
 //		Return(`{"num_items": 1}`)
 //
 // See: ClientStreamRequest.Returnf(), ClientStreamRequest.ReturnJSON(), ClientStreamRequest.ReturnFile().
-func (r *ClientStreamRequest) Return(v interface{}) {
+func (r *ClientStreamRequest) Return(v any) {
 	r.ReturnCode(codes.OK)
-	r.Run(func(context.Context, grpc.ServerStream) (interface{}, error) {
+	r.Run(func(context.Context, grpc.ServerStream) (any, error) {
 		return v, nil
 	})
 }
@@ -198,19 +198,19 @@ func (r *ClientStreamRequest) Return(v interface{}) {
 //		Returnf(`{"num_items": %d}`, 1)
 //
 // See: ClientStreamRequest.Return(), ClientStreamRequest.ReturnJSON(), ClientStreamRequest.ReturnFile().
-func (r *ClientStreamRequest) Returnf(format string, args ...interface{}) {
+func (r *ClientStreamRequest) Returnf(format string, args ...any) {
 	r.Return(fmt.Sprintf(format, args...))
 }
 
 // ReturnJSON marshals the object using json.Marshal and uses it as the result to return to client.
 //
 //	Server.ExpectClientStream("grpc.Service/CreateItems").
-//		ReturnJSON(map[string]interface{}{"num_items": 1})
+//		ReturnJSON(map[string]any{"num_items": 1})
 //
 // See: ClientStreamRequest.Return(), ClientStreamRequest.Returnf(), ClientStreamRequest.ReturnFile().
-func (r *ClientStreamRequest) ReturnJSON(v interface{}) {
+func (r *ClientStreamRequest) ReturnJSON(v any) {
 	r.ReturnCode(codes.OK)
-	r.Run(func(context.Context, grpc.ServerStream) (interface{}, error) {
+	r.Run(func(context.Context, grpc.ServerStream) (any, error) {
 		return json.Marshal(v)
 	})
 }
@@ -228,7 +228,7 @@ func (r *ClientStreamRequest) ReturnFile(filePath string) {
 	must.NotFail(err)
 
 	r.ReturnCode(codes.OK)
-	r.Run(func(context.Context, grpc.ServerStream) (interface{}, error) {
+	r.Run(func(context.Context, grpc.ServerStream) (any, error) {
 		return afero.ReadFile(r.fs, filePath)
 	})
 }
@@ -236,10 +236,10 @@ func (r *ClientStreamRequest) ReturnFile(filePath string) {
 // Run sets a custom handler to handle the given request.
 //
 //	   Server.ExpectClientStream("grpc.Service/CreateItems").
-//			Run(func(context.Context, grpc.ServerStreamer) (interface{}, error) {
+//			Run(func(context.Context, grpc.ServerStreamer) (any, error) {
 //				return &grpctest.CreateItemsResponse{NumItems: 1}, nil
 //			})
-func (r *ClientStreamRequest) Run(handler func(ctx context.Context, s grpc.ServerStream) (interface{}, error)) {
+func (r *ClientStreamRequest) Run(handler func(ctx context.Context, s grpc.ServerStream) (any, error)) {
 	r.lock()
 	defer r.unlock()
 
@@ -247,7 +247,7 @@ func (r *ClientStreamRequest) Run(handler func(ctx context.Context, s grpc.Serve
 }
 
 // handle executes the GRPC request.
-func (r *ClientStreamRequest) handle(ctx context.Context, in interface{}, out interface{}) error {
+func (r *ClientStreamRequest) handle(ctx context.Context, in any, out any) error {
 	// Block if specified.
 	if r.waitFor != nil {
 		<-r.waitFor

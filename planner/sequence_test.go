@@ -23,7 +23,7 @@ func TestSequence(t *testing.T) {
 		mockPlanner     func(t testing.TB) planner.Planner
 		context         context.Context
 		request         service.Method
-		input           interface{}
+		input           any
 		expectedRequest bool
 		expectedRemain  int
 		expectedError   string
@@ -126,7 +126,7 @@ func TestSequence_Plan_MatchedRequestIsRemoved(t *testing.T) {
 
 	assert.NotNil(t, result)
 	assert.NoError(t, err)
-	assert.Len(t, p.Remain(), 0)
+	assert.Empty(t, p.Remain())
 }
 
 func TestSequence_Plan_AlwaysMatchTheFirstUnlimitedRequest(t *testing.T) {

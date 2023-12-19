@@ -78,7 +78,7 @@ func TestMatchHeader_Unary(t *testing.T) {
 			scenario: "match panic",
 			context:  context.Background(),
 			expectation: expectGetItems().
-				WithHeader("locale", matcher.Fn("en-US", func(interface{}) (bool, error) {
+				WithHeader("locale", matcher.Fn("en-US", func(any) (bool, error) {
 					panic("match panic")
 				})),
 			expectedError: `Expected: Unary /grpctest.Service/GetItem
@@ -94,7 +94,7 @@ Error: could not match header: match panic
 			scenario: "match error",
 			context:  context.Background(),
 			expectation: expectGetItems().
-				WithHeader("locale", matcher.Fn("en-US", func(interface{}) (bool, error) {
+				WithHeader("locale", matcher.Fn("en-US", func(any) (bool, error) {
 					return false, errors.New("match error")
 				})),
 			expectedError: `Expected: Unary /grpctest.Service/GetItem
@@ -170,7 +170,7 @@ func TestMatchHeader_ClientStream(t *testing.T) {
 			scenario: "match panic",
 			context:  context.Background(),
 			expectation: expectCreateItems().
-				WithHeader("locale", matcher.Fn("en-US", func(interface{}) (bool, error) {
+				WithHeader("locale", matcher.Fn("en-US", func(any) (bool, error) {
 					panic("match panic")
 				})),
 			mockStreamer: mockCreateItemsStreamer(),
@@ -187,7 +187,7 @@ Error: could not match header: match panic
 			scenario: "match error",
 			context:  context.Background(),
 			expectation: expectCreateItems().
-				WithHeader("locale", matcher.Fn("en-US", func(interface{}) (bool, error) {
+				WithHeader("locale", matcher.Fn("en-US", func(any) (bool, error) {
 					return false, errors.New("match error")
 				})),
 			mockStreamer: mockCreateItemsStreamer(),
@@ -286,7 +286,7 @@ func TestMatchHeader_ServerStream(t *testing.T) {
 			scenario: "match panic",
 			context:  context.Background(),
 			expectation: expectListItems().
-				WithHeader("locale", matcher.Fn("en-US", func(interface{}) (bool, error) {
+				WithHeader("locale", matcher.Fn("en-US", func(any) (bool, error) {
 					panic("match panic")
 				})),
 			expectedError: `Expected: ServerStream /grpctest.Service/ListItems
@@ -302,7 +302,7 @@ Error: could not match header: match panic
 			scenario: "match error",
 			context:  context.Background(),
 			expectation: expectListItems().
-				WithHeader("locale", matcher.Fn("en-US", func(interface{}) (bool, error) {
+				WithHeader("locale", matcher.Fn("en-US", func(any) (bool, error) {
 					return false, errors.New("match error")
 				})),
 			expectedError: `Expected: ServerStream /grpctest.Service/ListItems
@@ -376,7 +376,7 @@ func TestMatchHeader_BidirectionalStream(t *testing.T) {
 			scenario: "match panic",
 			context:  context.Background(),
 			expectation: expectTransformItems().
-				WithHeader("locale", matcher.Fn("en-US", func(interface{}) (bool, error) {
+				WithHeader("locale", matcher.Fn("en-US", func(any) (bool, error) {
 					panic("match panic")
 				})),
 			expectedError: `Expected: BidirectionalStream /grpctest.Service/TransformItems
@@ -390,7 +390,7 @@ Error: could not match header: match panic
 			scenario: "match error",
 			context:  context.Background(),
 			expectation: expectTransformItems().
-				WithHeader("locale", matcher.Fn("en-US", func(interface{}) (bool, error) {
+				WithHeader("locale", matcher.Fn("en-US", func(any) (bool, error) {
 					return false, errors.New("match error")
 				})),
 			expectedError: `Expected: BidirectionalStream /grpctest.Service/TransformItems
@@ -450,7 +450,7 @@ func TestMatchPayload_Unary(t *testing.T) {
 	testCases := []struct {
 		scenario      string
 		expectation   expectationBuilder
-		in            interface{}
+		in            any
 		expectedError string
 	}{
 		{
@@ -485,7 +485,7 @@ Error: expected request payload: {"id":1}, received: {"id":42}
 		},
 		{
 			scenario: "mismatched without matcher expectation",
-			expectation: expectGetItems().WithPayload(matcher.Fn("", func(interface{}) (bool, error) {
+			expectation: expectGetItems().WithPayload(matcher.Fn("", func(any) (bool, error) {
 				return false, nil
 			})),
 			in: item,
@@ -566,7 +566,7 @@ Error: expected request payload: [{"id":1}], received: [{"id":41,"locale":"en-US
 		},
 		{
 			scenario: "mismatched without matcher expectation",
-			expectation: expectCreateItems().WithPayload(matcher.Fn("", func(interface{}) (bool, error) {
+			expectation: expectCreateItems().WithPayload(matcher.Fn("", func(any) (bool, error) {
 				return false, nil
 			})),
 			mockStreamer: mockCreateItemsStreamer(),
@@ -617,7 +617,7 @@ func TestMatchPayload_ServerStream(t *testing.T) {
 		{
 			scenario: "match error",
 			expectation: expectListItems().
-				WithPayload(matcher.Fn(`{"limit":10}`, func(interface{}) (bool, error) {
+				WithPayload(matcher.Fn(`{"limit":10}`, func(any) (bool, error) {
 					return false, errors.New("match error")
 				})),
 			expectedError: `Expected: ServerStream /grpctest.Service/ListItems
@@ -644,7 +644,7 @@ Error: expected request payload: {"limit":10}, received: {}
 		{
 			scenario: "mismatched without matcher expectation",
 			expectation: expectListItems().
-				WithPayload(matcher.Fn("", func(interface{}) (bool, error) {
+				WithPayload(matcher.Fn("", func(any) (bool, error) {
 					return false, nil
 				})),
 			expectedError: `Expected: ServerStream /grpctest.Service/ListItems

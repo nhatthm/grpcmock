@@ -290,7 +290,7 @@ func file_resources_protobuf_service_proto_rawDescGZIP() []byte {
 }
 
 var file_resources_protobuf_service_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
-var file_resources_protobuf_service_proto_goTypes = []interface{}{
+var file_resources_protobuf_service_proto_goTypes = []any{
 	(*GetItemRequest)(nil),        // 0: grpctest.GetItemRequest
 	(*ListItemsRequest)(nil),      // 1: grpctest.ListItemsRequest
 	(*CreateItemsResponse)(nil),   // 2: grpctest.CreateItemsResponse
@@ -320,7 +320,7 @@ func file_resources_protobuf_service_proto_init() {
 		return
 	}
 	if !protoimpl.UnsafeEnabled {
-		file_resources_protobuf_service_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
+		file_resources_protobuf_service_proto_msgTypes[0].Exporter = func(v any, i int) any {
 			switch v := v.(*GetItemRequest); i {
 			case 0:
 				return &v.state
@@ -332,7 +332,7 @@ func file_resources_protobuf_service_proto_init() {
 				return nil
 			}
 		}
-		file_resources_protobuf_service_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
+		file_resources_protobuf_service_proto_msgTypes[1].Exporter = func(v any, i int) any {
 			switch v := v.(*ListItemsRequest); i {
 			case 0:
 				return &v.state
@@ -344,7 +344,7 @@ func file_resources_protobuf_service_proto_init() {
 				return nil
 			}
 		}
-		file_resources_protobuf_service_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
+		file_resources_protobuf_service_proto_msgTypes[2].Exporter = func(v any, i int) any {
 			switch v := v.(*CreateItemsResponse); i {
 			case 0:
 				return &v.state
@@ -356,7 +356,7 @@ func file_resources_protobuf_service_proto_init() {
 				return nil
 			}
 		}
-		file_resources_protobuf_service_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
+		file_resources_protobuf_service_proto_msgTypes[3].Exporter = func(v any, i int) any {
 			switch v := v.(*Item); i {
 			case 0:
 				return &v.state

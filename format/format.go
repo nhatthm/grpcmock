@@ -23,10 +23,10 @@ func ExpectedRequest(w io.Writer, svc service.Method, header xmatcher.HeaderMatc
 
 // ExpectedRequestTimes formats an expected request with total and remaining calls.
 func ExpectedRequestTimes(w io.Writer, svc service.Method, header xmatcher.HeaderMatcher, payload matcher.Matcher, totalCalls, remainingCalls int) {
-	expectedHeader := map[string]interface{}(nil)
+	expectedHeader := map[string]any(nil)
 
 	if header != nil {
-		expectedHeader = make(map[string]interface{}, len(header))
+		expectedHeader = make(map[string]any, len(header))
 
 		for k, v := range header {
 			expectedHeader[k] = v
@@ -37,10 +37,10 @@ func ExpectedRequestTimes(w io.Writer, svc service.Method, header xmatcher.Heade
 }
 
 // Request formats a request.
-func Request(w io.Writer, svc service.Method, header map[string]string, payload interface{}) {
-	interfaceHeader := map[string]interface{}(nil)
+func Request(w io.Writer, svc service.Method, header map[string]string, payload any) {
+	interfaceHeader := map[string]any(nil)
 	if header != nil {
-		interfaceHeader = make(map[string]interface{}, len(header))
+		interfaceHeader = make(map[string]any, len(header))
 
 		for k, v := range header {
 			interfaceHeader[k] = v
@@ -50,7 +50,7 @@ func Request(w io.Writer, svc service.Method, header map[string]string, payload 
 	formatRequestTimes(w, svc, interfaceHeader, payload, 0, 0)
 }
 
-func formatRequestTimes(w io.Writer, svc service.Method, header map[string]interface{}, payload interface{}, totalCalls, remainingCalls int) {
+func formatRequestTimes(w io.Writer, svc service.Method, header map[string]any, payload any, totalCalls, remainingCalls int) {
 	_, _ = fmt.Fprintf(w, "%s %s", svc.MethodType, svc.FullName())
 
 	if remainingCalls > 0 && (totalCalls != 0 || remainingCalls != 1) {
@@ -87,7 +87,7 @@ func formatRequestTimes(w io.Writer, svc service.Method, header map[string]inter
 	}
 }
 
-func formatValueInline(v interface{}) string {
+func formatValueInline(v any) string {
 	if v == nil {
 		return "<nil>"
 	}
@@ -121,7 +121,7 @@ func formatValueInline(v interface{}) string {
 	}
 }
 
-func formatType(v interface{}) string {
+func formatType(v any) string {
 	if xreflect.IsNil(v) {
 		return ""
 	}
@@ -145,7 +145,7 @@ func formatType(v interface{}) string {
 }
 
 // nolint: cyclop
-func formatValue(v interface{}) string {
+func formatValue(v any) string {
 	if v == nil {
 		return "<nil>"
 	}

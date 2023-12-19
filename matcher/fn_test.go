@@ -16,20 +16,20 @@ func TestFn(t *testing.T) {
 
 	testCases := []struct {
 		scenario       string
-		match          func(interface{}) (bool, error)
+		match          func(any) (bool, error)
 		expectedResult bool
 		expectedError  error
 	}{
 		{
 			scenario: "error",
-			match: func(interface{}) (bool, error) {
+			match: func(any) (bool, error) {
 				return false, errors.New("match error")
 			},
 			expectedError: errors.New("match error"),
 		},
 		{
 			scenario: "success",
-			match: func(interface{}) (bool, error) {
+			match: func(any) (bool, error) {
 				return true, nil
 			},
 			expectedResult: true,

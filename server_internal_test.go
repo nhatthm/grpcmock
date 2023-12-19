@@ -29,7 +29,7 @@ func TestServer_HandleRequest_Unexpected(t *testing.T) {
 
 	testCases := []struct {
 		scenario      string
-		in            interface{}
+		in            any
 		expectedError string
 	}{
 		{
@@ -109,19 +109,19 @@ func TestNewUnaryHandler(t *testing.T) {
 		Output:     &grpctest.Item{},
 	}
 
-	decodeNoError := func(interface{}) error { return nil }
+	decodeNoError := func(any) error { return nil }
 
 	testCases := []struct {
 		scenario       string
-		handle         func(ctx context.Context, svc service.Method, in interface{}, out interface{}) error
-		decode         func(interface{}) error
+		handle         func(ctx context.Context, svc service.Method, in any, out any) error
+		decode         func(any) error
 		interceptor    grpc.UnaryServerInterceptor
 		expectedResult *grpctest.Item
 		expectedError  error
 	}{
 		{
 			scenario: "could not decode",
-			decode: func(interface{}) error {
+			decode: func(any) error {
 				return errors.New("decode error")
 			},
 			expectedError: status.Error(codes.Internal, "decode error"),
@@ -129,7 +129,7 @@ func TestNewUnaryHandler(t *testing.T) {
 		{
 			scenario: "intercept error",
 			decode:   decodeNoError,
-			interceptor: func(context.Context, interface{}, *grpc.UnaryServerInfo, grpc.UnaryHandler) (interface{}, error) {
+			interceptor: func(context.Context, any, *grpc.UnaryServerInfo, grpc.UnaryHandler) (any, error) {
 				return (*grpctest.Item)(nil), errors.New("intercept error")
 			},
 			expectedError: errors.New("intercept error"),
@@ -137,7 +137,7 @@ func TestNewUnaryHandler(t *testing.T) {
 		{
 			scenario: "intercept success",
 			decode:   decodeNoError,
-			interceptor: func(context.Context, interface{}, *grpc.UnaryServerInfo, grpc.UnaryHandler) (interface{}, error) {
+			interceptor: func(context.Context, any, *grpc.UnaryServerInfo, grpc.UnaryHandler) (any, error) {
 				return &grpctest.Item{Id: 42}, nil
 			},
 			expectedResult: &grpctest.Item{Id: 42},
@@ -145,7 +145,7 @@ func TestNewUnaryHandler(t *testing.T) {
 		{
 			scenario: "handle error",
 			decode:   decodeNoError,
-			handle: func(context.Context, service.Method, interface{}, interface{}) error {
+			handle: func(context.Context, service.Method, any, any) error {
 				return errors.New("handle error")
 			},
 			expectedError: errors.New("handle error"),
@@ -153,7 +153,7 @@ func TestNewUnaryHandler(t *testing.T) {
 		{
 			scenario: "handle success",
 			decode:   decodeNoError,
-			handle: func(_ context.Context, _ service.Method, _ interface{}, out interface{}) error {
+			handle: func(_ context.Context, _ service.Method, _ any, out any) error {
 				item := out.(*grpctest.Item) // nolint: errcheck
 				item.Id = 42
 
@@ -188,7 +188,7 @@ func TestNewStreamHandler_ServerStream(t *testing.T) {
 	testCases := []struct {
 		scenario      string
 		mockStream    xmock.ServerStreamMocker
-		handle        func(ctx context.Context, svc service.Method, in interface{}, out interface{}) error
+		handle        func(ctx context.Context, svc service.Method, in any, out any) error
 		expectedError error
 	}{
 		{
@@ -197,7 +197,7 @@ func TestNewStreamHandler_ServerStream(t *testing.T) {
 				s.On("RecvMsg", &grpctest.ListItemsRequest{}).
 					Return(errors.New("recv error"))
 			}),
-			handle: func(context.Context, service.Method, interface{}, interface{}) error {
+			handle: func(context.Context, service.Method, any, any) error {
 				assert.Fail(t, "should not be called")
 
 				return nil
@@ -213,7 +213,7 @@ func TestNewStreamHandler_ServerStream(t *testing.T) {
 				s.On("Context").
 					Return(context.Background())
 			}),
-			handle: func(context.Context, service.Method, interface{}, interface{}) error {
+			handle: func(context.Context, service.Method, any, any) error {
 				return status.Error(codes.Internal, "handle error")
 			},
 			expectedError: status.Error(codes.Internal, "handle error"),
@@ -227,7 +227,7 @@ func TestNewStreamHandler_ServerStream(t *testing.T) {
 				s.On("Context").
 					Return(context.Background())
 			}),
-			handle: func(context.Context, service.Method, interface{}, interface{}) error {
+			handle: func(context.Context, service.Method, any, any) error {
 				return nil
 			},
 		},
@@ -257,7 +257,7 @@ func TestNewStreamHandler_ClientStream(t *testing.T) {
 	testCases := []struct {
 		scenario      string
 		mockStream    xmock.ServerStreamMocker
-		handle        func(ctx context.Context, svc service.Method, in interface{}, out interface{}) error
+		handle        func(ctx context.Context, svc service.Method, in any, out any) error
 		expectedError error
 	}{
 		{
@@ -266,7 +266,7 @@ func TestNewStreamHandler_ClientStream(t *testing.T) {
 				s.On("Context").
 					Return(context.Background())
 			}),
-			handle: func(context.Context, service.Method, interface{}, interface{}) error {
+			handle: func(context.Context, service.Method, any, any) error {
 				return status.Error(codes.Internal, "handle error")
 			},
 			expectedError: status.Error(codes.Internal, "handle error"),
@@ -277,7 +277,7 @@ func TestNewStreamHandler_ClientStream(t *testing.T) {
 				s.On("Context").
 					Return(context.Background())
 			}),
-			handle: func(context.Context, service.Method, interface{}, interface{}) error {
+			handle: func(context.Context, service.Method, any, any) error {
 				return nil
 			},
 		},
@@ -307,7 +307,7 @@ func TestNewStreamHandler_BidirectionalStream(t *testing.T) {
 	testCases := []struct {
 		scenario      string
 		mockStream    xmock.ServerStreamMocker
-		handle        func(ctx context.Context, svc service.Method, in interface{}, out interface{}) error
+		handle        func(ctx context.Context, svc service.Method, in any, out any) error
 		expectedError error
 	}{
 		{
@@ -316,7 +316,7 @@ func TestNewStreamHandler_BidirectionalStream(t *testing.T) {
 				s.On("Context").
 					Return(context.Background())
 			}),
-			handle: func(context.Context, service.Method, interface{}, interface{}) error {
+			handle: func(context.Context, service.Method, any, any) error {
 				return status.Error(codes.Internal, "handle error")
 			},
 			expectedError: status.Error(codes.Internal, "handle error"),
@@ -327,7 +327,7 @@ func TestNewStreamHandler_BidirectionalStream(t *testing.T) {
 				s.On("Context").
 					Return(context.Background())
 			}),
-			handle: func(context.Context, service.Method, interface{}, interface{}) error {
+			handle: func(context.Context, service.Method, any, any) error {
 				return nil
 			},
 		},

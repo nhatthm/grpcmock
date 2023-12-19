@@ -182,7 +182,7 @@ func RegisterItemServiceServer(s grpc.ServiceRegistrar, srv ItemServiceServer) {
 	s.RegisterService(&ItemService_ServiceDesc, srv)
 }
 
-func _ItemService_GetItem_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _ItemService_GetItem_Handler(srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor) (any, error) {
 	in := new(GetItemRequest)
 	if err := dec(in); err != nil {
 		return nil, err
@@ -194,13 +194,13 @@ func _ItemService_GetItem_Handler(srv interface{}, ctx context.Context, dec func
 		Server:     srv,
 		FullMethod: "/grpctest.ItemService/GetItem",
 	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+	handler := func(ctx context.Context, req any) (any, error) {
 		return srv.(ItemServiceServer).GetItem(ctx, req.(*GetItemRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _ItemService_ListItems_Handler(srv interface{}, stream grpc.ServerStream) error {
+func _ItemService_ListItems_Handler(srv any, stream grpc.ServerStream) error {
 	m := new(ListItemsRequest)
 	if err := stream.RecvMsg(m); err != nil {
 		return err
@@ -221,7 +221,7 @@ func (x *itemServiceListItemsServer) Send(m *Item) error {
 	return x.ServerStream.SendMsg(m)
 }
 
-func _ItemService_CreateItems_Handler(srv interface{}, stream grpc.ServerStream) error {
+func _ItemService_CreateItems_Handler(srv any, stream grpc.ServerStream) error {
 	return srv.(ItemServiceServer).CreateItems(&itemServiceCreateItemsServer{stream})
 }
 
@@ -247,7 +247,7 @@ func (x *itemServiceCreateItemsServer) Recv() (*Item, error) {
 	return m, nil
 }
 
-func _ItemService_TransformItems_Handler(srv interface{}, stream grpc.ServerStream) error {
+func _ItemService_TransformItems_Handler(srv any, stream grpc.ServerStream) error {
 	return srv.(ItemServiceServer).TransformItems(&itemServiceTransformItemsServer{stream})
 }
 

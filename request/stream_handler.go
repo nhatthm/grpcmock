@@ -45,6 +45,6 @@ func (h *baseStreamHandler) ReturnError(code codes.Code, msg string) {
 	h.addStep(stepReturnErrorf(code, msg))
 }
 
-func (h *baseStreamHandler) ReturnErrorf(code codes.Code, msg string, args ...interface{}) {
+func (h *baseStreamHandler) ReturnErrorf(code codes.Code, msg string, args ...any) {
 	h.addStep(stepReturnErrorf(code, msg, args...))
 }

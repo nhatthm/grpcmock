@@ -41,7 +41,7 @@ func TestClientStreamExpectation_WithHeaders(t *testing.T) {
 	t.Parallel()
 
 	r := newCreateItemsRequest()
-	r.WithHeaders(map[string]interface{}{"foo": "bar"})
+	r.WithHeaders(map[string]any{"foo": "bar"})
 
 	assert.Equal(t, xmatcher.HeaderMatcher{"foo": matcher.Exact("bar")}, r.requestHeader)
 
@@ -57,7 +57,7 @@ func TestClientStreamExpectation_WithPayload(t *testing.T) {
 
 	testCases := []struct {
 		scenario string
-		input    interface{}
+		input    any
 	}{
 		{
 			scenario: "[]byte",
@@ -69,7 +69,7 @@ func TestClientStreamExpectation_WithPayload(t *testing.T) {
 		},
 		{
 			scenario: "map",
-			input: []map[string]interface{}{{
+			input: []map[string]any{{
 				"id":     42,
 				"locale": "en-US",
 				"name":   "Foobar",
@@ -126,7 +126,7 @@ func TestClientStreamExpectation_WithPayload_Matched(t *testing.T) {
 
 	testCases := []struct {
 		scenario string
-		payload  interface{}
+		payload  any
 	}{
 		{
 			scenario: "[]byte",
@@ -138,7 +138,7 @@ func TestClientStreamExpectation_WithPayload_Matched(t *testing.T) {
 		},
 		{
 			scenario: "slice of map",
-			payload: []map[string]interface{}{{
+			payload: []map[string]any{{
 				"id":     42,
 				"locale": "en-US",
 				"name":   "Foobar",
@@ -203,7 +203,7 @@ func TestClientStreamExpectation_WithPayload_Mismatched(t *testing.T) {
 
 	testCases := []struct {
 		scenario string
-		payload  interface{}
+		payload  any
 	}{
 		{
 			scenario: "[]byte",
@@ -215,7 +215,7 @@ func TestClientStreamExpectation_WithPayload_Mismatched(t *testing.T) {
 		},
 		{
 			scenario: "slice of map",
-			payload: []map[string]interface{}{{
+			payload: []map[string]any{{
 				"id":     41,
 				"locale": "en-US",
 				"name":   "Foobar",
@@ -276,7 +276,7 @@ func TestClientStreamExpectation_WithPayload_Mismatched(t *testing.T) {
 func TestClientStreamExpectation_WithPayload_CustomMatcher_Matched(t *testing.T) {
 	t.Parallel()
 
-	expectStreamMsgsCount := func(actual interface{}, msgCount int) (bool, error) {
+	expectStreamMsgsCount := func(actual any, msgCount int) (bool, error) {
 		payload, ok := actual.([]*grpctest.Item)
 		if !ok {
 			return false, nil
@@ -287,18 +287,18 @@ func TestClientStreamExpectation_WithPayload_CustomMatcher_Matched(t *testing.T)
 
 	testCases := []struct {
 		scenario string
-		matcher  interface{}
+		matcher  any
 	}{
 		{
 			scenario: "without expectation",
-			matcher: func(actual interface{}) (bool, error) {
+			matcher: func(actual any) (bool, error) {
 				return expectStreamMsgsCount(actual, 2)
 			},
 		},
 		{
 			scenario: "with expectation",
 			matcher: func() (string, xmatcher.MatchFn) {
-				return "2 messages", func(actual interface{}) (bool, error) {
+				return "2 messages", func(actual any) (bool, error) {
 					return expectStreamMsgsCount(actual, 2)
 				}
 			},
@@ -328,18 +328,18 @@ func TestClientStreamExpectation_WithPayload_CustomMatcher_Mismatched(t *testing
 
 	testCases := []struct {
 		scenario string
-		matcher  interface{}
+		matcher  any
 	}{
 		{
 			scenario: "without expectation",
-			matcher: func(interface{}) (bool, error) {
+			matcher: func(any) (bool, error) {
 				return false, nil
 			},
 		},
 		{
 			scenario: "with expectation",
 			matcher: func() (string, xmatcher.MatchFn) {
-				return "always fail", func(interface{}) (bool, error) {
+				return "always fail", func(any) (bool, error) {
 					return false, nil
 				}
 			},
@@ -373,18 +373,18 @@ func TestClientStreamExpectation_WithPayload_CustomMatcher_MatchError(t *testing
 
 	testCases := []struct {
 		scenario string
-		matcher  interface{}
+		matcher  any
 	}{
 		{
 			scenario: "without expectation",
-			matcher: func(interface{}) (bool, error) {
+			matcher: func(any) (bool, error) {
 				return false, errors.New("match error")
 			},
 		},
 		{
 			scenario: "with expectation",
 			matcher: func() (string, xmatcher.MatchFn) {
-				return "always fail", func(interface{}) (bool, error) {
+				return "always fail", func(any) (bool, error) {
 					return false, errors.New("match error")
 				}
 			},
@@ -422,7 +422,7 @@ func TestClientStreamExpectation_WithPayload_CustomMatcher_RecvError(t *testing.
 	})(t)
 
 	r := newCreateItemsRequest()
-	r.WithPayload(func(interface{}) (bool, error) {
+	r.WithPayload(func(any) (bool, error) {
 		// Intentionally return true here in case the PayloadMatcher misbehaves.
 		return true, nil
 	})
@@ -635,7 +635,7 @@ func TestClientStreamExpectation_Return(t *testing.T) {
 	testCases := []struct {
 		scenario       string
 		mockStreamer   func(t *testing.T) *streamer.ClientStreamer
-		output         interface{}
+		output         any
 		expectedResult *grpctest.CreateItemsResponse
 		expectedError  error
 	}{
@@ -755,7 +755,7 @@ func TestClientStreamExpectation_ReturnJSON(t *testing.T) {
 
 	r := newCreateItemsRequest()
 
-	r.ReturnJSON(map[string]interface{}{
+	r.ReturnJSON(map[string]any{
 		"num_items": 1,
 	})
 
@@ -825,7 +825,7 @@ func TestClientStreamExpectation_Run(t *testing.T) {
 	)(t)
 
 	r := newCreateItemsRequest()
-	r.Run(func(_ context.Context, s grpc.ServerStream) (interface{}, error) {
+	r.Run(func(_ context.Context, s grpc.ServerStream) (any, error) {
 		out := make([]*grpctest.Item, 0)
 
 		if err := stream.RecvAll(s, &out); err != nil {
@@ -835,7 +835,7 @@ func TestClientStreamExpectation_Run(t *testing.T) {
 		cnt := int64(0)
 
 		for _, msg := range out {
-			if msg.Id > 40 {
+			if msg.GetId() > 40 {
 				cnt++
 			}
 		}

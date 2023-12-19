@@ -16,7 +16,7 @@ func TestBuffer_SendMsg_Error(t *testing.T) {
 
 	testCases := []struct {
 		scenario       string
-		message        interface{}
+		message        any
 		expectedResult *stream.Buffer
 		expectedError  string
 	}{
@@ -70,7 +70,7 @@ func TestBuffer_RecvMsg(t *testing.T) {
 
 	testCases := []struct {
 		scenario      string
-		message       interface{}
+		message       any
 		expectedError string
 	}{
 		{

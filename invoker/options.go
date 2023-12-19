@@ -17,7 +17,7 @@ func WithAddress(addr string) Option {
 }
 
 // WithInput sets the input for the invoker.
-func WithInput(input interface{}) Option {
+func WithInput(input any) Option {
 	return func(i *Invoker) {
 		i.input = input
 	}
@@ -31,7 +31,7 @@ func WithInputStreamHandler(h grpcmock.ClientStreamHandler) Option {
 }
 
 // WithOutput sets the output for the invoker.
-func WithOutput(output interface{}) Option {
+func WithOutput(output any) Option {
 	return func(i *Invoker) {
 		i.output = output
 	}
