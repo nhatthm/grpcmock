@@ -13,7 +13,9 @@ jobs:
   notify:
     runs-on: ubuntu-latest
     steps:
-      - uses: nhatthm/gh-actions/checkout@master
-      - uses: nhatthm/gh-actions/notify-go-registries@master
+      - name: Checkout code
+        uses: nhatthm/gh-actions/checkout@master
+      - name: Notify registries
+        uses: nhatthm/gh-actions/notify-go-registries@master
         with:
           token: ${{ secrets.REGISTRY_TOKEN }}
