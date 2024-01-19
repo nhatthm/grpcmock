@@ -17,8 +17,11 @@ jobs:
       go-latest-version: ${{ steps.find-go-version.outputs.go-latest-version }}
       go-supported-versions: ${{ steps.find-go-version.outputs.go-supported-versions }}
     steps:
-      - uses: nhatthm/gh-actions/checkout@master
+      - name: Checkout code
+        uses: nhatthm/gh-actions/checkout@master
+
       - id: find-go-version
+        name: Find Go version
         uses: nhatthm/gh-actions/find-go-version@master
 
   test:
@@ -41,11 +44,10 @@ jobs:
           go-version: ${{ matrix.go-version }}
 
       - name: Test
-        id: test
         run: |
           make test
 
-      - name: Upload code coverage
+      - name: Upload code coverage (unit)
         if: matrix.go-version == env.GO_LATEST_VERSION
         uses: nhatthm/gh-actions/codecov@master
         with:

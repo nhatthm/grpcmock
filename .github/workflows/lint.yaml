@@ -14,11 +14,14 @@ jobs:
     steps:
       - name: Checkout code
         uses: nhatthm/gh-actions/checkout@master
+
       - name: Setup
         uses: nhatthm/gh-actions/find-go-version@master
+
       - name: Install Go
         uses: nhatthm/gh-actions/setup-go@master
         with:
           go-version: ${{ env.GO_LATEST_VERSION }}
+
       - name: Lint
         uses: nhatthm/gh-actions/golangci-lint@master
