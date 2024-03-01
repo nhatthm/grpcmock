@@ -5,7 +5,7 @@ go 1.19
 require (
 	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0
 	github.com/spf13/afero v1.11.0
-	github.com/stretchr/testify v1.8.4
+	github.com/stretchr/testify v1.9.0
 	github.com/swaggest/assertjson v1.9.0
 	go.nhat.io/aferomock v0.4.0
 	go.nhat.io/matcher/v2 v2.0.0
@@ -25,7 +25,7 @@ require (
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/rogpeppe/go-internal v1.9.0 // indirect
 	github.com/sergi/go-diff v1.3.1 // indirect
-	github.com/stretchr/objx v0.5.1 // indirect
+	github.com/stretchr/objx v0.5.2 // indirect
 	github.com/yudai/gojsondiff v1.0.0 // indirect
 	github.com/yudai/golcs v0.0.0-20170316035057-ecda9a501e82 // indirect
 	golang.org/x/net v0.21.0 // indirect
