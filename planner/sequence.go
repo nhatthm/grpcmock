@@ -33,11 +33,23 @@ func (s *sequence) Plan(ctx context.Context, req service.Method, in any) (Expect
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	if err := MatchRequest(ctx, s.expectations[0], req, in); err != nil {
+	var (
+		err   error
+		index int
+	)
+	for i, e := range s.expectations {
+		err = MatchRequest(ctx, e, req, in)
+		if err == nil {
+			index = i
+			break
+		}
+	}
+
+	if err != nil {
 		return nil, err
 	}
 
-	expected, expectations := nextExpectations(s.expectations)
+	expected, expectations := nextExpectations(s.expectations, index)
 	s.expectations = expectations
 
 	return expected, nil
@@ -62,8 +74,8 @@ func Sequence() Planner {
 	return &sequence{}
 }
 
-func nextExpectations(expectedRequests []Expectation) (Expectation, []Expectation) {
-	r := expectedRequests[0]
+func nextExpectations(expectedRequests []Expectation, index int) (Expectation, []Expectation) {
+	r := expectedRequests[index]
 
 	if trackRepeatable(r) {
 		return r, expectedRequests
