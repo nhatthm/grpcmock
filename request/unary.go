@@ -60,7 +60,7 @@ func NewUnaryRequest(locker sync.Locker, svc *service.Method) *UnaryRequest {
 			fs:          afero.NewOsFs(),
 		},
 
-		run: func(ctx context.Context, in any) (any, error) {
+		run: func(context.Context, any) (any, error) {
 			return nil, status.Error(codes.Unimplemented, "not implemented")
 		},
 	}

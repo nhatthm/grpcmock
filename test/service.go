@@ -86,9 +86,9 @@ func StartServer(t *testing.T, opts ...ServiceOption) func(context.Context, stri
 	srv := NewServer(opts...)
 
 	go func() {
-		defer l.Close() // nolint: errcheck
+		defer l.Close() //nolint: errcheck
 
-		_ = srv.Serve(l) // nolint: errcheck
+		_ = srv.Serve(l) //nolint: errcheck
 	}()
 
 	t.Cleanup(func() {

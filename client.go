@@ -153,7 +153,11 @@ func prepInvoke(ctx context.Context, method string, opts ...InvokeOption) (conte
 
 	ctx, dialOpts, callOpts := invokeOptions(ctx, opts...)
 
-	conn, err := grpc.DialContext(ctx, addr, dialOpts...)
+	if addr == "" {
+		addr = "passthrough://"
+	}
+
+	conn, err := grpc.NewClient(addr, dialOpts...)
 	if err != nil {
 		return ctx, nil, "", nil, err
 	}
@@ -169,7 +173,7 @@ func parseMethod(method string) (string, string, error) {
 	addr := methodRegex.ReplaceAllString(method, "")
 
 	method = strings.Replace(method, addr, "", 1)
-	method = fmt.Sprintf("/%s", strings.TrimLeft(method, "/"))
+	method = "/" + strings.TrimLeft(method, "/")
 
 	return addr, method, nil
 }
@@ -186,6 +190,8 @@ func invokeOptions(ctx context.Context, opts ...InvokeOption) (context.Context, 
 	if len(cfg.header) > 0 {
 		ctx = metadata.NewOutgoingContext(ctx, metadata.New(cfg.header))
 	}
+
+	// cfg.dialOpts = append([]grpc.DialOption{withDefaultScheme("passthrough")}, cfg.dialOpts...)
 
 	return ctx, cfg.dialOpts, cfg.callOpts
 }

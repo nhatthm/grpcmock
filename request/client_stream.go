@@ -259,7 +259,7 @@ func (r *ClientStreamRequest) handle(ctx context.Context, in any, out any) error
 		return status.Error(r.statusCode, r.statusMessage)
 	}
 
-	stream := in.(*streamer.ClientStreamer) // nolint: errcheck
+	stream := in.(*streamer.ClientStreamer) //nolint: errcheck
 
 	resp, err := r.run(ctx, stream)
 	if err != nil {

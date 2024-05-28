@@ -725,8 +725,8 @@ func TestServerStreamExpectation_Run(t *testing.T) {
 
 	r := newListItemsRequest()
 	r.Run(func(_ context.Context, _ any, s grpc.ServerStream) error {
-		_ = s.SendMsg(&grpctest.Item{Id: 41, Name: "Item #41"}) // nolint: errcheck
-		_ = s.SendMsg(&grpctest.Item{Id: 42, Name: "Item #42"}) // nolint: errcheck
+		_ = s.SendMsg(&grpctest.Item{Id: 41, Name: "Item #41"}) //nolint: errcheck
+		_ = s.SendMsg(&grpctest.Item{Id: 42, Name: "Item #42"}) //nolint: errcheck
 
 		return nil
 	})
@@ -845,7 +845,7 @@ func TestServerStreamExpectation_WaitTime_ContextTimeout(t *testing.T) {
 	err := r.Handle(ctx, nil, nil)
 	endTime := time.Now()
 
-	assert.GreaterOrEqual(t, endTime.Sub(startTime), expectedDuration)
+	assert.InDelta(t, expectedDuration.Milliseconds(), endTime.Sub(startTime).Milliseconds(), float64(time.Millisecond))
 	assert.Error(t, err)
 	assert.EqualError(t, err, `rpc error: code = Internal desc = context deadline exceeded`)
 }

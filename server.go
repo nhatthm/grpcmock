@@ -90,7 +90,7 @@ func (s *Server) WithPlanner(p planner.Planner) *Server {
 	defer s.mu.Unlock()
 
 	if !s.planner.IsEmpty() {
-		panic(errors.New("could not change planner: planner is not empty")) // nolint: goerr113
+		panic(errors.New("could not change planner: planner is not empty")) //nolint: goerr113
 	}
 
 	s.planner = p
@@ -238,7 +238,7 @@ func (s *Server) ExpectationsWereMet() error {
 		return nil
 	}
 
-	// nolint:goerr113
+	//nolint:goerr113
 	return errors.New(sb.String())
 }
 
@@ -272,7 +272,7 @@ func (s *Server) Serve() {
 
 	go func(l net.Listener) {
 		//goland:noinspection GoUnhandledErrorResult
-		defer closeListener() // nolint: errcheck
+		defer closeListener() //nolint: errcheck
 
 		must.NotFail(srv.Serve(l))
 	}(s.listener)
@@ -470,7 +470,7 @@ func newStreamHandler(
 			out any
 		)
 
-		// nolint: exhaustive
+		//nolint: exhaustive
 		switch svc.MethodType {
 		case service.TypeServerStream:
 			in = xreflect.New(svc.Input)

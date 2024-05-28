@@ -181,7 +181,7 @@ func TestServer_ExpectUnary_Success(t *testing.T) {
 					}
 				}
 
-				p := in.(*grpctest.GetItemRequest) // nolint: errcheck
+				p := in.(*grpctest.GetItemRequest) //nolint: errcheck
 
 				result := testSrv.BuildItem().
 					WithID(p.GetId()).
@@ -551,7 +551,7 @@ func TestServer_ExpectBidirectionalStream_Success(t *testing.T) {
 	_, d := mockItemServiceServer(t, func(s *grpcmock.Server) {
 		s.ExpectBidirectionalStream(grpcTestServiceTransformItems).
 			WithHeader(`locale`, `en-US`).
-			Run(func(ctx context.Context, s grpc.ServerStream) error {
+			Run(func(_ context.Context, s grpc.ServerStream) error {
 				for {
 					item := &grpctest.Item{}
 					err := s.RecvMsg(item)
@@ -701,7 +701,7 @@ func TestFindServerMethod(t *testing.T) {
 	}{
 		{
 			scenario:   "not found",
-			mockServer: func(s *grpcmock.Server) {},
+			mockServer: func(*grpcmock.Server) {},
 		},
 		{
 			scenario:   "found",

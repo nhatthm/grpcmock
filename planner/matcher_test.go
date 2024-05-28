@@ -709,7 +709,7 @@ func mockCreateItemsStreamer() func(t *testing.T) *streamer.ClientStreamer {
 	return test.MockCreateItemsStreamer(func(s *xmock.ServerStream) {
 		s.On("RecvMsg", &grpctest.Item{}).Once().
 			Run(func(args mock.Arguments) {
-				item := args.Get(0).(*grpctest.Item) // nolint: errcheck
+				item := args.Get(0).(*grpctest.Item) //nolint: errcheck
 
 				proto.Merge(item, test.DefaultItem())
 			}).

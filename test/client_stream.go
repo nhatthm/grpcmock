@@ -34,7 +34,7 @@ func MockStreamRecvItemSuccess(i *grpctest.Item) func(s *xmock.ServerStream) {
 	return func(s *xmock.ServerStream) {
 		s.On("RecvMsg", &grpctest.Item{}).Once().
 			Run(func(args mock.Arguments) {
-				item := args.Get(0).(*grpctest.Item) // nolint: errcheck
+				item := args.Get(0).(*grpctest.Item) //nolint: errcheck
 
 				proto.Merge(item, i)
 			}).
