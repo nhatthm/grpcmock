@@ -3,7 +3,6 @@ package grpcmock_test
 import (
 	"context"
 	"errors"
-	"fmt"
 	"io"
 	"net"
 	"testing"
@@ -67,7 +66,7 @@ func TestInvokeUnary_Unimplemented(t *testing.T) {
 	defer srv.Stop()
 
 	go func() {
-		_ = srv.Serve(l) // nolint: errcheck
+		_ = srv.Serve(l) //nolint: errcheck
 	}()
 
 	err := grpcmock.InvokeUnary(context.Background(), "grpctest.ItemService/GetItem", nil, nil,
@@ -433,7 +432,7 @@ func TestInvokeBidirectionalStream_Success(t *testing.T) {
 				return err
 			}
 
-			msg.Name = fmt.Sprintf("Modified %s", msg.GetName())
+			msg.Name = "Modified " + msg.GetName()
 
 			if err := srv.SendMsg(msg); err != nil {
 				return err
@@ -540,7 +539,7 @@ func TestRecvAll(t *testing.T) {
 
 			s.On("RecvMsg", &grpctest.Item{}).Once().
 				Run(func(args mock.Arguments) {
-					out := args.Get(0).(*grpctest.Item) // nolint: errcheck
+					out := args.Get(0).(*grpctest.Item) //nolint: errcheck
 
 					proto.Merge(out, i)
 				}).
@@ -739,7 +738,7 @@ func TestSendAndRecvAll_Success(t *testing.T) {
 			mockStream: xmock.MockClientStream(func(s *xmock.ClientStream) {
 				s.On("RecvMsg", mock.Anything).Once().
 					Run(func(args mock.Arguments) {
-						out := args.Get(0).(*grpctest.Item) // nolint: errcheck
+						out := args.Get(0).(*grpctest.Item) //nolint: errcheck
 
 						*out = grpctest.Item{Id: 42, Name: "Modified"}
 					}).

@@ -34,7 +34,7 @@ func TestTeeClientStreamer(t *testing.T) {
 		s.On("RecvMsg", &grpctest.Item{}).
 			Once().
 			Run(func(args mock.Arguments) {
-				msg := args.Get(0).(*grpctest.Item) // nolint: errcheck
+				msg := args.Get(0).(*grpctest.Item) //nolint: errcheck
 				msg.Id = 42
 			}).
 			Return(nil)
@@ -100,7 +100,7 @@ func TestClientStreamerPayload(t *testing.T) {
 			mockStream: xmock.MockServerStream(func(s *xmock.ServerStream) {
 				s.On("RecvMsg", &grpctest.Item{}).Once().
 					Run(func(args mock.Arguments) {
-						msg := args.Get(0).(*grpctest.Item) // nolint: errcheck
+						msg := args.Get(0).(*grpctest.Item) //nolint: errcheck
 						msg.Id = 42
 					}).
 					Return(nil)

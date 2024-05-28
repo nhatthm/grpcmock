@@ -392,7 +392,7 @@ func newUnaryExpectation(svc *service.Method) *unaryExpectation {
 			waiter:      wait.NoWait,
 			serviceDesc: svc,
 		},
-		run: func(ctx context.Context, in any) (any, error) {
+		run: func(context.Context, any) (any, error) {
 			return nil, status.Error(codes.Unimplemented, "not implemented")
 		},
 	}

@@ -35,7 +35,7 @@ func MockServer(opts ...ServerOption) ServerMocker {
 		t.Cleanup(func() {
 			assert.NoError(t, s.ExpectationsWereMet())
 
-			_ = s.Close() // nolint: errcheck
+			_ = s.Close() //nolint: errcheck
 		})
 
 		return s
@@ -48,7 +48,7 @@ func MockServerWithBufConn(opts ...ServerOption) ServerMockerWithContextDialer {
 		buf := bufconn.Listen(1024 * 1024)
 		opts = append(opts, WithListener(buf))
 
-		return MockServer(opts...)(t), func(ctx context.Context, s string) (net.Conn, error) {
+		return MockServer(opts...)(t), func(context.Context, string) (net.Conn, error) {
 			return buf.Dial()
 		}
 	}

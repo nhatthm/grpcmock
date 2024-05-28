@@ -26,7 +26,7 @@ import (
 
 func ExampleServer_WithPlanner() {
 	buf := bufconn.Listen(1024 * 1024)
-	defer buf.Close() // nolint: errcheck
+	defer buf.Close() //nolint: errcheck
 
 	srv := grpcmock.NewServer(
 		grpcmock.RegisterService(grpctest.RegisterItemServiceServer),
@@ -48,7 +48,7 @@ func ExampleServer_WithPlanner() {
 		},
 	)
 
-	defer srv.Close() // nolint: errcheck
+	defer srv.Close() //nolint: errcheck
 
 	// Call the service.
 	err := grpcmock.InvokeUnary(context.Background(),
@@ -65,7 +65,7 @@ func ExampleServer_WithPlanner() {
 
 func ExampleServer_firstMatch_planner() {
 	buf := bufconn.Listen(1024 * 1024)
-	defer buf.Close() // nolint: errcheck
+	defer buf.Close() //nolint: errcheck
 
 	srv := grpcmock.NewServer(
 		grpcmock.RegisterService(grpctest.RegisterItemServiceServer),
@@ -86,7 +86,7 @@ func ExampleServer_firstMatch_planner() {
 		},
 	)
 
-	defer srv.Close() // nolint: errcheck
+	defer srv.Close() //nolint: errcheck
 
 	// Call the service.
 	ids := []int32{1, 2, 3}
@@ -143,7 +143,7 @@ func ExampleServer_firstMatch_planner() {
 
 func ExampleNewServer_unaryMethod() {
 	buf := bufconn.Listen(1024 * 1024)
-	defer buf.Close() // nolint: errcheck
+	defer buf.Close() //nolint: errcheck
 
 	srv := grpcmock.NewServer(
 		grpcmock.RegisterService(grpctest.RegisterItemServiceServer),
@@ -159,7 +159,7 @@ func ExampleNewServer_unaryMethod() {
 		},
 	)
 
-	defer srv.Close() // nolint: errcheck
+	defer srv.Close() //nolint: errcheck
 
 	// Call the service.
 	out := &grpctest.Item{}
@@ -198,7 +198,7 @@ func ExampleNewServer_withPort() {
 		},
 	)
 
-	defer srv.Close() // nolint: errcheck
+	defer srv.Close() //nolint: errcheck
 
 	// Call the service.
 	out := &grpctest.Item{}
@@ -223,7 +223,7 @@ func ExampleNewServer_withPort() {
 
 func ExampleNewServer_unaryMethod_customHandler() {
 	buf := bufconn.Listen(1024 * 1024)
-	defer buf.Close() // nolint: errcheck
+	defer buf.Close() //nolint: errcheck
 
 	srv := grpcmock.NewServer(
 		grpcmock.RegisterService(grpctest.RegisterItemServiceServer),
@@ -232,7 +232,7 @@ func ExampleNewServer_unaryMethod_customHandler() {
 			s.ExpectUnary("grpctest.ItemService/GetItem").
 				WithPayload(&grpctest.GetItemRequest{Id: 42}).
 				Run(func(ctx context.Context, in any) (any, error) {
-					req := in.(*grpctest.GetItemRequest) // nolint: errcheck
+					req := in.(*grpctest.GetItemRequest) //nolint: errcheck
 
 					var locale string
 
@@ -252,7 +252,7 @@ func ExampleNewServer_unaryMethod_customHandler() {
 		},
 	)
 
-	defer srv.Close() // nolint: errcheck
+	defer srv.Close() //nolint: errcheck
 
 	// Call the service.
 	out := &grpctest.Item{}
@@ -279,7 +279,7 @@ func ExampleNewServer_unaryMethod_customHandler() {
 
 func ExampleNewServer_clientStreamMethod() {
 	buf := bufconn.Listen(1024 * 1024)
-	defer buf.Close() // nolint: errcheck
+	defer buf.Close() //nolint: errcheck
 
 	srv := grpcmock.NewServer(
 		grpcmock.RegisterService(grpctest.RegisterItemServiceServer),
@@ -294,7 +294,7 @@ func ExampleNewServer_clientStreamMethod() {
 		},
 	)
 
-	defer srv.Close() // nolint: errcheck
+	defer srv.Close() //nolint: errcheck
 
 	// Call the service.
 	out := &grpctest.CreateItemsResponse{}
@@ -323,7 +323,7 @@ func ExampleNewServer_clientStreamMethod() {
 
 func ExampleNewServer_clientStreamMethod_customHandler() {
 	buf := bufconn.Listen(1024 * 1024)
-	defer buf.Close() // nolint: errcheck
+	defer buf.Close() //nolint: errcheck
 
 	srv := grpcmock.NewServer(
 		grpcmock.RegisterService(grpctest.RegisterItemServiceServer),
@@ -351,7 +351,7 @@ func ExampleNewServer_clientStreamMethod_customHandler() {
 		},
 	)
 
-	defer srv.Close() // nolint: errcheck
+	defer srv.Close() //nolint: errcheck
 
 	// Call the service.
 	out := &grpctest.CreateItemsResponse{}
@@ -381,7 +381,7 @@ func ExampleNewServer_clientStreamMethod_customHandler() {
 
 func ExampleNewServer_serverStreamMethod() {
 	buf := bufconn.Listen(1024 * 1024)
-	defer buf.Close() // nolint: errcheck
+	defer buf.Close() //nolint: errcheck
 
 	srv := grpcmock.NewServer(
 		grpcmock.RegisterService(grpctest.RegisterItemServiceServer),
@@ -395,7 +395,7 @@ func ExampleNewServer_serverStreamMethod() {
 		},
 	)
 
-	defer srv.Close() // nolint: errcheck
+	defer srv.Close() //nolint: errcheck
 
 	// Call the service.
 	out := make([]*grpctest.Item, 0)
@@ -428,7 +428,7 @@ func ExampleNewServer_serverStreamMethod() {
 
 func ExampleNewServer_serverStreamMethod_customHandler() {
 	buf := bufconn.Listen(1024 * 1024)
-	defer buf.Close() // nolint: errcheck
+	defer buf.Close() //nolint: errcheck
 
 	srv := grpcmock.NewServer(
 		grpcmock.RegisterService(grpctest.RegisterItemServiceServer),
@@ -436,15 +436,15 @@ func ExampleNewServer_serverStreamMethod_customHandler() {
 		func(s *grpcmock.Server) {
 			s.ExpectServerStream("grpctest.ItemService/ListItems").
 				Run(func(_ context.Context, _ any, s grpc.ServerStream) error {
-					_ = s.SendMsg(&grpctest.Item{Id: 41, Name: "Item #41"}) // nolint: errcheck
-					_ = s.SendMsg(&grpctest.Item{Id: 42, Name: "Item #42"}) // nolint: errcheck
+					_ = s.SendMsg(&grpctest.Item{Id: 41, Name: "Item #41"}) //nolint: errcheck
+					_ = s.SendMsg(&grpctest.Item{Id: 42, Name: "Item #42"}) //nolint: errcheck
 
 					return nil
 				})
 		},
 	)
 
-	defer srv.Close() // nolint: errcheck
+	defer srv.Close() //nolint: errcheck
 
 	// Call the service.
 	out := make([]*grpctest.Item, 0)
@@ -477,7 +477,7 @@ func ExampleNewServer_serverStreamMethod_customHandler() {
 
 func ExampleNewServer_serverStreamMethod_customStreamBehaviors() {
 	buf := bufconn.Listen(1024 * 1024)
-	defer buf.Close() // nolint: errcheck
+	defer buf.Close() //nolint: errcheck
 
 	srv := grpcmock.NewServer(
 		grpcmock.RegisterService(grpctest.RegisterItemServiceServer),
@@ -490,7 +490,7 @@ func ExampleNewServer_serverStreamMethod_customStreamBehaviors() {
 		},
 	)
 
-	defer srv.Close() // nolint: errcheck
+	defer srv.Close() //nolint: errcheck
 
 	// Call the service.
 	out := make([]*grpctest.Item, 0)
@@ -512,14 +512,14 @@ func ExampleNewServer_serverStreamMethod_customStreamBehaviors() {
 
 func ExampleNewServer_bidirectionalStreamMethod() {
 	buf := bufconn.Listen(1024 * 1024)
-	defer buf.Close() // nolint: errcheck
+	defer buf.Close() //nolint: errcheck
 
 	srv := grpcmock.NewServer(
 		grpcmock.RegisterService(grpctest.RegisterItemServiceServer),
 		grpcmock.WithListener(buf),
 		func(s *grpcmock.Server) {
 			s.ExpectBidirectionalStream("grpctest.ItemService/TransformItems").
-				Run(func(ctx context.Context, s grpc.ServerStream) error {
+				Run(func(_ context.Context, s grpc.ServerStream) error {
 					for {
 						item := &grpctest.Item{}
 						err := s.RecvMsg(item)
@@ -542,7 +542,7 @@ func ExampleNewServer_bidirectionalStreamMethod() {
 		},
 	)
 
-	defer srv.Close() // nolint: errcheck
+	defer srv.Close() //nolint: errcheck
 
 	// Call the service.
 	in := []*grpctest.Item{
@@ -585,7 +585,7 @@ func ExampleNewServer_bidirectionalStreamMethod() {
 
 func ExampleRegisterService() {
 	buf := bufconn.Listen(1024 * 1024)
-	defer buf.Close() // nolint: errcheck
+	defer buf.Close() //nolint: errcheck
 
 	srv := grpcmock.NewServer(
 		grpcmock.RegisterService(grpctest.RegisterItemServiceServer),
@@ -601,7 +601,7 @@ func ExampleRegisterService() {
 		},
 	)
 
-	defer srv.Close() // nolint: errcheck
+	defer srv.Close() //nolint: errcheck
 
 	// Call the service.
 	out := &grpctest.Item{}
@@ -627,7 +627,7 @@ func ExampleRegisterService() {
 
 func ExampleRegisterServiceFromInstance() {
 	buf := bufconn.Listen(1024 * 1024)
-	defer buf.Close() // nolint: errcheck
+	defer buf.Close() //nolint: errcheck
 
 	srv := grpcmock.NewServer(
 		grpcmock.RegisterServiceFromInstance("grpctest.ItemService", (*grpctest.ItemServiceServer)(nil)),
@@ -643,7 +643,7 @@ func ExampleRegisterServiceFromInstance() {
 		},
 	)
 
-	defer srv.Close() // nolint: errcheck
+	defer srv.Close() //nolint: errcheck
 
 	// Call the service.
 	out := &grpctest.Item{}
@@ -669,7 +669,7 @@ func ExampleRegisterServiceFromInstance() {
 
 func ExampleRegisterServiceFromMethods() {
 	buf := bufconn.Listen(1024 * 1024)
-	defer buf.Close() // nolint: errcheck
+	defer buf.Close() //nolint: errcheck
 
 	srv := grpcmock.NewServer(
 		grpcmock.RegisterServiceFromMethods(service.Method{
@@ -691,7 +691,7 @@ func ExampleRegisterServiceFromMethods() {
 		},
 	)
 
-	defer srv.Close() // nolint: errcheck
+	defer srv.Close() //nolint: errcheck
 
 	// Call the service.
 	out := &grpctest.Item{}

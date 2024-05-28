@@ -112,7 +112,7 @@ func TestSendAndRecvAll_Success_ClientStream(t *testing.T) {
 			mockStream: xmock.MockClientStream(func(s *xmock.ClientStream) {
 				s.On("RecvMsg", mock.Anything).Once().
 					Run(func(args mock.Arguments) {
-						out := args.Get(0).(*grpctest.Item) // nolint: errcheck
+						out := args.Get(0).(*grpctest.Item) //nolint: errcheck
 
 						*out = grpctest.Item{Id: 42, Name: "Modified"}
 					}).
@@ -180,7 +180,7 @@ func TestSendAndRecvAll_Success_ServerStream(t *testing.T) {
 			mockStream: xmock.MockServerStream(func(s *xmock.ServerStream) {
 				s.On("RecvMsg", mock.Anything).Once().
 					Run(func(args mock.Arguments) {
-						out := args.Get(0).(*grpctest.Item) // nolint: errcheck
+						out := args.Get(0).(*grpctest.Item) //nolint: errcheck
 
 						*out = grpctest.Item{Id: 42, Name: "Modified"}
 					}).

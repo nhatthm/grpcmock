@@ -73,7 +73,7 @@ func TestServer(t *testing.T) {
 	)
 
 	// Close the server on exit.
-	defer s.Close(context.Background()) // nolint: errcheck
+	defer s.Close(context.Background()) //nolint: errcheck
 
 	// Call the server and assertions.
 }

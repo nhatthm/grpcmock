@@ -223,7 +223,7 @@ func TestBidirectionalStreamExpectation_Run_Success(t *testing.T) {
 	t.Parallel()
 
 	r := newTransformItemsRequest()
-	r.Run(func(ctx context.Context, s grpc.ServerStream) error {
+	r.Run(func(_ context.Context, s grpc.ServerStream) error {
 		for {
 			item := &grpctest.Item{}
 			err := s.RecvMsg(item)

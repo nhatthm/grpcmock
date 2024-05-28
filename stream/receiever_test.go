@@ -25,7 +25,7 @@ func TestRecvAll(t *testing.T) {
 
 			s.On("RecvMsg", &grpctest.Item{}).Once().
 				Run(func(args mock.Arguments) {
-					out := args.Get(0).(*grpctest.Item) // nolint: errcheck
+					out := args.Get(0).(*grpctest.Item) //nolint: errcheck
 
 					proto.Merge(out, i)
 				}).

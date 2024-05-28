@@ -73,16 +73,16 @@ func TestCloseGRPCServer_Error(t *testing.T) {
 	srv, _ := buildGRPCServer(s.services, s.handleRequest, s.serverOpts...)
 
 	go func() {
-		defer buf.Close() // nolint: errcheck
+		defer buf.Close() //nolint: errcheck
 
-		_ = srv.Serve(buf) // nolint: errcheck
+		_ = srv.Serve(buf) //nolint: errcheck
 	}()
 
 	go func() {
 		// Wait until server is up.
 		time.Sleep(time.Millisecond * 20)
 
-		// nolint: errcheck
+		//nolint: errcheck
 		_ = InvokeUnary(context.Background(),
 			"grpctest.ItemService/GetItem",
 			&grpctest.GetItemRequest{Id: 42}, &grpctest.Item{},
@@ -154,7 +154,7 @@ func TestNewUnaryHandler(t *testing.T) {
 			scenario: "handle success",
 			decode:   decodeNoError,
 			handle: func(_ context.Context, _ service.Method, _ any, out any) error {
-				item := out.(*grpctest.Item) // nolint: errcheck
+				item := out.(*grpctest.Item) //nolint: errcheck
 				item.Id = 42
 
 				return nil

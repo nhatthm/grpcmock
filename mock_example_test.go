@@ -38,7 +38,7 @@ func ExampleMockServer() {
 
 		// Call the service.
 		out := &grpctest.Item{}
-		method := fmt.Sprintf("%s/grpctest.ItemService/GetItem", srv.Address())
+		method := srv.Address() + "/grpctest.ItemService/GetItem"
 		err := grpcmock.InvokeUnary(context.Background(),
 			method, &grpctest.GetItemRequest{Id: 41}, out,
 			grpcmock.WithInsecure(),

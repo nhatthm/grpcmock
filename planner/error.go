@@ -72,7 +72,7 @@ func NewError(ctx context.Context, expected Expectation, req service.Method, in 
 	if in != nil {
 		in, err := value.Marshal(in)
 		if err != nil {
-			in = fmt.Sprintf("could not read request payload: %s", err.Error())
+			in = "could not read request payload: " + err.Error()
 		}
 
 		actualPayload = in

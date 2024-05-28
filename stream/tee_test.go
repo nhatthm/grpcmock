@@ -47,7 +47,7 @@ func TestTeeReceiver_RecvMsg(t *testing.T) {
 			mockReceiver: xmock.MockServerStream(func(s *xmock.ServerStream) {
 				s.On("RecvMsg", &grpctest.Item{}).
 					Run(func(args mock.Arguments) {
-						out := args.Get(0).(*grpctest.Item) // nolint: errcheck
+						out := args.Get(0).(*grpctest.Item) //nolint: errcheck
 						out.Id = 42
 					}).
 					Return(nil)

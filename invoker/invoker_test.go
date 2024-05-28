@@ -3,7 +3,6 @@ package invoker_test
 import (
 	"context"
 	"errors"
-	"fmt"
 	"io"
 	"testing"
 	"time"
@@ -32,7 +31,7 @@ func TestInvoker_Invoke_Unary_Unimplemented(t *testing.T) {
 	defer srv.Stop()
 
 	go func() {
-		_ = srv.Serve(l) // nolint: errcheck
+		_ = srv.Serve(l) //nolint: errcheck
 	}()
 
 	err := invoker.New(getItemMethod(),
@@ -234,7 +233,7 @@ func TestInvoker_Invoke_BidirectionalStream_Success(t *testing.T) {
 				return err
 			}
 
-			msg.Name = fmt.Sprintf("Modified %s", msg.GetName())
+			msg.Name = "Modified " + msg.GetName()
 
 			if err := srv.SendMsg(msg); err != nil {
 				return err
