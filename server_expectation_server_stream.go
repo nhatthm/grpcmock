@@ -534,7 +534,7 @@ func (h *serverStreamHandler) SendMany(v any) ServerStreamHandler {
 }
 
 func (h *serverStreamHandler) ReturnError(code codes.Code, msg string) {
-	h.addStep(stepReturnErrorf(code, msg))
+	h.addStep(stepReturnErrorf(code, msg)) //nolint: govet
 }
 
 func (h *serverStreamHandler) ReturnErrorf(code codes.Code, msg string, args ...any) {

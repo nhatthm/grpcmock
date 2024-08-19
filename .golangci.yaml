@@ -20,34 +20,24 @@ linters:
   enable-all: true
   disable:
     - copyloopvar
-    - deadcode
     - depguard
     - execinquery
-    - exhaustivestruct
     - exhaustruct
     - forbidigo
     - forcetypeassert
     - gci
     - gochecknoglobals
-    - golint
     - gomnd
-    - ifshort
     - intrange
-    - interfacer
     - ireturn
     - lll
-    - maligned
     - mnd
     - nolintlint # https://github.com/golangci/golangci-lint/issues/3063
     - nonamedreturns
-    - nosnakecase
     - paralleltest
-    - scopelint
-    - structcheck
     - tagliatelle
     - testifylint
     - testpackage
-    - varcheck
     - varnamelen
     - wrapcheck
 

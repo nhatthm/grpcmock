@@ -31,13 +31,13 @@ func removeExpectations(expectations []Expectation, index int) []Expectation {
 		return expectations[1:]
 	}
 
-	max := len(expectations) - 1
+	maxIndex := len(expectations) - 1
 
-	if index == max {
-		return expectations[:max]
+	if index == maxIndex {
+		return expectations[:maxIndex]
 	}
 
-	remains := make([]Expectation, 0, max)
+	remains := make([]Expectation, 0, maxIndex)
 
 	remains = append(remains, expectations[:index]...)
 	remains = append(remains, expectations[index+1:]...)

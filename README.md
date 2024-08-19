@@ -29,7 +29,7 @@ Test gRPC service and client like a pro.
 
 ## Prerequisites
 
-- `Go >= 1.18`
+- `Go >= 1.21`
 
 [<sub><sup>[table of contents]</sup></sub>](#table-of-contents)
 
