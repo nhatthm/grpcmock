@@ -1,6 +1,6 @@
 module go.nhat.io/grpcmock
 
-go 1.19
+go 1.21
 
 require (
 	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0
@@ -17,13 +17,10 @@ require (
 require (
 	github.com/bool64/shared v0.1.5 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/fsnotify/fsnotify v1.4.9 // indirect
+	github.com/fsnotify/fsnotify v1.7.0 // indirect
 	github.com/iancoleman/orderedmap v0.3.0 // indirect
-	github.com/kr/pretty v0.3.0 // indirect
-	github.com/mattn/go-isatty v0.0.17 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	github.com/rogpeppe/go-internal v1.9.0 // indirect
-	github.com/sergi/go-diff v1.3.1 // indirect
+	github.com/sergi/go-diff v1.2.0 // indirect
 	github.com/stretchr/objx v0.5.2 // indirect
 	github.com/yudai/gojsondiff v1.0.0 // indirect
 	github.com/yudai/golcs v0.0.0-20170316035057-ecda9a501e82 // indirect

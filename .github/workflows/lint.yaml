@@ -25,3 +25,5 @@ jobs:
 
       - name: Lint
         uses: nhatthm/gh-actions/golangci-lint@master
+        with:
+          args: --timeout=5m

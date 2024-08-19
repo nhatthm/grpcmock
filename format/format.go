@@ -51,16 +51,16 @@ func Request(w io.Writer, svc service.Method, header map[string]string, payload 
 }
 
 func formatRequestTimes(w io.Writer, svc service.Method, header map[string]any, payload any, totalCalls, remainingCalls int) {
-	_, _ = fmt.Fprintf(w, "%s %s", svc.MethodType, svc.FullName())
+	_, _ = fmt.Fprintf(w, "%s %s", svc.MethodType, svc.FullName()) //nolint: errcheck
 
 	if remainingCalls > 0 && (totalCalls != 0 || remainingCalls != 1) {
-		_, _ = fmt.Fprintf(w, " (called: %d time(s), remaining: %d time(s))", totalCalls, remainingCalls)
+		_, _ = fmt.Fprintf(w, " (called: %d time(s), remaining: %d time(s))", totalCalls, remainingCalls) //nolint: errcheck
 	}
 
-	_, _ = fmt.Fprintln(w)
+	_, _ = fmt.Fprintln(w) //nolint: errcheck
 
 	if len(header) > 0 {
-		_, _ = fmt.Fprintf(w, "%swith header:\n", indent)
+		_, _ = fmt.Fprintf(w, "%swith header:\n", indent) //nolint: errcheck
 
 		keys := make([]string, len(header))
 		i := 0
@@ -73,7 +73,7 @@ func formatRequestTimes(w io.Writer, svc service.Method, header map[string]any, 
 		sort.Strings(keys)
 
 		for _, key := range keys {
-			_, _ = fmt.Fprintf(w, "%s%s%s: %s\n", indent, indent, key, formatValueInline(header[key]))
+			_, _ = fmt.Fprintf(w, "%s%s%s: %s\n", indent, indent, key, formatValueInline(header[key])) //nolint: errcheck
 		}
 	}
 
@@ -81,8 +81,8 @@ func formatRequestTimes(w io.Writer, svc service.Method, header map[string]any, 
 		bodyStr := formatValue(payload)
 
 		if bodyStr != "" {
-			_, _ = fmt.Fprintf(w, "%swith payload%s\n", indent, formatType(payload))
-			_, _ = fmt.Fprintf(w, "%s%s%s\n", indent, indent, bodyStr)
+			_, _ = fmt.Fprintf(w, "%swith payload%s\n", indent, formatType(payload)) //nolint: errcheck
+			_, _ = fmt.Fprintf(w, "%s%s%s\n", indent, indent, bodyStr)               //nolint: errcheck
 		}
 	}
 }
