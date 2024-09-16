@@ -697,13 +697,13 @@ func TestServerStreamExpectation_ReturnFile_ReadError(t *testing.T) {
 
 	r := newListItemsRequest()
 
-	r.withFs(aferomock.NewFs(func(fs *aferomock.Fs) {
+	r.withFs(aferomock.MockFs(func(fs *aferomock.Fs) {
 		fs.On("Stat", mock.Anything).
-			Return(aferomock.NewFileInfo(), nil)
+			Return(aferomock.NopFileInfo(t), nil)
 
 		fs.On("Open", mock.Anything).
 			Return(nil, errors.New("read error"))
-	}))
+	})(t))
 
 	r.ReturnFile("mocked.file")
 

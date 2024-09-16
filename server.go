@@ -228,7 +228,7 @@ func (s *Server) ExpectationsWereMet() error {
 			expected.HeaderMatcher(),
 			expected.PayloadMatcher(),
 			int(calls),
-			int(repeat),
+			int(repeat), //nolint: gosec
 		)
 
 		count++
