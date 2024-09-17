@@ -88,8 +88,8 @@ github.com/yudai/pp v2.0.1+incompatible h1:Q4//iY4pNF6yPLZIigmvcl7k/bPgrcTPIFIcm
 github.com/yudai/pp v2.0.1+incompatible/go.mod h1:PuxR/8QJ7cyCkFp/aUDS+JY727OFEZkTdatxwunjIkc=
 github.com/yuin/goldmark v1.1.27/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 github.com/yuin/goldmark v1.2.1/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
-go.nhat.io/aferomock v0.6.0 h1:LlGvABDSOs2pCdXweFIQ/tDF1oV0rWbr7Ih+N21EeQs=
-go.nhat.io/aferomock v0.6.0/go.mod h1:DexRX1DiNRZwfGYrMdC5zjA09Mw95LrfYceLBlPZd5Y=
+go.nhat.io/aferomock v0.7.0 h1:jip7tIX2Vt3M54mE9PTYMOrTN/IMZqlcpCMyIr/XFEc=
+go.nhat.io/aferomock v0.7.0/go.mod h1:DexRX1DiNRZwfGYrMdC5zjA09Mw95LrfYceLBlPZd5Y=
 go.nhat.io/matcher/v2 v2.0.0 h1:W+rbHi0hKuZHtOQH4U5g+KwyKyfVioIxrxjoGRcUETE=
 go.nhat.io/matcher/v2 v2.0.0/go.mod h1:cL5oYp0M9A4L8jEGqjmUfy+k7AXVDddoVt6aYIL1r5g=
 go.nhat.io/wait v0.1.0 h1:aQ4YDzaOgFbypiJ9c/eAfOIB1G25VOv7Gd2QS8uz1gw=
