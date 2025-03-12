@@ -321,7 +321,7 @@ func (e *serverStreamExpectation) ReturnErrorf(code codes.Code, format string, a
 func (e *serverStreamExpectation) Return(v any) {
 	e.ReturnCode(codes.OK)
 	e.Run(func(ctx context.Context, _ any, s grpc.ServerStream) error {
-		h := newServerStreamHandler(s.(*streamer.ServerStreamer))
+		h := newServerStreamHandler(s.(*streamer.ServerStreamer)) //nolint: errcheck
 
 		h.SendMany(v)
 
@@ -341,7 +341,7 @@ func (e *serverStreamExpectation) ReturnJSON(v any) {
 			return status.Error(codes.Internal, err.Error())
 		}
 
-		h := newServerStreamHandler(s.(*streamer.ServerStreamer))
+		h := newServerStreamHandler(s.(*streamer.ServerStreamer)) //nolint: errcheck
 
 		h.SendMany(d)
 
@@ -362,7 +362,7 @@ func (e *serverStreamExpectation) ReturnFile(filePath string) {
 			return status.Error(codes.Internal, err.Error())
 		}
 
-		h := newServerStreamHandler(s.(*streamer.ServerStreamer))
+		h := newServerStreamHandler(s.(*streamer.ServerStreamer)) //nolint: errcheck
 
 		h.SendMany(d)
 
@@ -375,6 +375,7 @@ func (e *serverStreamExpectation) ReturnStream() ServerStreamHandler { //nolint:
 
 	e.ReturnCode(codes.OK)
 	e.Run(func(ctx context.Context, _ any, s grpc.ServerStream) error {
+		//nolint: errcheck
 		return h.withStreamer(s.(*streamer.ServerStreamer)).
 			handle(ctx)
 	})
@@ -398,7 +399,7 @@ func (e *serverStreamExpectation) Handle(ctx context.Context, in any, out any) e
 		return status.Error(e.statusCode, e.statusMessage)
 	}
 
-	return xerrors.StatusError(e.run(ctx, in, out.(*streamer.ServerStreamer)))
+	return xerrors.StatusError(e.run(ctx, in, out.(*streamer.ServerStreamer))) //nolint: errcheck
 }
 
 func (e *serverStreamExpectation) Once() ServerStreamExpectation {

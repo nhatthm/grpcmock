@@ -121,7 +121,7 @@ func ClientStreamPayload(in any) *PayloadMatcher {
 
 func matchClientStreamPayloadWithCustomMatcher(expected string, match MatchFn) *PayloadMatcher {
 	return Payload(Fn(expected, func(actual any) (bool, error) {
-		in, err := streamer.ClientStreamerPayload(actual.(*streamer.ClientStreamer))
+		in, err := streamer.ClientStreamerPayload(actual.(*streamer.ClientStreamer)) //nolint: errcheck
 		// This should never happen because the PayloadMatcher will read the stream first.
 		// If there is an error while reading the stream, it is caught inside the PayloadMatcher.
 		must.NotFail(err)

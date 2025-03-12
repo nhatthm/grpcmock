@@ -19,7 +19,7 @@ import (
 
 	xassert "go.nhat.io/grpcmock/assert"
 	xmatcher "go.nhat.io/grpcmock/matcher"
-	xmock "go.nhat.io/grpcmock/mock/grpc"
+	mockgrpc "go.nhat.io/grpcmock/mock/grpc"
 	"go.nhat.io/grpcmock/planner"
 	"go.nhat.io/grpcmock/reflect"
 	"go.nhat.io/grpcmock/service"
@@ -939,7 +939,7 @@ func TestServerStreamHandler_AddHeader_SendHeader(t *testing.T) {
 	}{
 		{
 			scenario: "error",
-			mockStreamer: test.MockListItemsStreamer(func(s *xmock.ServerStream) {
+			mockStreamer: test.MockListItemsStreamer(func(s *mockgrpc.ServerStream) {
 				s.On("SendHeader", mock.Anything).
 					Return(status.Error(codes.Internal, "send error"))
 			}),
@@ -947,7 +947,7 @@ func TestServerStreamHandler_AddHeader_SendHeader(t *testing.T) {
 		},
 		{
 			scenario: "success",
-			mockStreamer: test.MockListItemsStreamer(func(s *xmock.ServerStream) {
+			mockStreamer: test.MockListItemsStreamer(func(s *mockgrpc.ServerStream) {
 				s.On("SendHeader", metadata.New(map[string]string{
 					"user":  "foobar",
 					"email": "test@example.com",
@@ -985,7 +985,7 @@ func TestServerStreamHandler_SetHeader_SendHeader(t *testing.T) {
 	}{
 		{
 			scenario: "error",
-			mockStreamer: test.MockListItemsStreamer(func(s *xmock.ServerStream) {
+			mockStreamer: test.MockListItemsStreamer(func(s *mockgrpc.ServerStream) {
 				s.On("SendHeader", mock.Anything).
 					Return(status.Error(codes.Internal, "send error"))
 			}),
@@ -993,7 +993,7 @@ func TestServerStreamHandler_SetHeader_SendHeader(t *testing.T) {
 		},
 		{
 			scenario: "success",
-			mockStreamer: test.MockListItemsStreamer(func(s *xmock.ServerStream) {
+			mockStreamer: test.MockListItemsStreamer(func(s *mockgrpc.ServerStream) {
 				s.On("SendHeader", metadata.New(map[string]string{
 					"user":  "foobar",
 					"email": "test@example.com",
@@ -1033,7 +1033,7 @@ func TestServerStreamHandler_Send(t *testing.T) {
 	}{
 		{
 			scenario: "error",
-			mockStreamer: test.MockListItemsStreamer(func(s *xmock.ServerStream) {
+			mockStreamer: test.MockListItemsStreamer(func(s *mockgrpc.ServerStream) {
 				s.On("SendMsg", mock.Anything).
 					Return(status.Error(codes.Internal, "send error"))
 			}),
@@ -1041,7 +1041,7 @@ func TestServerStreamHandler_Send(t *testing.T) {
 		},
 		{
 			scenario: "success",
-			mockStreamer: test.MockListItemsStreamer(func(s *xmock.ServerStream) {
+			mockStreamer: test.MockListItemsStreamer(func(s *mockgrpc.ServerStream) {
 				s.On("SendMsg", &grpctest.Item{Id: 42}).
 					Return(nil)
 			}),
@@ -1074,7 +1074,7 @@ func TestServerStreamHandler_SendMany(t *testing.T) {
 	}{
 		{
 			scenario: "error",
-			mockStreamer: test.MockListItemsStreamer(func(s *xmock.ServerStream) {
+			mockStreamer: test.MockListItemsStreamer(func(s *mockgrpc.ServerStream) {
 				s.On("SendMsg", mock.Anything).
 					Return(status.Error(codes.Internal, "send error"))
 			}),
@@ -1082,7 +1082,7 @@ func TestServerStreamHandler_SendMany(t *testing.T) {
 		},
 		{
 			scenario: "success",
-			mockStreamer: test.MockListItemsStreamer(func(s *xmock.ServerStream) {
+			mockStreamer: test.MockListItemsStreamer(func(s *mockgrpc.ServerStream) {
 				s.On("SendMsg", &grpctest.Item{Id: 41}).
 					Return(nil)
 
@@ -1113,7 +1113,7 @@ func TestServerStreamHandler_WaitFor(t *testing.T) {
 
 	duration := 50 * time.Millisecond
 
-	s := test.MockListItemsStreamer(func(s *xmock.ServerStream) {
+	s := test.MockListItemsStreamer(func(s *mockgrpc.ServerStream) {
 		s.On("SendMsg", &grpctest.Item{Id: 42}).
 			Return(nil)
 	})(t)
@@ -1157,12 +1157,12 @@ func TestStepSendHeader(t *testing.T) {
 
 	testCases := []struct {
 		scenario   string
-		mockStream xmock.ServerStreamMocker
+		mockStream mockgrpc.ServerStreamMocker
 		error      error
 	}{
 		{
 			scenario: "error",
-			mockStream: xmock.MockServerStream(func(s *xmock.ServerStream) {
+			mockStream: mockgrpc.MockServerStream(func(s *mockgrpc.ServerStream) {
 				s.On("SendHeader", mock.Anything).
 					Return(status.Error(codes.Internal, "send error"))
 			}),
@@ -1170,7 +1170,7 @@ func TestStepSendHeader(t *testing.T) {
 		},
 		{
 			scenario: "no error",
-			mockStream: xmock.MockServerStream(func(s *xmock.ServerStream) {
+			mockStream: mockgrpc.MockServerStream(func(s *mockgrpc.ServerStream) {
 				s.On("SendHeader", metadata.New(map[string]string{"locale": "en-us"})).
 					Return(nil)
 			}),
@@ -1199,19 +1199,19 @@ func TestStepSend(t *testing.T) {
 
 	testCases := []struct {
 		scenario         string
-		mockServerStream xmock.ServerStreamMocker
+		mockServerStream mockgrpc.ServerStreamMocker
 		msg              any
 		expectedError    string
 	}{
 		{
 			scenario:         "wrong type",
-			mockServerStream: xmock.NoMockServerStream,
+			mockServerStream: mockgrpc.NopServerStream,
 			msg:              42,
 			expectedError:    `rpc error: code = Internal desc = unsupported data type: got int, want grpctest.Item`,
 		},
 		{
 			scenario: "exact type error",
-			mockServerStream: xmock.MockServerStream(func(s *xmock.ServerStream) {
+			mockServerStream: mockgrpc.MockServerStream(func(s *mockgrpc.ServerStream) {
 				s.On("SendMsg", mock.Anything).
 					Return(status.Error(codes.Internal, "send error"))
 			}),
@@ -1220,7 +1220,7 @@ func TestStepSend(t *testing.T) {
 		},
 		{
 			scenario: "exact type success",
-			mockServerStream: xmock.MockServerStream(func(s *xmock.ServerStream) {
+			mockServerStream: mockgrpc.MockServerStream(func(s *mockgrpc.ServerStream) {
 				s.On("SendMsg", &grpctest.Item{Id: 42}).
 					Return(nil)
 			}),
@@ -1228,13 +1228,13 @@ func TestStepSend(t *testing.T) {
 		},
 		{
 			scenario:         "byte error",
-			mockServerStream: xmock.NoMockServerStream,
+			mockServerStream: mockgrpc.NopServerStream,
 			msg:              []byte(`{`),
 			expectedError:    `rpc error: code = Internal desc = proto: unexpected EOF`,
 		},
 		{
 			scenario: "byte",
-			mockServerStream: xmock.MockServerStream(func(s *xmock.ServerStream) {
+			mockServerStream: mockgrpc.MockServerStream(func(s *mockgrpc.ServerStream) {
 				s.On("SendMsg", &grpctest.Item{Id: 42}).
 					Return(nil)
 			}),
@@ -1242,7 +1242,7 @@ func TestStepSend(t *testing.T) {
 		},
 		{
 			scenario: "string",
-			mockServerStream: xmock.MockServerStream(func(s *xmock.ServerStream) {
+			mockServerStream: mockgrpc.MockServerStream(func(s *mockgrpc.ServerStream) {
 				s.On("SendMsg", &grpctest.Item{Id: 42}).
 					Return(nil)
 			}),
@@ -1276,25 +1276,25 @@ func TestStepSendMany(t *testing.T) {
 
 	testCases := []struct {
 		scenario         string
-		mockServerStream xmock.ServerStreamMocker
+		mockServerStream mockgrpc.ServerStreamMocker
 		msg              any
 		expectedError    string
 	}{
 		{
 			scenario:         "wrong type",
-			mockServerStream: xmock.NoMockServerStream,
+			mockServerStream: mockgrpc.NopServerStream,
 			msg:              42,
 			expectedError:    `rpc error: code = Internal desc = unsupported data type: got int, want []grpctest.Item`,
 		},
 		{
 			scenario:         "wrong type - not a slice",
-			mockServerStream: xmock.NoMockServerStream,
+			mockServerStream: mockgrpc.NopServerStream,
 			msg:              grpctest.Item{},
 			expectedError:    `rpc error: code = Internal desc = unsupported data type: got grpctest.Item, want []grpctest.Item`,
 		},
 		{
 			scenario: "exact type error",
-			mockServerStream: xmock.MockServerStream(func(s *xmock.ServerStream) {
+			mockServerStream: mockgrpc.MockServerStream(func(s *mockgrpc.ServerStream) {
 				s.On("SendMsg", mock.Anything).
 					Return(status.Error(codes.Internal, "send error"))
 			}),
@@ -1303,7 +1303,7 @@ func TestStepSendMany(t *testing.T) {
 		},
 		{
 			scenario: "exact type success",
-			mockServerStream: xmock.MockServerStream(func(s *xmock.ServerStream) {
+			mockServerStream: mockgrpc.MockServerStream(func(s *mockgrpc.ServerStream) {
 				s.On("SendMsg", &grpctest.Item{Id: 42}).
 					Return(nil)
 			}),
@@ -1311,7 +1311,7 @@ func TestStepSendMany(t *testing.T) {
 		},
 		{
 			scenario: "exact type ptr success",
-			mockServerStream: xmock.MockServerStream(func(s *xmock.ServerStream) {
+			mockServerStream: mockgrpc.MockServerStream(func(s *mockgrpc.ServerStream) {
 				s.On("SendMsg", &grpctest.Item{Id: 42}).
 					Return(nil)
 			}),
@@ -1319,7 +1319,7 @@ func TestStepSendMany(t *testing.T) {
 		},
 		{
 			scenario: "exact type many success",
-			mockServerStream: xmock.MockServerStream(func(s *xmock.ServerStream) {
+			mockServerStream: mockgrpc.MockServerStream(func(s *mockgrpc.ServerStream) {
 				s.On("SendMsg", &grpctest.Item{Id: 42}).
 					Return(nil)
 
@@ -1333,13 +1333,13 @@ func TestStepSendMany(t *testing.T) {
 		},
 		{
 			scenario:         "byte error",
-			mockServerStream: xmock.NoMockServerStream,
+			mockServerStream: mockgrpc.NopServerStream,
 			msg:              []byte(`[`),
 			expectedError:    `rpc error: code = Internal desc = unexpected end of JSON input`,
 		},
 		{
 			scenario: "byte",
-			mockServerStream: xmock.MockServerStream(func(s *xmock.ServerStream) {
+			mockServerStream: mockgrpc.MockServerStream(func(s *mockgrpc.ServerStream) {
 				s.On("SendMsg", &grpctest.Item{Id: 42}).
 					Return(nil)
 			}),
@@ -1347,7 +1347,7 @@ func TestStepSendMany(t *testing.T) {
 		},
 		{
 			scenario: "string",
-			mockServerStream: xmock.MockServerStream(func(s *xmock.ServerStream) {
+			mockServerStream: mockgrpc.MockServerStream(func(s *mockgrpc.ServerStream) {
 				s.On("SendMsg", &grpctest.Item{Id: 42}).
 					Return(nil)
 			}),
