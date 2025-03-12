@@ -1,0 +1,18 @@
+dry-run: false
+with-expecter: false
+mockname: "{{.InterfaceName}}"
+filename: "{{ .InterfaceName | snakecase }}.go"
+dir: "{{.InterfaceDir}}/mock"
+outpkg: mock
+packages:
+  google.golang.org/grpc:
+    config:
+      dir: "mock/grpc"
+      include-regex: "^(ClientStream|ServerStream)$"
+      outpkg: grpc
+
+  go.nhat.io/grpcmock/planner:
+    config:
+      dir: "mock/planner"
+      include-regex: "^(Expectation|Planner)$"
+      outpkg: planner

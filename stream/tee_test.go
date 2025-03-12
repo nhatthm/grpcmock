@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
-	xmock "go.nhat.io/grpcmock/mock/grpc"
+	mockgrpc "go.nhat.io/grpcmock/mock/grpc"
 	"go.nhat.io/grpcmock/stream"
 	"go.nhat.io/grpcmock/test/grpctest"
 )
@@ -17,26 +17,26 @@ func TestTeeReceiver_RecvMsg(t *testing.T) {
 
 	testCases := []struct {
 		scenario      string
-		mockReceiver  xmock.ServerStreamMocker
-		mockSender    xmock.ServerStreamMocker
+		mockReceiver  mockgrpc.ServerStreamMocker
+		mockSender    mockgrpc.ServerStreamMocker
 		expectedError error
 	}{
 		{
 			scenario: "recv error",
-			mockReceiver: xmock.MockServerStream(func(s *xmock.ServerStream) {
+			mockReceiver: mockgrpc.MockServerStream(func(s *mockgrpc.ServerStream) {
 				s.On("RecvMsg", &grpctest.Item{}).
 					Return(errors.New("recv error"))
 			}),
-			mockSender:    xmock.NoMockServerStream,
+			mockSender:    mockgrpc.NopServerStream,
 			expectedError: errors.New("recv error"),
 		},
 		{
 			scenario: "send error",
-			mockReceiver: xmock.MockServerStream(func(s *xmock.ServerStream) {
+			mockReceiver: mockgrpc.MockServerStream(func(s *mockgrpc.ServerStream) {
 				s.On("RecvMsg", &grpctest.Item{}).
 					Return(nil)
 			}),
-			mockSender: xmock.MockServerStream(func(s *xmock.ServerStream) {
+			mockSender: mockgrpc.MockServerStream(func(s *mockgrpc.ServerStream) {
 				s.On("SendMsg", &grpctest.Item{}).
 					Return(errors.New("send error"))
 			}),
@@ -44,7 +44,7 @@ func TestTeeReceiver_RecvMsg(t *testing.T) {
 		},
 		{
 			scenario: "no error",
-			mockReceiver: xmock.MockServerStream(func(s *xmock.ServerStream) {
+			mockReceiver: mockgrpc.MockServerStream(func(s *mockgrpc.ServerStream) {
 				s.On("RecvMsg", &grpctest.Item{}).
 					Run(func(args mock.Arguments) {
 						out := args.Get(0).(*grpctest.Item) //nolint: errcheck
@@ -52,7 +52,7 @@ func TestTeeReceiver_RecvMsg(t *testing.T) {
 					}).
 					Return(nil)
 			}),
-			mockSender: xmock.MockServerStream(func(s *xmock.ServerStream) {
+			mockSender: mockgrpc.MockServerStream(func(s *mockgrpc.ServerStream) {
 				s.On("SendMsg", &grpctest.Item{Id: 42}).
 					Return(nil)
 			}),

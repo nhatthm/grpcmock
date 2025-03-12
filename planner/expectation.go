@@ -9,8 +9,6 @@ import (
 const UnlimitedTimes uint = 0
 
 // Expectation is an interface that represents an expectation.
-//
-//go:generate mockery --name Expectation --output ../mock/planner --outpkg planner --filename expectation.go
 type Expectation interface {
 	ServiceMethod() service.Method
 	HeaderMatcher() matcher.HeaderMatcher

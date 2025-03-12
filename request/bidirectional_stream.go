@@ -170,7 +170,7 @@ func (r *BidirectionalStreamRequest) handle(ctx context.Context, in any, _ any) 
 		return status.Error(r.statusCode, r.statusMessage)
 	}
 
-	return xerrors.StatusError(r.run(ctx, in.(*streamer.BidirectionalStreamer)))
+	return xerrors.StatusError(r.run(ctx, in.(*streamer.BidirectionalStreamer))) //nolint: errcheck
 }
 
 // Once indicates that the mock should only return the value once.

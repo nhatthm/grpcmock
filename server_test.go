@@ -64,7 +64,7 @@ func TestServer_WithPlanner_Panic(t *testing.T) {
 		mockItemServiceServer(grpcmock.NoOpT(), func(s *grpcmock.Server) {
 			s.ExpectUnary(grpcTestServiceGetItem)
 
-			s.WithPlanner(planner.NoMockPlanner(t))
+			s.WithPlanner(planner.NopPlanner(t))
 		})
 	})
 }

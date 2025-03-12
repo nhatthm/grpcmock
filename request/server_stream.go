@@ -185,6 +185,7 @@ func (r *ServerStreamRequest) ReturnErrorf(code codes.Code, format string, args 
 func (r *ServerStreamRequest) Return(v any) {
 	r.ReturnCode(codes.OK)
 	r.Run(func(ctx context.Context, _ any, s grpc.ServerStream) error {
+		//nolint: errcheck
 		return newServerStreamHandler(s.(*streamer.ServerStreamer)).
 			SendMany(v).
 			handle(ctx)
@@ -215,6 +216,7 @@ func (r *ServerStreamRequest) ReturnJSON(v any) {
 			return status.Error(codes.Internal, err.Error())
 		}
 
+		//nolint: errcheck
 		return newServerStreamHandler(s.(*streamer.ServerStreamer)).
 			SendMany(d).
 			handle(ctx)
@@ -240,6 +242,7 @@ func (r *ServerStreamRequest) ReturnFile(filePath string) {
 			return status.Error(codes.Internal, err.Error())
 		}
 
+		//nolint: errcheck
 		return newServerStreamHandler(s.(*streamer.ServerStreamer)).
 			SendMany(d).
 			handle(ctx)
@@ -263,6 +266,7 @@ func (r *ServerStreamRequest) ReturnStream() *serverStreamHandler { //nolint: re
 
 	r.ReturnCode(codes.OK)
 	r.Run(func(ctx context.Context, _ any, s grpc.ServerStream) error {
+		//nolint: errcheck
 		return h.withStreamer(s.(*streamer.ServerStreamer)).
 			handle(ctx)
 	})
@@ -298,7 +302,7 @@ func (r *ServerStreamRequest) handle(ctx context.Context, in any, out any) error
 		return status.Error(r.statusCode, r.statusMessage)
 	}
 
-	return xerrors.StatusError(r.run(ctx, in, out.(*streamer.ServerStreamer)))
+	return xerrors.StatusError(r.run(ctx, in, out.(*streamer.ServerStreamer))) //nolint: errcheck
 }
 
 // Once indicates that the mock should only return the value once.

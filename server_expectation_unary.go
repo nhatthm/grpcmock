@@ -337,7 +337,7 @@ func (e *unaryExpectation) Handle(ctx context.Context, in any, out any) error {
 
 	switch resp := resp.(type) {
 	case []byte, string, fmt.Stringer:
-		if err := protojson.Unmarshal([]byte(value.String(resp)), out.(proto.Message)); err != nil {
+		if err := protojson.Unmarshal([]byte(value.String(resp)), out.(proto.Message)); err != nil { //nolint: errcheck
 			return status.Error(codes.Internal, err.Error())
 		}
 

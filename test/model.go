@@ -78,5 +78,5 @@ func BuildItem() ItemBuilder {
 }
 
 func clone(src *grpctest.Item) *grpctest.Item {
-	return proto.Clone(src).(*grpctest.Item)
+	return proto.Clone(src).(*grpctest.Item) //nolint: errcheck
 }
