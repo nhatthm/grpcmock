@@ -10,3 +10,9 @@ packages:
       dir: "mock/grpc"
       include-regex: "^(ClientStream|ServerStream)$"
       outpkg: grpc
+
+  go.nhat.io/grpcmock/planner:
+    config:
+      dir: "mock/planner"
+      include-regex: "^(Expectation|Planner)$"
+      outpkg: planner
