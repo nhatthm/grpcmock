@@ -9,7 +9,7 @@ require (
 	github.com/spf13/afero v1.14.0
 	github.com/stretchr/testify v1.10.0
 	github.com/swaggest/assertjson v1.9.0
-	go.nhat.io/aferomock v0.7.0
+	go.nhat.io/aferomock v0.8.0
 	go.nhat.io/matcher/v2 v2.0.0
 	go.nhat.io/wait v0.1.0
 	google.golang.org/grpc v1.71.0
