@@ -2,7 +2,7 @@ module go.nhat.io/grpcmock
 
 go 1.23.0
 
-toolchain go1.23.5
+toolchain go1.24.1
 
 require (
 	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0
@@ -12,7 +12,7 @@ require (
 	go.nhat.io/aferomock v0.8.0
 	go.nhat.io/matcher/v2 v2.0.0
 	go.nhat.io/wait v0.1.0
-	google.golang.org/grpc v1.71.0
+	google.golang.org/grpc v1.71.1
 	google.golang.org/protobuf v1.36.6
 )
 
