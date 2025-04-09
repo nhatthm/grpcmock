@@ -3,7 +3,7 @@ MODULE_NAME = grpcmock
 VENDOR_DIR = vendor
 
 GOLANGCI_LINT_VERSION ?= v2.0.2
-MOCKERY_VERSION ?= v2.53.2
+MOCKERY_VERSION ?= v2.53.3
 
 GO ?= go
 GOLANGCI_LINT ?= $(shell go env GOPATH)/bin/golangci-lint-$(GOLANGCI_LINT_VERSION)

@@ -136,7 +136,7 @@ func (s *Server) ExpectUnary(method string) UnaryExpectation {
 	svc := s.method(method)
 
 	if !service.IsMethodUnary(svc.MethodType) {
-		panic(fmt.Errorf("%w: %s", xerrors.ErrMethodNotUnary, method))
+		panic(fmt.Errorf("%w: %s", xerrors.ErrMethodNotUnary, svc.FullName()))
 	}
 
 	r := newUnaryExpectation(svc)
@@ -153,7 +153,7 @@ func (s *Server) ExpectClientStream(method string) ClientStreamExpectation {
 	svc := s.method(method)
 
 	if !service.IsMethodClientStream(svc.MethodType) {
-		panic(fmt.Errorf("%w: %s", xerrors.ErrMethodNotClientStream, method))
+		panic(fmt.Errorf("%w: %s", xerrors.ErrMethodNotClientStream, svc.FullName()))
 	}
 
 	r := newClientStreamExpectation(svc)
@@ -170,7 +170,7 @@ func (s *Server) ExpectServerStream(method string) ServerStreamExpectation {
 	svc := s.method(method)
 
 	if !service.IsMethodServerStream(svc.MethodType) {
-		panic(fmt.Errorf("%w: %s", xerrors.ErrMethodNotServerStream, method))
+		panic(fmt.Errorf("%w: %s", xerrors.ErrMethodNotServerStream, svc.FullName()))
 	}
 
 	r := newServerStreamExpectation(svc)
@@ -187,7 +187,7 @@ func (s *Server) ExpectBidirectionalStream(method string) BidirectionalStreamExp
 	svc := s.method(method)
 
 	if !service.IsMethodBidirectionalStream(svc.MethodType) {
-		panic(fmt.Errorf("%w: %s", xerrors.ErrMethodNotBidirectionalStream, method))
+		panic(fmt.Errorf("%w: %s", xerrors.ErrMethodNotBidirectionalStream, svc.FullName()))
 	}
 
 	r := newBidirectionalStreamExpectation(svc)
@@ -498,7 +498,7 @@ func newStreamHandler(
 //		grpcmock.RegisterService(grpctest.RegisterItemServiceServer),
 //		grpcmock.WithPlanner(planner.FirstMatch()),
 //		func(s *grpcmock.Server) {
-//			s.ExpectUnary("grpctest.ItemService/GetItem").UnlimitedTimes().
+//			s.ExpectUnary(grpctest.ItemService_GetItem_FullMethodName).UnlimitedTimes().
 //				Return(&grpctest.Item{})
 //		},
 //	)(t)
@@ -513,7 +513,7 @@ func WithPlanner(p planner.Planner) ServerOption {
 //	grpcmock.MockUnstartedServer(
 //		grpcmock.RegisterService(grpctest.RegisterItemServiceServer),
 //		func(s *grpcmock.Server) {
-//			s.ExpectUnary("grpctest.ItemService/GetItem").UnlimitedTimes().
+//			s.ExpectUnary(grpctest.ItemService_GetItem_FullMethodName).UnlimitedTimes().
 //				Return(&grpctest.Item{})
 //		},
 //	)(t)
@@ -530,9 +530,9 @@ func RegisterService(registerFunc any) ServerOption {
 // RegisterServiceFromInstance registers a new service using the generated server interface.
 //
 //	grpcmock.MockUnstartedServer(
-//		grpcmock.RegisterServiceFromInstance("grpctest.ItemService", (*grpctest.ItemServiceServer)(nil)),
+//		grpcmock.RegisterServiceFromInstance(grpctest.ItemService_ServiceDesc.ServiceName, (*grpctest.ItemServiceServer)(nil)),
 //		func(s *grpcmock.Server) {
-//			s.ExpectUnary("grpctest.ItemService/GetItem").UnlimitedTimes().
+//			s.ExpectUnary(grpctest.ItemService_GetItem_FullMethodName).UnlimitedTimes().
 //				Return(&grpctest.Item{})
 //		},
 //	)(t)
@@ -548,14 +548,14 @@ func RegisterServiceFromInstance(id string, svc any) ServerOption {
 //
 //	   grpcmock.MockUnstartedServer(
 //	   	grpcmock.RegisterServiceFromMethods(service.Method{
-//				ServiceName: "grpctest.ItemService",
+//				ServiceName: grpctest.ItemService_ServiceDesc.ServiceName,
 //				MethodName:  "GetItem",
 //				MethodType:  service.TypeUnary,
 //				Input:       &grpctest.GetItemRequest{},
 //				Output:      &grpctest.Item{},
 //	   	}),
 //	   	func(s *grpcmock.Server) {
-//	   		s.ExpectUnary("grpctest.ItemService/GetItem").UnlimitedTimes().
+//	   		s.ExpectUnary(grpctest.ItemService_GetItem_FullMethodName).UnlimitedTimes().
 //	   			Return(&grpctest.Item{})
 //	   	},
 //	   )(t)

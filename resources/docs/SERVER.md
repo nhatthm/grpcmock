@@ -111,65 +111,64 @@ For example:
 package main
 
 import (
-	"context"
-	"testing"
+    "context"
+    "testing"
 
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
-	"go.nhat.io/grpcmock"
+    "github.com/stretchr/testify/assert"
+    "github.com/stretchr/testify/require"
+    "go.nhat.io/grpcmock"
+    "go.nhat.io/grpcmock/test/grpctest"
 )
 
 func mockItemServiceServer(m ...grpcmock.ServerOption) grpcmock.ServerMockerWithContextDialer {
-	opts := []grpcmock.ServerOption{grpcmock.RegisterService(RegisterItemServiceServer)}
-	opts = append(opts, m...)
+    opts := []grpcmock.ServerOption{grpcmock.RegisterService(RegisterItemServiceServer)}
+    opts = append(opts, m...)
 
-	return grpcmock.MockServerWithBufConn(opts...)
+    return grpcmock.MockServerWithBufConn(opts...)
 }
 
 func TestServer(t *testing.T) {
-	t.Parallel()
+    t.Parallel()
 
-	const getItem = "grpctest.ItemService/GetItem"
+    testCases := []struct {
+        scenario   string
+        mockServer grpcmock.ServerMockerWithContextDialer
+        request    GetItemRequest
+        expected   Item
+    }{
+        {
+            scenario: "success",
+            mockServer: mockItemServiceServer(func(s *grpcmock.Server) {
+                s.ExpectUnary(grpctest.ItemService_GetItem_FullMethodName).
+                    WithPayload(&GetItemRequest{Id: 1}).
+                    Return(&Item{Id: 1, Name: "Item #1"})
+            }),
+        },
+    }
 
-	testCases := []struct {
-		scenario   string
-		mockServer grpcmock.ServerMockerWithContextDialer
-		request    GetItemRequest
-		expected   Item
-	}{
-		{
-			scenario: "success",
-			mockServer: mockItemServiceServer(func(s *grpcmock.Server) {
-				s.ExpectUnary(getItem).
-					WithPayload(&GetItemRequest{Id: 1}).
-					Return(&Item{Id: 1, Name: "Item #1"})
-			}),
-		},
-	}
+    for _, tc := range testCases {
+        tc := tc
+        t.Run(tc.scenario, func(t *testing.T) {
+            t.Parallel()
 
-	for _, tc := range testCases {
-		tc := tc
-		t.Run(tc.scenario, func(t *testing.T) {
-			t.Parallel()
+            _, dialer := tc.mockServer(t)
 
-			_, dialer := tc.mockServer(t)
+            // Use the dialer in your client, do the request and assertions.
+            // For example:
+            out := &Item{}
+            err := grpcmock.InvokeUnary(context.Background(),
+                grpctest.ItemService_GetItem_FullMethodName, &GetItemRequest{Id: 1}, out,
+                grpcmock.WithInsecure(),
+                grpcmock.WithContextDialer(dialer),
+            )
 
-			// Use the dialer in your client, do the request and assertions.
-			// For example:
-			out := &Item{}
-			err := grpcmock.InvokeUnary(context.Background(),
-				getItem, &GetItemRequest{Id: 1}, out,
-				grpcmock.WithInsecure(),
-				grpcmock.WithContextDialer(dialer),
-			)
+            require.NoError(t, err)
 
-			require.NoError(t, err)
+            assert.Equal(t, "Item #1", out.Name)
 
-			assert.Equal(t, "Item #1", out.Name)
-
-			// Server is closed at the end, and the ExpectationsWereMet() is also called, automatically!
-		})
-	}
+            // Server is closed at the end, and the ExpectationsWereMet() is also called, automatically!
+        })
+    }
 }
 ```
 
@@ -261,11 +260,12 @@ import (
 	"testing"
 
 	"go.nhat.io/grpcmock"
+    "go.nhat.io/grpcmock/test/grpctest"
 )
 
 func TestServer(t *testing.T) {
 	s, d := grpcmock.MockServerWithBufConn(
-		grpcmock.RegisterServiceFromInstance("grpctest.ItemService", (*ItemServiceServer)(nil)),
+		grpcmock.RegisterServiceFromInstance(grpctest.ItemService_ServiceDesc.ServiceName, (*ItemServiceServer)(nil)),
 		func(s *grpcmock.Server) {
 			// Mock your server here.
 		},
@@ -284,11 +284,12 @@ import (
 	"testing"
 
 	"go.nhat.io/grpcmock"
+    "go.nhat.io/grpcmock/test/grpctest"
 )
 
 func TestServer(t *testing.T) {
 	s, d := grpcmock.MockServerWithBufConn(
-		grpcmock.RegisterServiceFromInstance("grpctest.ItemService", (*ItemServiceServer)(nil)),
+		grpcmock.RegisterServiceFromInstance(grpctest.ItemService_ServiceDesc.ServiceName, (*ItemServiceServer)(nil)),
 		func(s *grpcmock.Server) {
 			s.ExpectUnary("grpctest.Service/GetItem")
 		},
@@ -315,13 +316,14 @@ import (
 
 	"go.nhat.io/grpcmock"
 	"go.nhat.io/grpcmock/service"
+    "go.nhat.io/grpcmock/test/grpctest"
 )
 
 func TestServer(t *testing.T) {
 	s, d := grpcmock.MockServerWithBufConn(
 		grpcmock.RegisterServiceFromMethods(service.Method{
 			// Provide a service definition with request and response type.
-			ServiceName: "grpctest.ItemService",
+			ServiceName: grpctest.ItemService_ServiceDesc.ServiceName,
 			MethodName:  "GetItem",
 			MethodType:  service.TypeUnary,
 			Input:       &GetItemRequest{},

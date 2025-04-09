@@ -63,7 +63,7 @@ func TestCloseGRPCServer_Error(t *testing.T) {
 	s := NewUnstartedServer(
 		RegisterService(grpctest.RegisterItemServiceServer),
 		func(s *Server) {
-			s.ExpectUnary("grpctest.ItemService/GetItem").
+			s.ExpectUnary(grpctest.ItemService_GetItem_FullMethodName).
 				After(time.Millisecond * 300).
 				Return(&grpctest.GetItemRequest{Id: 42})
 		},
@@ -84,7 +84,7 @@ func TestCloseGRPCServer_Error(t *testing.T) {
 
 		//nolint: errcheck
 		_ = InvokeUnary(context.Background(),
-			"grpctest.ItemService/GetItem",
+			grpctest.ItemService_GetItem_FullMethodName,
 			&grpctest.GetItemRequest{Id: 42}, &grpctest.Item{},
 			WithBufConnDialer(buf),
 			WithInsecure(),

@@ -26,7 +26,7 @@ func ExampleMockServer() {
 		srv := grpcmock.MockServer(
 			grpcmock.RegisterService(grpctest.RegisterItemServiceServer),
 			func(s *grpcmock.Server) {
-				s.ExpectUnary("grpctest.ItemService/GetItem").
+				s.ExpectUnary(grpctest.ItemService_GetItem_FullMethodName).
 					WithPayload(&grpctest.GetItemRequest{Id: 41}).
 					Return(&grpctest.Item{
 						Id:     41,
@@ -38,7 +38,7 @@ func ExampleMockServer() {
 
 		// Call the service.
 		out := &grpctest.Item{}
-		method := srv.Address() + "/grpctest.ItemService/GetItem"
+		method := srv.Address() + grpctest.ItemService_GetItem_FullMethodName
 		err := grpcmock.InvokeUnary(context.Background(),
 			method, &grpctest.GetItemRequest{Id: 41}, out,
 			grpcmock.WithInsecure(),
@@ -84,7 +84,7 @@ func ExampleMockServerWithBufConn() {
 		_, d := grpcmock.MockServerWithBufConn(
 			grpcmock.RegisterService(grpctest.RegisterItemServiceServer),
 			func(s *grpcmock.Server) {
-				s.ExpectUnary("grpctest.ItemService/GetItem").
+				s.ExpectUnary(grpctest.ItemService_GetItem_FullMethodName).
 					WithPayload(&grpctest.GetItemRequest{Id: 41}).
 					Return(&grpctest.Item{
 						Id:     41,
@@ -97,7 +97,7 @@ func ExampleMockServerWithBufConn() {
 		// Call the service.
 		out := &grpctest.Item{}
 		err := grpcmock.InvokeUnary(context.Background(),
-			"grpctest.ItemService/GetItem", &grpctest.GetItemRequest{Id: 41}, out,
+			grpctest.ItemService_GetItem_FullMethodName, &grpctest.GetItemRequest{Id: 41}, out,
 			grpcmock.WithInsecure(),
 			grpcmock.WithContextDialer(d),
 		)

@@ -23,13 +23,6 @@ import (
 	"go.nhat.io/grpcmock/test/grpctest"
 )
 
-const (
-	grpcTestServiceGetItem        = "grpctest.ItemService/GetItem"
-	grpcTestServiceListItems      = "grpctest.ItemService/ListItems"
-	grpcTestServiceCreateItems    = "grpctest.ItemService/CreateItems"
-	grpcTestServiceTransformItems = "grpctest.ItemService/TransformItems"
-)
-
 func TestServer_WithPlanner(t *testing.T) {
 	t.Parallel()
 
@@ -44,7 +37,7 @@ func TestServer_WithPlanner(t *testing.T) {
 		})(t)
 
 		s.WithPlanner(p).
-			ExpectUnary(grpcTestServiceGetItem)
+			ExpectUnary(grpctest.ItemService_GetItem_FullMethodName)
 	})
 
 	actual, err := getItem(d, 42)
@@ -62,7 +55,7 @@ func TestServer_WithPlanner_Panic(t *testing.T) {
 
 	assert.PanicsWithError(t, expected, func() {
 		mockItemServiceServer(grpcmock.NoOpT(), func(s *grpcmock.Server) {
-			s.ExpectUnary(grpcTestServiceGetItem)
+			s.ExpectUnary(grpctest.ItemService_GetItem_FullMethodName)
 
 			s.WithPlanner(planner.NopPlanner(t))
 		})
@@ -73,7 +66,7 @@ func TestServer_Expect_Unimplemented(t *testing.T) {
 	t.Parallel()
 
 	_, d := mockItemServiceServer(grpcmock.NoOpT(), func(s *grpcmock.Server) {
-		s.ExpectUnary(grpcTestServiceGetItem)
+		s.ExpectUnary(grpctest.ItemService_GetItem_FullMethodName)
 	})
 
 	actual, err := getItem(d, 42)
@@ -138,18 +131,18 @@ func TestServer_ExpectUnary_Panic(t *testing.T) {
 		},
 		{
 			scenario: "server stream",
-			method:   grpcTestServiceListItems,
-			expected: `method is not unary: grpctest.ItemService/ListItems`,
+			method:   grpctest.ItemService_ListItems_FullMethodName,
+			expected: `method is not unary: /grpctest.ItemService/ListItems`,
 		},
 		{
 			scenario: "client stream",
-			method:   grpcTestServiceCreateItems,
-			expected: `method is not unary: grpctest.ItemService/CreateItems`,
+			method:   grpctest.ItemService_CreateItems_FullMethodName,
+			expected: `method is not unary: /grpctest.ItemService/CreateItems`,
 		},
 		{
 			scenario: "bidirectional stream",
-			method:   grpcTestServiceTransformItems,
-			expected: `method is not unary: grpctest.ItemService/TransformItems`,
+			method:   grpctest.ItemService_TransformItems_FullMethodName,
+			expected: `method is not unary: /grpctest.ItemService/TransformItems`,
 		},
 	}
 
@@ -171,7 +164,7 @@ func TestServer_ExpectUnary_Success(t *testing.T) {
 	t.Parallel()
 
 	_, d := mockItemServiceServer(t, func(s *grpcmock.Server) {
-		s.ExpectUnary(grpcTestServiceGetItem).
+		s.ExpectUnary(grpctest.ItemService_GetItem_FullMethodName).
 			Run(func(ctx context.Context, in any) (any, error) {
 				var locale string
 
@@ -209,7 +202,7 @@ func TestServer_ExpectUnary_WrongPayload(t *testing.T) {
 	t.Parallel()
 
 	_, d := mockItemServiceServer(grpcmock.NoOpT(), func(s *grpcmock.Server) {
-		s.ExpectUnary(grpcTestServiceGetItem).
+		s.ExpectUnary(grpctest.ItemService_GetItem_FullMethodName).
 			WithHeader("locale", "en-US").
 			WithPayload(&grpctest.GetItemRequest{Id: 1})
 	})
@@ -262,18 +255,18 @@ func TestServer_ExpectServerStream_Panic(t *testing.T) {
 		},
 		{
 			scenario: "unary",
-			method:   grpcTestServiceGetItem,
-			expected: `method is not server-stream: grpctest.ItemService/GetItem`,
+			method:   grpctest.ItemService_GetItem_FullMethodName,
+			expected: `method is not server-stream: /grpctest.ItemService/GetItem`,
 		},
 		{
 			scenario: "client stream",
-			method:   grpcTestServiceCreateItems,
-			expected: `method is not server-stream: grpctest.ItemService/CreateItems`,
+			method:   grpctest.ItemService_CreateItems_FullMethodName,
+			expected: `method is not server-stream: /grpctest.ItemService/CreateItems`,
 		},
 		{
 			scenario: "bidirectional stream",
-			method:   grpcTestServiceTransformItems,
-			expected: `method is not server-stream: grpctest.ItemService/TransformItems`,
+			method:   grpctest.ItemService_TransformItems_FullMethodName,
+			expected: `method is not server-stream: /grpctest.ItemService/TransformItems`,
 		},
 	}
 
@@ -296,7 +289,7 @@ func TestServer_ExpectServerStream_Success(t *testing.T) {
 
 	expected := testSrv.DefaultItems()
 	_, d := mockItemServiceServer(t, func(s *grpcmock.Server) {
-		s.ExpectServerStream(grpcTestServiceListItems).
+		s.ExpectServerStream(grpctest.ItemService_ListItems_FullMethodName).
 			ReturnStream().
 			SendMany(expected)
 	})
@@ -339,18 +332,18 @@ func TestServer_ExpectClientStream_Panic(t *testing.T) {
 		},
 		{
 			scenario: "unary",
-			method:   grpcTestServiceGetItem,
-			expected: `method is not client-stream: grpctest.ItemService/GetItem`,
+			method:   grpctest.ItemService_GetItem_FullMethodName,
+			expected: `method is not client-stream: /grpctest.ItemService/GetItem`,
 		},
 		{
 			scenario: "server stream",
-			method:   grpcTestServiceListItems,
-			expected: `method is not client-stream: grpctest.ItemService/ListItems`,
+			method:   grpctest.ItemService_ListItems_FullMethodName,
+			expected: `method is not client-stream: /grpctest.ItemService/ListItems`,
 		},
 		{
 			scenario: "bidirectional stream",
-			method:   grpcTestServiceTransformItems,
-			expected: `method is not client-stream: grpctest.ItemService/TransformItems`,
+			method:   grpctest.ItemService_TransformItems_FullMethodName,
+			expected: `method is not client-stream: /grpctest.ItemService/TransformItems`,
 		},
 	}
 
@@ -372,7 +365,7 @@ func TestServer_ExpectClientStream_Success(t *testing.T) {
 	t.Parallel()
 
 	_, d := mockItemServiceServer(t, func(s *grpcmock.Server) {
-		s.ExpectClientStream(grpcTestServiceCreateItems).
+		s.ExpectClientStream(grpctest.ItemService_CreateItems_FullMethodName).
 			WithHeader(`locale`, `en-US`).
 			WithPayload([]*grpctest.Item{{Id: 42}}).
 			Run(func(_ context.Context, s grpc.ServerStream) (any, error) {
@@ -407,7 +400,7 @@ func TestServer_ExpectClientStream_CustomMatcher_Success(t *testing.T) {
 	t.Parallel()
 
 	_, d := mockItemServiceServer(t, func(s *grpcmock.Server) {
-		s.ExpectClientStream(grpcTestServiceCreateItems).
+		s.ExpectClientStream(grpctest.ItemService_CreateItems_FullMethodName).
 			WithHeader(`locale`, `en-US`).
 			WithPayload(grpcmock.MatchClientStreamMsgCount(1)).
 			Run(func(_ context.Context, s grpc.ServerStream) (any, error) {
@@ -442,7 +435,7 @@ func TestServer_ExpectClientStream_MatchMsgCount_Mismatched(t *testing.T) {
 	t.Parallel()
 
 	_, d := mockItemServiceServer(grpcmock.NoOpT(), func(s *grpcmock.Server) {
-		s.ExpectClientStream(grpcTestServiceCreateItems).
+		s.ExpectClientStream(grpctest.ItemService_CreateItems_FullMethodName).
 			WithPayload(grpcmock.MatchClientStreamMsgCount(2))
 	})
 
@@ -466,7 +459,7 @@ func TestServer_ExpectClientStream_CustomStreamMatcher_Mismatched(t *testing.T) 
 	t.Parallel()
 
 	_, d := mockItemServiceServer(grpcmock.NoOpT(), func(s *grpcmock.Server) {
-		s.ExpectClientStream(grpcTestServiceCreateItems).
+		s.ExpectClientStream(grpctest.ItemService_CreateItems_FullMethodName).
 			WithPayload(func(any) (bool, error) {
 				return false, nil
 			})
@@ -516,18 +509,18 @@ func TestServer_ExpectBidirectionalStream_Panic(t *testing.T) {
 		},
 		{
 			scenario: "unary",
-			method:   grpcTestServiceGetItem,
-			expected: `method is not bidirectional-stream: grpctest.ItemService/GetItem`,
+			method:   grpctest.ItemService_GetItem_FullMethodName,
+			expected: `method is not bidirectional-stream: /grpctest.ItemService/GetItem`,
 		},
 		{
 			scenario: "client stream",
-			method:   grpcTestServiceCreateItems,
-			expected: `method is not bidirectional-stream: grpctest.ItemService/CreateItems`,
+			method:   grpctest.ItemService_CreateItems_FullMethodName,
+			expected: `method is not bidirectional-stream: /grpctest.ItemService/CreateItems`,
 		},
 		{
 			scenario: "server stream",
-			method:   grpcTestServiceListItems,
-			expected: `method is not bidirectional-stream: grpctest.ItemService/ListItems`,
+			method:   grpctest.ItemService_ListItems_FullMethodName,
+			expected: `method is not bidirectional-stream: /grpctest.ItemService/ListItems`,
 		},
 	}
 
@@ -549,7 +542,7 @@ func TestServer_ExpectBidirectionalStream_Success(t *testing.T) {
 	t.Parallel()
 
 	_, d := mockItemServiceServer(t, func(s *grpcmock.Server) {
-		s.ExpectBidirectionalStream(grpcTestServiceTransformItems).
+		s.ExpectBidirectionalStream(grpctest.ItemService_TransformItems_FullMethodName).
 			WithHeader(`locale`, `en-US`).
 			Run(func(_ context.Context, s grpc.ServerStream) error {
 				for {
@@ -593,11 +586,11 @@ func TestServer_ExpectationsWereNotMet_LimitedRequest(t *testing.T) {
 
 	s, d := mockItemServiceServer(grpcmock.NoOpT(),
 		func(s *grpcmock.Server) {
-			s.ExpectUnary(grpcTestServiceGetItem).Twice().
+			s.ExpectUnary(grpctest.ItemService_GetItem_FullMethodName).Twice().
 				WithPayload(&grpctest.GetItemRequest{Id: 42}).
 				Return(&grpctest.Item{Id: 42})
 
-			s.ExpectServerStream(grpcTestServiceListItems)
+			s.ExpectServerStream(grpctest.ItemService_ListItems_FullMethodName)
 		},
 	)
 
@@ -630,10 +623,10 @@ func TestServer_ExpectationsWereNotMet_UnlimitedRequest(t *testing.T) {
 
 	s, d := mockItemServiceServer(grpcmock.NoOpT(),
 		func(s *grpcmock.Server) {
-			s.ExpectUnary(grpcTestServiceGetItem).UnlimitedTimes().
+			s.ExpectUnary(grpctest.ItemService_GetItem_FullMethodName).UnlimitedTimes().
 				Return(&grpctest.Item{})
 
-			s.ExpectServerStream(grpcTestServiceListItems)
+			s.ExpectServerStream(grpctest.ItemService_ListItems_FullMethodName)
 		},
 	)
 
@@ -663,7 +656,7 @@ func TestServer_ExpectationsWereMet_UnlimitedRequest(t *testing.T) {
 
 	s, d := mockItemServiceServer(grpcmock.NoOpT(),
 		func(s *grpcmock.Server) {
-			s.ExpectUnary(grpcTestServiceGetItem).UnlimitedTimes().
+			s.ExpectUnary(grpctest.ItemService_GetItem_FullMethodName).UnlimitedTimes().
 				Return(&grpctest.Item{})
 		},
 	)
@@ -680,7 +673,7 @@ func TestServer_ResetExpectations(t *testing.T) {
 	s := grpcmock.MockUnstartedServer(
 		grpcmock.RegisterService(grpctest.RegisterItemServiceServer),
 		func(s *grpcmock.Server) {
-			s.ExpectUnary(grpcTestServiceGetItem).
+			s.ExpectUnary(grpctest.ItemService_GetItem_FullMethodName).
 				WithPayload(&grpctest.GetItemRequest{Id: 1}).
 				Return(&grpctest.Item{Id: 1, Name: "Foobar"})
 		},
@@ -707,7 +700,7 @@ func TestFindServerMethod(t *testing.T) {
 			scenario:   "found",
 			mockServer: grpcmock.RegisterService(grpctest.RegisterItemServiceServer),
 			expected: &service.Method{
-				ServiceName: "grpctest.ItemService",
+				ServiceName: grpctest.ItemService_ServiceDesc.ServiceName,
 				MethodName:  "GetItem",
 				MethodType:  service.TypeUnary,
 				Input:       &grpctest.GetItemRequest{},
@@ -721,7 +714,7 @@ func TestFindServerMethod(t *testing.T) {
 		t.Run(tc.scenario, func(t *testing.T) {
 			t.Parallel()
 
-			actual := grpcmock.FindServerMethod(grpcmock.NewUnstartedServer(tc.mockServer), grpcTestServiceGetItem)
+			actual := grpcmock.FindServerMethod(grpcmock.NewUnstartedServer(tc.mockServer), grpctest.ItemService_GetItem_FullMethodName)
 
 			assert.Equal(t, tc.expected, actual)
 		})
@@ -743,7 +736,7 @@ func getItem(d grpcmock.ContextDialer, id int32) (*grpctest.Item, error) {
 	out := &grpctest.Item{}
 
 	err := grpcmock.InvokeUnary(ctx,
-		grpcTestServiceGetItem,
+		grpctest.ItemService_GetItem_FullMethodName,
 		&grpctest.GetItemRequest{Id: id}, out,
 		grpcmock.WithHeader("Locale", "en-US"),
 		grpcmock.WithContextDialer(d),
@@ -763,7 +756,7 @@ func listItems(d grpcmock.ContextDialer) ([]*grpctest.Item, error) {
 	out := make([]*grpctest.Item, 0)
 
 	err := grpcmock.InvokeServerStream(ctx,
-		grpcTestServiceListItems,
+		grpctest.ItemService_ListItems_FullMethodName,
 		&grpctest.ListItemsRequest{},
 		grpcmock.RecvAll(&out),
 		grpcmock.WithHeader("Locale", "en-US"),
@@ -784,7 +777,7 @@ func createItems(d grpcmock.ContextDialer, items ...*grpctest.Item) (*grpctest.C
 	out := &grpctest.CreateItemsResponse{}
 
 	err := grpcmock.InvokeClientStream(ctx,
-		grpcTestServiceCreateItems,
+		grpctest.ItemService_CreateItems_FullMethodName,
 		grpcmock.SendAll(items), out,
 		grpcmock.WithHeader("Locale", "en-US"),
 		grpcmock.WithContextDialer(d),
@@ -804,7 +797,7 @@ func transformItems(d grpcmock.ContextDialer, items ...*grpctest.Item) ([]*grpct
 	out := make([]*grpctest.Item, 0)
 
 	err := grpcmock.InvokeBidirectionalStream(ctx,
-		grpcTestServiceTransformItems,
+		grpctest.ItemService_TransformItems_FullMethodName,
 		grpcmock.SendAndRecvAll(items, &out),
 		grpcmock.WithHeader("Locale", "en-US"),
 		grpcmock.WithContextDialer(d),
