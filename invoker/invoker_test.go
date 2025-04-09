@@ -332,7 +332,7 @@ func TestInvoker_Timeout(t *testing.T) {
 
 func getItemMethod() service.Method {
 	return service.Method{
-		ServiceName: "grpctest.ItemService",
+		ServiceName: grpctest.ItemService_ServiceDesc.ServiceName,
 		MethodName:  "GetItem",
 		MethodType:  service.TypeUnary,
 	}
@@ -340,7 +340,7 @@ func getItemMethod() service.Method {
 
 func listItemsMethod() service.Method {
 	return service.Method{
-		ServiceName: "grpctest.ItemService",
+		ServiceName: grpctest.ItemService_ServiceDesc.ServiceName,
 		MethodName:  "ListItems",
 		MethodType:  service.TypeServerStream,
 	}
@@ -348,7 +348,7 @@ func listItemsMethod() service.Method {
 
 func createItemsMethod() service.Method {
 	return service.Method{
-		ServiceName: "grpctest.ItemService",
+		ServiceName: grpctest.ItemService_ServiceDesc.ServiceName,
 		MethodName:  "CreateItems",
 		MethodType:  service.TypeClientStream,
 	}
@@ -356,7 +356,7 @@ func createItemsMethod() service.Method {
 
 func transformItemsMethod() service.Method {
 	return service.Method{
-		ServiceName: "grpctest.ItemService",
+		ServiceName: grpctest.ItemService_ServiceDesc.ServiceName,
 		MethodName:  "TransformItems",
 		MethodType:  service.TypeBidirectionalStream,
 	}

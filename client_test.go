@@ -69,7 +69,7 @@ func TestInvokeUnary_Unimplemented(t *testing.T) {
 		_ = srv.Serve(l) //nolint: errcheck
 	}()
 
-	err := grpcmock.InvokeUnary(context.Background(), "grpctest.ItemService/GetItem", nil, nil,
+	err := grpcmock.InvokeUnary(context.Background(), grpctest.ItemService_GetItem_FullMethodName, nil, nil,
 		grpcmock.WithBufConnDialer(l),
 		grpcmock.WithInsecure(),
 	)
@@ -106,7 +106,7 @@ func TestInvokeUnary_Success(t *testing.T) {
 	expectedRequest := &grpctest.GetItemRequest{Id: 42}
 	actualResponse := &grpctest.Item{}
 
-	err := grpcmock.InvokeUnary(context.Background(), "grpctest.ItemService/GetItem", expectedRequest, actualResponse,
+	err := grpcmock.InvokeUnary(context.Background(), grpctest.ItemService_GetItem_FullMethodName, expectedRequest, actualResponse,
 		grpcmock.WithContextDialer(dialer),
 		grpcmock.WithInsecure(),
 		grpcmock.WithHeader("Locale", "en-US"),
@@ -171,7 +171,7 @@ func TestInvokeServerStream_UnaryMethod(t *testing.T) {
 	}))
 
 	err := grpcmock.InvokeServerStream(context.Background(),
-		"grpctest.ItemService/GetItem",
+		grpctest.ItemService_GetItem_FullMethodName,
 		&grpctest.ListItemsRequest{},
 		func(s grpc.ClientStream) error {
 			msg := &grpctest.Item{}
@@ -220,7 +220,7 @@ func TestInvokeServerStream_Success(t *testing.T) {
 	result := make([]*grpctest.Item, 0)
 
 	err := grpcmock.InvokeServerStream(context.Background(),
-		"grpctest.ItemService/ListItems",
+		grpctest.ItemService_ListItems_FullMethodName,
 		&grpctest.ListItemsRequest{},
 		grpcmock.RecvAll(&result),
 		grpcmock.WithContextDialer(dialer),
@@ -281,7 +281,7 @@ func TestInvokeClientStream_NoHandlerShouldBeFine(t *testing.T) {
 		return srv.SendAndClose(&grpctest.CreateItemsResponse{})
 	}))
 
-	err := grpcmock.InvokeClientStream(context.Background(), "grpctest.ItemService/CreateItems", nil, &grpctest.CreateItemsResponse{},
+	err := grpcmock.InvokeClientStream(context.Background(), grpctest.ItemService_CreateItems_FullMethodName, nil, &grpctest.CreateItemsResponse{},
 		grpcmock.WithContextDialer(dialer),
 		grpcmock.WithInsecure(),
 	)
@@ -296,7 +296,7 @@ func TestInvokeClientStream_FailToHandle(t *testing.T) {
 		return srv.SendAndClose(&grpctest.CreateItemsResponse{})
 	}))
 
-	err := grpcmock.InvokeClientStream(context.Background(), "grpctest.ItemService/CreateItems",
+	err := grpcmock.InvokeClientStream(context.Background(), grpctest.ItemService_CreateItems_FullMethodName,
 		func(grpc.ClientStream) error {
 			return errors.New("handle error")
 		},
@@ -339,7 +339,7 @@ func TestInvokeClientStream_Success(t *testing.T) {
 	result := &grpctest.CreateItemsResponse{}
 
 	err := grpcmock.InvokeClientStream(context.Background(),
-		"grpctest.ItemService/CreateItems",
+		grpctest.ItemService_CreateItems_FullMethodName,
 		grpcmock.SendAll(items),
 		result,
 		grpcmock.WithContextDialer(dialer),
@@ -389,7 +389,7 @@ func TestInvokeBidirectionalStream_NoHandlerShouldBeFine(t *testing.T) {
 		return srv.SendAndClose(&grpctest.CreateItemsResponse{})
 	}))
 
-	err := grpcmock.InvokeBidirectionalStream(context.Background(), "grpctest.ItemService/CreateItems", nil,
+	err := grpcmock.InvokeBidirectionalStream(context.Background(), grpctest.ItemService_CreateItems_FullMethodName, nil,
 		grpcmock.WithContextDialer(dialer),
 		grpcmock.WithInsecure(),
 	)
@@ -404,7 +404,7 @@ func TestInvokeBidirectionalStream_FailToHandle(t *testing.T) {
 		return srv.SendAndClose(&grpctest.CreateItemsResponse{})
 	}))
 
-	err := grpcmock.InvokeBidirectionalStream(context.Background(), "grpctest.ItemService/CreateItems",
+	err := grpcmock.InvokeBidirectionalStream(context.Background(), grpctest.ItemService_CreateItems_FullMethodName,
 		func(grpc.ClientStream) error {
 			return errors.New("handle error")
 		},
@@ -446,7 +446,7 @@ func TestInvokeBidirectionalStream_Success(t *testing.T) {
 	result := make([]*grpctest.Item, 0)
 
 	err := grpcmock.InvokeBidirectionalStream(context.Background(),
-		"grpctest.ItemService/TransformItems",
+		grpctest.ItemService_TransformItems_FullMethodName,
 		grpcmock.SendAndRecvAll(items, &result),
 		grpcmock.WithContextDialer(dialer),
 		grpcmock.WithInsecure(),
