@@ -1,57 +1,67 @@
-# See https://github.com/golangci/golangci-lint/blob/master/.golangci.example.yml
+version: "2"
 run:
   tests: true
-  timeout: 5m
-
-linters-settings:
-  errcheck:
-    check-type-assertions: true
-    check-blank: true
-  gocyclo:
-    min-complexity: 20
-  dupl:
-    threshold: 100
-  misspell:
-    locale: US
-  unparam:
-    check-exported: true
-
 linters:
-  enable-all: true
+  default: all
   disable:
     - copyloopvar
     - depguard
     - exhaustruct
     - forbidigo
     - forcetypeassert
-    - gci
     - gochecknoglobals
     - intrange
     - ireturn
     - lll
     - mnd
-    - nolintlint # https://github.com/golangci/golangci-lint/issues/3063
+    - nolintlint
     - nonamedreturns
     - paralleltest
     - recvcheck
     - tagliatelle
-    - tenv
     - testifylint
     - testpackage
     - varnamelen
     - wrapcheck
-
+  settings:
+    dupl:
+      threshold: 100
+    errcheck:
+      check-type-assertions: true
+      check-blank: true
+    gocyclo:
+      min-complexity: 20
+    misspell:
+      locale: US
+    unparam:
+      check-exported: true
+  exclusions:
+    generated: lax
+    rules:
+      - linters:
+          - containedctx
+          - dupl
+          - err113
+          - funlen
+          - goconst
+          - mnd
+          - noctx
+        path: _test.go
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
 issues:
   max-issues-per-linter: 200
   max-same-issues: 50
-  exclude-use-default: false
-  exclude-rules:
-    - linters:
-        - containedctx
-        - dupl
-        - err113
-        - funlen
-        - goconst
-        - mnd
-        - noctx
-      path: "_test.go"
+formatters:
+  enable:
+    - gofmt
+    - gofumpt
+    - goimports
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
