@@ -9,6 +9,7 @@ linters:
     - exhaustruct
     - forbidigo
     - forcetypeassert
+    - funcorder
     - gochecknoglobals
     - intrange
     - ireturn
