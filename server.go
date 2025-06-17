@@ -66,11 +66,9 @@ func NewUnstartedServer(opts ...ServerOption) *Server {
 		serverOpts: []grpc.ServerOption{
 			grpc.ChainUnaryInterceptor(
 				recovery.UnaryServerInterceptor(),
-				tags.UnaryServerInterceptor(),
 			),
 			grpc.ChainStreamInterceptor(
 				recovery.StreamServerInterceptor(),
-				tags.StreamServerInterceptor(),
 			),
 		},
 		closeServer: closeNothing,
