@@ -10,8 +10,7 @@ import (
 	"sync"
 	"time"
 
-	recovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
-	tags "github.com/grpc-ecosystem/go-grpc-middleware/tags"
+	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/recovery"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
 
