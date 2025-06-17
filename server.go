@@ -10,8 +10,7 @@ import (
 	"sync"
 	"time"
 
-	recovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
-	tags "github.com/grpc-ecosystem/go-grpc-middleware/tags"
+	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/recovery"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
 
@@ -66,11 +65,9 @@ func NewUnstartedServer(opts ...ServerOption) *Server {
 		serverOpts: []grpc.ServerOption{
 			grpc.ChainUnaryInterceptor(
 				recovery.UnaryServerInterceptor(),
-				tags.UnaryServerInterceptor(),
 			),
 			grpc.ChainStreamInterceptor(
 				recovery.StreamServerInterceptor(),
-				tags.StreamServerInterceptor(),
 			),
 		},
 		closeServer: closeNothing,
