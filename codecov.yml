@@ -1,6 +1,6 @@
 ignore:
     - "features/**/*"
     - "internal/**/*"
-    - "mocks/**/*"
+    - "mock/**/*"
     - "request/*"
     - "options.go"
