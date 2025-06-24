@@ -3,4 +3,5 @@ ignore:
     - "internal/**/*"
     - "mock/**/*"
     - "request/*"
+    - "test/**/*"
     - "options.go"
