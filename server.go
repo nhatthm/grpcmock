@@ -398,8 +398,8 @@ func buildServiceDescriptions(
 			desc.Streams = append(desc.Streams, grpc.StreamDesc{
 				StreamName:    svc.MethodName,
 				Handler:       newStreamHandler(*svc, handler),
-				ServerStreams: isClientStream,
-				ClientStreams: isServerStream,
+				ServerStreams: isServerStream,
+				ClientStreams: isClientStream,
 			})
 		} else {
 			desc.Methods = append(desc.Methods, grpc.MethodDesc{

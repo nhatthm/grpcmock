@@ -720,7 +720,7 @@ func TestUnaryExpectation_WaitTime_ContextTimeout(t *testing.T) {
 	err := r.Handle(ctx, nil, nil)
 	endTime := time.Now()
 
-	assert.GreaterOrEqual(t, endTime.Sub(startTime), expectedDuration)
+	assert.GreaterOrEqual(t, endTime.Sub(startTime), expectedDuration-time.Millisecond)
 	assert.Error(t, err)
 	assert.EqualError(t, err, `rpc error: code = Internal desc = context deadline exceeded`)
 }

@@ -24,8 +24,8 @@ func (b *Buffer) Len() int {
 
 // SendMsg persists the message into the Buffer.
 func (b *Buffer) SendMsg(m any) error {
-	if !xreflect.IsPtr(m) {
-		if xreflect.IsNil(m) {
+	if !xreflect.IsValidPtr(m) {
+		if xreflect.IsNilPtr(m) {
 			return fmt.Errorf("send msg error: %w", xreflect.ErrPtrIsNil)
 		}
 
@@ -43,8 +43,8 @@ func (b *Buffer) SendMsg(m any) error {
 
 // RecvMsg returns the messages in buffer.
 func (b *Buffer) RecvMsg(m any) error {
-	if !xreflect.IsPtr(m) {
-		if xreflect.IsNil(m) {
+	if !xreflect.IsValidPtr(m) {
+		if xreflect.IsNilPtr(m) {
 			return fmt.Errorf("recv msg error: %w", xreflect.ErrPtrIsNil)
 		}
 
