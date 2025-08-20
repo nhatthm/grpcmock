@@ -140,12 +140,12 @@ func TestIsNil(t *testing.T) {
 		t.Run(tc.scenario, func(t *testing.T) {
 			t.Parallel()
 
-			assert.Equal(t, tc.expected, xreflect.IsNil(tc.input))
+			assert.Equal(t, tc.expected, xreflect.IsZero(tc.input))
 		})
 	}
 }
 
-func TestIsPtr(t *testing.T) {
+func TestIsValidPtr(t *testing.T) {
 	t.Parallel()
 
 	testCases := []struct {
@@ -185,7 +185,7 @@ func TestIsPtr(t *testing.T) {
 		t.Run(tc.scenario, func(t *testing.T) {
 			t.Parallel()
 
-			assert.Equal(t, tc.expected, xreflect.IsPtr(tc.input))
+			assert.Equal(t, tc.expected, xreflect.IsValidPtr(tc.input))
 		})
 	}
 }

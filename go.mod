@@ -2,7 +2,7 @@ module go.nhat.io/grpcmock
 
 go 1.23.0
 
-toolchain go1.23.7
+toolchain go1.23.11
 
 require (
 	github.com/grpc-ecosystem/go-grpc-middleware/v2 v2.3.2

@@ -77,7 +77,7 @@ func formatRequestTimes(w io.Writer, svc service.Method, header map[string]any, 
 		}
 	}
 
-	if !xreflect.IsNil(payload) {
+	if !xreflect.IsZero(payload) {
 		bodyStr := formatValue(payload)
 
 		if bodyStr != "" {
@@ -113,7 +113,7 @@ func formatValueInline(v any) string {
 		return fmt.Sprintf("%T(%q)", v, m.Expected())
 
 	default:
-		if xreflect.IsNil(v) {
+		if xreflect.IsZero(v) {
 			return ""
 		}
 
@@ -122,7 +122,7 @@ func formatValueInline(v any) string {
 }
 
 func formatType(v any) string {
-	if xreflect.IsNil(v) {
+	if xreflect.IsZero(v) {
 		return ""
 	}
 
@@ -178,7 +178,7 @@ func formatValue(v any) string {
 		return m.Expected()
 
 	default:
-		if xreflect.IsNil(v) {
+		if xreflect.IsZero(v) {
 			return ""
 		}
 
