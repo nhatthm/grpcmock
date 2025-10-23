@@ -22,6 +22,7 @@ linters:
     - tagliatelle
     - testifylint
     - testpackage
+    - usetesting
     - varnamelen
     - wrapcheck
   settings:

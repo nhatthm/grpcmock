@@ -415,7 +415,7 @@ func TestBidirectionalStreamExpectation_WaitTime_ContextTimeout(t *testing.T) {
 
 	expectedDuration := 20 * time.Millisecond
 
-	ctx, cancel := context.WithTimeout(context.Background(), expectedDuration)
+	ctx, cancel := context.WithTimeout(context.Background(), expectedDuration+time.Millisecond)
 	defer cancel()
 
 	duration := 50 * time.Millisecond

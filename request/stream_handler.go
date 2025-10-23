@@ -42,7 +42,7 @@ func (h *baseStreamHandler) handle(ctx context.Context) error {
 }
 
 func (h *baseStreamHandler) ReturnError(code codes.Code, msg string) {
-	h.addStep(stepReturnErrorf(code, msg)) //nolint: govet
+	h.addStep(stepReturnError(code, msg))
 }
 
 func (h *baseStreamHandler) ReturnErrorf(code codes.Code, msg string, args ...any) {
