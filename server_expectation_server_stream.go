@@ -535,7 +535,7 @@ func (h *serverStreamHandler) SendMany(v any) ServerStreamHandler {
 }
 
 func (h *serverStreamHandler) ReturnError(code codes.Code, msg string) {
-	h.addStep(stepReturnErrorf(code, msg)) //nolint: govet
+	h.addStep(stepReturnError(code, msg))
 }
 
 func (h *serverStreamHandler) ReturnErrorf(code codes.Code, msg string, args ...any) {
@@ -646,6 +646,12 @@ func stepSendMany(msgType reflect.Type, msg any) serverStreamHandlerStepFunc { /
 		}
 
 		return status.Errorf(codes.Internal, "%s: got %T, want %s", xerrors.ErrUnsupportedDataType.Error(), msg, expectedType.String())
+	}
+}
+
+func stepReturnError(code codes.Code, msg string) serverStreamHandlerStepFunc {
+	return func(context.Context, grpc.ServerStream) error {
+		return status.Error(code, msg)
 	}
 }
 

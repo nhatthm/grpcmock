@@ -120,6 +120,12 @@ func stepSendMany(msgType reflect.Type, msg any) streamStepFunc { //nolint: cycl
 	}
 }
 
+func stepReturnError(code codes.Code, msg string) streamStepFunc {
+	return func(context.Context, grpc.ServerStream) error {
+		return status.Error(code, msg)
+	}
+}
+
 func stepReturnErrorf(code codes.Code, msg string, args ...any) streamStepFunc {
 	return func(context.Context, grpc.ServerStream) error {
 		return status.Errorf(code, msg, args...)
