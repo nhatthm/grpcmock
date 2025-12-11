@@ -2,10 +2,16 @@ package planner
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"go.nhat.io/grpcmock/matcher"
 	"go.nhat.io/grpcmock/service"
+)
+
+var (
+	errCouldNotMatchHeader  = errors.New("could not match header")
+	errCouldNotMatchPayload = errors.New("could not match payload")
 )
 
 // MatchRequest checks whether a request is matched.
@@ -23,7 +29,7 @@ func MatchRequest(ctx context.Context, expected Expectation, actual service.Meth
 
 // TryMatchRequest tries to check whether a request is matched.
 func TryMatchRequest(ctx context.Context, expected Expectation, actual service.Method, in any) bool {
-	if err := matchService(expected, actual, in); err != nil {
+	if err := matchService(expected, actual); err != nil {
 		return false
 	}
 
@@ -45,7 +51,7 @@ func TryMatchRequest(ctx context.Context, expected Expectation, actual service.M
 
 // MatchService matches the service of a given request.
 func MatchService(ctx context.Context, expected Expectation, actual service.Method, in any) (err error) {
-	if err := matchService(expected, actual, in); err != nil {
+	if err := matchService(expected, actual); err != nil {
 		return WrapError(ctx, expected, actual, in, err)
 	}
 
@@ -76,11 +82,11 @@ func MatchPayload(ctx context.Context, expected Expectation, actual service.Meth
 }
 
 // matchService matches the service of a given request.
-func matchService(expected Expectation, actual service.Method, in any) error {
+func matchService(expected Expectation, actual service.Method) error {
 	svc := expected.ServiceMethod()
 
 	if svc.FullName() != actual.FullName() {
-		return fmt.Errorf("method %s %q expected, %s %q received",
+		return fmt.Errorf("method %s %q expected, %s %q received", //nolint: err113
 			svc.MethodType, svc.FullName(), actual.MethodType, actual.FullName(),
 		)
 	}
@@ -97,7 +103,7 @@ func matchHeader(ctx context.Context, expected Expectation) (err error) {
 
 	defer func() {
 		if p := recover(); p != nil {
-			err = fmt.Errorf("could not match header: %s", recovered(p))
+			err = fmt.Errorf("%w: %s", errCouldNotMatchHeader, recovered(p))
 		}
 	}()
 
@@ -112,21 +118,21 @@ func matchHeader(ctx context.Context, expected Expectation) (err error) {
 func matchPayload(m *matcher.PayloadMatcher, in any) (err error) {
 	defer func() {
 		if p := recover(); p != nil {
-			err = fmt.Errorf("could not match payload: %s", recovered(p))
+			err = fmt.Errorf("%w: %s", errCouldNotMatchPayload, recovered(p))
 		}
 	}()
 
 	matched, err := m.Match(in)
 	if err != nil {
-		return fmt.Errorf("could not match payload: %w", err)
+		return fmt.Errorf("%w: %s", errCouldNotMatchPayload, err) //nolint: errorlint
 	}
 
 	if !matched {
 		if e := m.Expected(); e != "" {
-			return fmt.Errorf("expected request payload: %s, received: %s", m.Expected(), m.Actual())
+			return fmt.Errorf("expected request payload: %s, received: %s", m.Expected(), m.Actual()) //nolint: err113
 		}
 
-		return fmt.Errorf("payload does not match expectation, received: %s", m.Actual())
+		return fmt.Errorf("payload does not match expectation, received: %s", m.Actual()) //nolint: err113
 	}
 
 	return nil
