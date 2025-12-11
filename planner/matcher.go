@@ -2,7 +2,9 @@ package planner
 
 import (
 	"context"
+	"fmt"
 
+	"go.nhat.io/grpcmock/matcher"
 	"go.nhat.io/grpcmock/service"
 )
 
@@ -19,14 +21,32 @@ func MatchRequest(ctx context.Context, expected Expectation, actual service.Meth
 	return MatchPayload(ctx, expected, actual, in)
 }
 
+// TryMatchRequest tries to check whether a request is matched.
+func TryMatchRequest(ctx context.Context, expected Expectation, actual service.Method, in any) bool {
+	if err := matchService(expected, actual, in); err != nil {
+		return false
+	}
+
+	if err := matchHeader(ctx, expected); err != nil {
+		return false
+	}
+
+	m := expected.PayloadMatcher()
+	if m == nil {
+		return true
+	}
+
+	if err := matchPayload(m, in); err != nil {
+		return false
+	}
+
+	return true
+}
+
 // MatchService matches the service of a given request.
 func MatchService(ctx context.Context, expected Expectation, actual service.Method, in any) (err error) {
-	svc := expected.ServiceMethod()
-
-	if svc.FullName() != actual.FullName() {
-		return NewError(ctx, expected, actual, in,
-			"method %s %q expected, %s %q received", svc.MethodType, svc.FullName(), actual.MethodType, actual.FullName(),
-		)
+	if err := matchService(expected, actual, in); err != nil {
+		return WrapError(ctx, expected, actual, in, err)
 	}
 
 	return nil
@@ -34,21 +54,8 @@ func MatchService(ctx context.Context, expected Expectation, actual service.Meth
 
 // MatchHeader matches the header of a given request.
 func MatchHeader(ctx context.Context, expected Expectation, actual service.Method, in any) (err error) {
-	header := expected.HeaderMatcher()
-	if len(header) == 0 {
-		return nil
-	}
-
-	defer func() {
-		if p := recover(); p != nil {
-			err = NewError(ctx, expected, actual, in,
-				"could not match header: %s", recovered(p),
-			)
-		}
-	}()
-
-	if err := header.Match(ctx); err != nil {
-		return NewError(ctx, expected, actual, in, err.Error())
+	if err := matchHeader(ctx, expected); err != nil {
+		return WrapError(ctx, expected, actual, in, err)
 	}
 
 	return nil
@@ -61,27 +68,65 @@ func MatchPayload(ctx context.Context, expected Expectation, actual service.Meth
 		return nil
 	}
 
+	if err := matchPayload(m, in); err != nil {
+		return WrapError(ctx, expected, actual, m.Actual(), err)
+	}
+
+	return nil
+}
+
+// matchService matches the service of a given request.
+func matchService(expected Expectation, actual service.Method, in any) error {
+	svc := expected.ServiceMethod()
+
+	if svc.FullName() != actual.FullName() {
+		return fmt.Errorf("method %s %q expected, %s %q received",
+			svc.MethodType, svc.FullName(), actual.MethodType, actual.FullName(),
+		)
+	}
+
+	return nil
+}
+
+// matchHeader matches the header of a given request.
+func matchHeader(ctx context.Context, expected Expectation) (err error) {
+	header := expected.HeaderMatcher()
+	if len(header) == 0 {
+		return nil
+	}
+
 	defer func() {
 		if p := recover(); p != nil {
-			err = NewError(ctx, expected, actual, m.Actual(),
-				"could not match payload: %s", recovered(p),
-			)
+			err = fmt.Errorf("could not match header: %s", recovered(p))
+		}
+	}()
+
+	if err := header.Match(ctx); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// matchPayload matches the payload of a given request.
+func matchPayload(m *matcher.PayloadMatcher, in any) (err error) {
+	defer func() {
+		if p := recover(); p != nil {
+			err = fmt.Errorf("could not match payload: %s", recovered(p))
 		}
 	}()
 
 	matched, err := m.Match(in)
 	if err != nil {
-		return NewError(ctx, expected, actual, m.Actual(),
-			"could not match payload: %s", err.Error(),
-		)
+		return fmt.Errorf("could not match payload: %w", err)
 	}
 
 	if !matched {
 		if e := m.Expected(); e != "" {
-			return NewError(ctx, expected, actual, m.Actual(), "expected request payload: %s, received: %s", m.Expected(), m.Actual())
+			return fmt.Errorf("expected request payload: %s, received: %s", m.Expected(), m.Actual())
 		}
 
-		return NewError(ctx, expected, actual, m.Actual(), "payload does not match expectation, received: %s", m.Actual())
+		return fmt.Errorf("payload does not match expectation, received: %s", m.Actual())
 	}
 
 	return nil

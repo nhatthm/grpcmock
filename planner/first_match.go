@@ -37,7 +37,7 @@ func (m *firstMatch) Plan(ctx context.Context, req service.Method, in any) (Expe
 	found := -1
 
 	for i, expect := range m.expectations {
-		if err := MatchRequest(ctx, expect, req, in); err == nil {
+		if TryMatchRequest(ctx, expect, req, in) {
 			matched = expect
 			found = i
 
