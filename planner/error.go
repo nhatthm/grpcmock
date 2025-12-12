@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"strings"
+	"time"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
@@ -17,6 +18,8 @@ import (
 
 // Error represents an error that occurs while matching a request.
 type Error struct {
+	err error
+
 	expected      Expectation
 	actual        service.Method
 	actualHeader  map[string]string
@@ -32,6 +35,11 @@ func (e Error) formatExpected(w io.Writer) {
 
 func (e Error) formatActual(w io.Writer) {
 	format.Request(w, e.actual, e.actualHeader, e.actualPayload)
+}
+
+// Unwrap unwraps the error.
+func (e Error) Unwrap() error {
+	return e.err
 }
 
 // Error satisfies the error interface.
@@ -70,7 +78,10 @@ func NewError(ctx context.Context, expected Expectation, req service.Method, in 
 	var actualPayload any
 
 	if in != nil {
-		in, err := value.Marshal(in)
+		ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+		defer cancel()
+
+		in, err := value.MarshalContext(ctx, in)
 		if err != nil {
 			in = "could not read request payload: " + err.Error()
 		}
@@ -86,6 +97,15 @@ func NewError(ctx context.Context, expected Expectation, req service.Method, in 
 		messageFormat: messageFormat,
 		messageArgs:   messageArgs,
 	}
+}
+
+// WrapError wraps the error with request details.
+func WrapError(ctx context.Context, expected Expectation, req service.Method, in any, err error) *Error {
+	wrapped := NewError(ctx, expected, req, in, err.Error())
+
+	wrapped.err = err
+
+	return wrapped
 }
 
 // UnexpectedRequestError returns an error because of the unexpected request.

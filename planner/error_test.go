@@ -1,14 +1,29 @@
 package planner_test
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 
+	"go.nhat.io/grpcmock/matcher"
+	plannermock "go.nhat.io/grpcmock/mock/planner"
 	"go.nhat.io/grpcmock/planner"
 	"go.nhat.io/grpcmock/test"
 	"go.nhat.io/grpcmock/test/grpctest"
 )
+
+func TestError_Unwrap(t *testing.T) {
+	t.Parallel()
+
+	expected := plannermock.MockExpectation(func(e *plannermock.Expectation) {
+		e.On("HeaderMatcher").Return(make(matcher.HeaderMatcher))
+	})(t)
+
+	wrapped := planner.WrapError(context.Background(), expected, test.CreateItemsSvc(), nil, context.DeadlineExceeded)
+
+	assert.ErrorIs(t, wrapped, context.DeadlineExceeded)
+}
 
 func TestUnexpectedRequestError_Unary(t *testing.T) {
 	t.Parallel()

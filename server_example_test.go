@@ -16,7 +16,7 @@ import (
 	"google.golang.org/grpc/test/bufconn"
 
 	"go.nhat.io/grpcmock"
-	plannerMock "go.nhat.io/grpcmock/mock/planner"
+	plannermock "go.nhat.io/grpcmock/mock/planner"
 	"go.nhat.io/grpcmock/must"
 	"go.nhat.io/grpcmock/planner"
 	"go.nhat.io/grpcmock/service"
@@ -32,7 +32,7 @@ func ExampleServer_WithPlanner() {
 		grpcmock.RegisterService(grpctest.RegisterItemServiceServer),
 		grpcmock.WithListener(buf),
 		func(s *grpcmock.Server) {
-			p := &plannerMock.Planner{}
+			p := &plannermock.Planner{}
 
 			p.On("IsEmpty").Return(false)
 			p.On("Expect", mock.Anything)

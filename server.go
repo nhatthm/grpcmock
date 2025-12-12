@@ -292,25 +292,34 @@ func (s *Server) Close() error {
 	return s.closeServer()
 }
 
-func (s *Server) handleRequest(ctx context.Context, svc service.Method, in any, out any) error {
+func (s *Server) planRequest(ctx context.Context, svc service.Method, in any) (planner.Expectation, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
 	if s.planner.IsEmpty() {
-		return planner.UnexpectedRequestError(svc, in)
+		return nil, planner.UnexpectedRequestError(svc, in)
 	}
 
 	expected, err := s.planner.Plan(ctx, svc, in)
 	assert.NoError(s.test, err)
 
 	if err != nil {
-		return xerrors.StatusError(err)
+		return nil, xerrors.StatusError(err)
 	}
 
 	// Log the request.
 	expected.Fulfilled()
 
 	s.Requests = append(s.Requests, expected)
+
+	return expected, nil
+}
+
+func (s *Server) handleRequest(ctx context.Context, svc service.Method, in any, out any) error {
+	expected, err := s.planRequest(ctx, svc, in)
+	if err != nil {
+		return err
+	}
 
 	h, _ := expected.(interface { //nolint: errcheck
 		Handle(ctx context.Context, in any, out any) error
