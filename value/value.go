@@ -1,6 +1,7 @@
 package value
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 
@@ -23,6 +24,33 @@ func String(v any) string {
 	}
 
 	panic(errors.ErrUnsupportedDataType)
+}
+
+// MarshalContext marshals the given object.
+func MarshalContext(ctx context.Context, v any) (string, error) {
+	ch := make(chan any, 1)
+
+	go func() {
+		defer close(ch)
+
+		if s, err := Marshal(v); err != nil {
+			ch <- err
+		} else {
+			ch <- s
+		}
+	}()
+
+	select {
+	case <-ctx.Done():
+		return "", ctx.Err()
+
+	case v := <-ch:
+		if s, ok := v.(string); ok {
+			return s, nil
+		}
+
+		return "", v.(error) //nolint: errcheck,forcetypeassert
+	}
 }
 
 // Marshal marshals the given object.

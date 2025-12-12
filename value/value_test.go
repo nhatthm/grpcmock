@@ -1,10 +1,12 @@
 package value_test
 
 import (
+	"context"
 	"errors"
 	"io"
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -57,6 +59,87 @@ func TestString_Panic(t *testing.T) {
 	assert.PanicsWithError(t, `unsupported data type`, func() {
 		value.String(42)
 	})
+}
+
+func TestMarshalContext(t *testing.T) {
+	t.Parallel()
+
+	const payload = `[{"id":42}]`
+
+	testCases := []struct {
+		scenario       string
+		timeout        time.Duration
+		in             any
+		expectedResult string
+		expectedError  string
+	}{
+		{
+			scenario: "timeout while getting value",
+			timeout:  10 * time.Millisecond,
+			in: streamer.NewClientStreamer(xmock.MockServerStream(func(s *xmock.ServerStream) {
+				s.On("RecvMsg", &grpctest.Item{}).
+					Once().
+					After(50 * time.Millisecond).
+					Run(func(args mock.Arguments) {
+						msg := args.Get(0).(*grpctest.Item) //nolint: errcheck
+						msg.Id = 42
+					}).
+					Return(nil)
+
+				s.On("RecvMsg", &grpctest.Item{}).
+					Return(io.EOF)
+			})(t), reflect.TypeOf(&grpctest.Item{}), reflect.TypeOf(&grpctest.CreateItemsResponse{})),
+			expectedError: `context deadline exceeded`,
+		},
+		{
+			scenario:       "[]byte",
+			in:             []byte(payload),
+			expectedResult: payload,
+		},
+		{
+			scenario:       "string",
+			in:             payload,
+			expectedResult: payload,
+		},
+		{
+			scenario:      "chan",
+			in:            make(chan struct{}, 1),
+			expectedError: `json: unsupported type: chan struct {}`,
+		},
+		{
+			scenario:       "object",
+			in:             streamer.NewBidirectionalStreamer(nil, nil, nil),
+			expectedResult: "",
+		},
+		{
+			scenario:       "object",
+			in:             []*grpctest.Item{{Id: 42}},
+			expectedResult: payload,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.scenario, func(t *testing.T) {
+			t.Parallel()
+
+			if tc.timeout == 0 {
+				tc.timeout = time.Hour
+			}
+
+			ctx, cancel := context.WithTimeout(t.Context(), tc.timeout)
+			defer cancel()
+
+			result, err := value.MarshalContext(ctx, tc.in)
+
+			if tc.expectedError == "" {
+				assert.NoError(t, err)
+			} else {
+				assert.EqualError(t, err, tc.expectedError)
+			}
+
+			assert.Equal(t, tc.expectedResult, result)
+		})
+	}
 }
 
 func TestMarshal(t *testing.T) {
