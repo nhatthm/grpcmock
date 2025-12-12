@@ -7,11 +7,6 @@ import (
 // ExpectationMocker is Expectation mocker.
 type ExpectationMocker func(tb testing.TB) *Expectation
 
-// NoMockExpectation is no mock Expectation.
-//
-// Deprecated: Use NopExpectation instead.
-var NoMockExpectation = NopExpectation
-
 // NopExpectation is no mock Expectation.
 var NopExpectation = MockExpectation()
 
@@ -32,11 +27,6 @@ func MockExpectation(mocks ...func(e *Expectation)) ExpectationMocker {
 
 // Mocker is Planner mocker.
 type Mocker func(tb testing.TB) *Planner
-
-// NoMockPlanner is no mock Planner.
-//
-// Deprecated: Use NopPlanner instead.
-var NoMockPlanner = NopPlanner
 
 // NopPlanner is no mock Planner.
 var NopPlanner = Mock()
