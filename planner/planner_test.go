@@ -8,7 +8,7 @@ import (
 	"google.golang.org/grpc/metadata"
 
 	xmatcher "go.nhat.io/grpcmock/matcher"
-	plannerMock "go.nhat.io/grpcmock/mock/planner"
+	plannermock "go.nhat.io/grpcmock/mock/planner"
 	"go.nhat.io/grpcmock/service"
 	"go.nhat.io/grpcmock/test"
 )
@@ -63,8 +63,8 @@ func (b expectationBuilder) WithTimes(t uint) expectationBuilder {
 	return b
 }
 
-func (b expectationBuilder) Mock() func(tb testing.TB) *plannerMock.Expectation {
-	return plannerMock.MockExpectation(func(e *plannerMock.Expectation) {
+func (b expectationBuilder) Mock() func(tb testing.TB) *plannermock.Expectation {
+	return plannermock.MockExpectation(func(e *plannermock.Expectation) {
 		e.On("ServiceMethod").Maybe().
 			Return(b.serviceMethod)
 
@@ -79,7 +79,7 @@ func (b expectationBuilder) Mock() func(tb testing.TB) *plannerMock.Expectation 
 	})
 }
 
-func (b expectationBuilder) Build(tb testing.TB) *plannerMock.Expectation {
+func (b expectationBuilder) Build(tb testing.TB) *plannermock.Expectation {
 	tb.Helper()
 
 	return b.Mock()(tb)
