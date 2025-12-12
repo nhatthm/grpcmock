@@ -258,13 +258,6 @@ func methodOutput(method reflect.Method, position int) any {
 	return New(method.Type.Out(position))
 }
 
-// IsNil checks whether the given value is nil.
-//
-// Deprecated: Use IsZero instead.
-func IsNil(v any) bool {
-	return IsZero(v)
-}
-
 // IsZero checks whether the given value is zero.
 func IsZero(v any) bool {
 	if v == nil {
@@ -272,13 +265,6 @@ func IsZero(v any) bool {
 	}
 
 	return reflect.ValueOf(v).IsZero()
-}
-
-// IsValid checks whether the input is a pointer and not nil.
-//
-// Deprecated: Use IsValidPtr instead.
-func IsValid(v any) bool {
-	return IsValidPtr(v)
 }
 
 // IsValidPtr checks whether the input is a pointer and not nil.
