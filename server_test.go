@@ -147,7 +147,6 @@ func TestServer_ExpectUnary_Panic(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		tc := tc
 		t.Run(tc.scenario, func(t *testing.T) {
 			t.Parallel()
 
@@ -271,7 +270,6 @@ func TestServer_ExpectServerStream_Panic(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		tc := tc
 		t.Run(tc.scenario, func(t *testing.T) {
 			t.Parallel()
 
@@ -299,7 +297,7 @@ func TestServer_ExpectServerStream_Success(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Len(t, actual, len(expected))
 
-	for i := 0; i < len(expected); i++ {
+	for i := range len(expected) {
 		xassert.EqualMessage(t, expected[i], actual[i])
 	}
 }
@@ -348,7 +346,6 @@ func TestServer_ExpectClientStream_Panic(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		tc := tc
 		t.Run(tc.scenario, func(t *testing.T) {
 			t.Parallel()
 
@@ -525,7 +522,6 @@ func TestServer_ExpectBidirectionalStream_Panic(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		tc := tc
 		t.Run(tc.scenario, func(t *testing.T) {
 			t.Parallel()
 
@@ -576,7 +572,7 @@ func TestServer_ExpectBidirectionalStream_Success(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Len(t, actual, len(expected))
 
-	for i := 0; i < len(expected); i++ {
+	for i := range len(expected) {
 		xassert.EqualMessage(t, expected[i], actual[i])
 	}
 }
@@ -710,7 +706,6 @@ func TestFindServerMethod(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		tc := tc
 		t.Run(tc.scenario, func(t *testing.T) {
 			t.Parallel()
 
@@ -722,7 +717,9 @@ func TestFindServerMethod(t *testing.T) {
 }
 
 func mockItemServiceServer(t grpcmock.T, m ...grpcmock.ServerOption) (*grpcmock.Server, grpcmock.ContextDialer) {
-	opts := []grpcmock.ServerOption{grpcmock.RegisterService(grpctest.RegisterItemServiceServer)}
+	opts := make([]grpcmock.ServerOption, 0, len(m)+1)
+
+	opts = append(opts, grpcmock.RegisterService(grpctest.RegisterItemServiceServer))
 	opts = append(opts, m...)
 
 	return grpcmock.MockServerWithBufConn(opts...)(t)

@@ -244,7 +244,7 @@ func TestInvokeServerStream_Success(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, len(expected), len(result))
 
-	for i := 0; i < len(expected); i++ {
+	for i := range len(expected) {
 		xassert.EqualMessage(t, expected[i], result[i])
 	}
 }
@@ -468,7 +468,7 @@ func TestInvokeBidirectionalStream_Success(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, len(expected), len(result))
 
-	for i := 0; i < len(expected); i++ {
+	for i := range len(expected) {
 		xassert.EqualMessage(t, expected[i], result[i])
 	}
 }
@@ -515,7 +515,6 @@ func TestSendAll(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		tc := tc
 		t.Run(tc.scenario, func(t *testing.T) {
 			t.Parallel()
 
@@ -535,8 +534,6 @@ func TestRecvAll(t *testing.T) {
 
 	sendItems := func(s *mockgrpc.ClientStream) {
 		for _, i := range test.DefaultItems() {
-			i := i
-
 			s.On("RecvMsg", &grpctest.Item{}).Once().
 				Run(func(args mock.Arguments) {
 					out := args.Get(0).(*grpctest.Item) //nolint: errcheck
@@ -623,7 +620,6 @@ func TestRecvAll(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		tc := tc
 		t.Run(tc.scenario, func(t *testing.T) {
 			t.Parallel()
 
@@ -755,7 +751,6 @@ func TestSendAndRecvAll_Success(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		tc := tc
 		t.Run(tc.scenario, func(t *testing.T) {
 			t.Parallel()
 

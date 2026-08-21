@@ -52,7 +52,7 @@ func recvAllMessages(r Receiver, out reflect.Value, msgType reflect.Type) (refle
 }
 
 func newSliceMessageValue(t reflect.Type, v reflect.Value) reflect.Value {
-	if t.Kind() != reflect.Ptr {
+	if t.Kind() != reflect.Pointer {
 		return v
 	}
 

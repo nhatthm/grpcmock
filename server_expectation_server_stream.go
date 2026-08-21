@@ -595,7 +595,7 @@ func stepSendMany(msgType reflect.Type, msg any) serverStreamHandlerStepFunc { /
 		sendMany := func(v any) error {
 			valueOf := reflect.ValueOf(v)
 
-			if valueOf.Type().Kind() == reflect.Ptr {
+			if valueOf.Type().Kind() == reflect.Pointer {
 				valueOf = valueOf.Elem()
 			}
 

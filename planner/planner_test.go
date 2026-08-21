@@ -2,6 +2,7 @@ package planner_test
 
 import (
 	"context"
+	"maps"
 	"testing"
 
 	"go.nhat.io/matcher/v2"
@@ -27,10 +28,9 @@ func (b expectationBuilder) WithServiceMethod(serviceMethod service.Method) expe
 }
 
 func (b expectationBuilder) WithHeader(header string, value any) expectationBuilder {
-	headerMatcher := make(xmatcher.HeaderMatcher, len(b.headerMatcher))
-	for header, value := range b.headerMatcher {
-		headerMatcher[header] = value
-	}
+	headerMatcher := make(xmatcher.HeaderMatcher, len(b.headerMatcher)+1)
+
+	maps.Copy(headerMatcher, b.headerMatcher)
 
 	headerMatcher[header] = matcher.Match(value)
 	b.headerMatcher = headerMatcher

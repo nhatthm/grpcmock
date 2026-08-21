@@ -86,7 +86,6 @@ func TestClientStreamExpectation_WithPayload(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		tc := tc
 		t.Run(tc.scenario, func(t *testing.T) {
 			t.Parallel()
 
@@ -175,7 +174,6 @@ func TestClientStreamExpectation_WithPayload_Matched(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		tc := tc
 		t.Run(tc.scenario, func(t *testing.T) {
 			t.Parallel()
 
@@ -252,7 +250,6 @@ func TestClientStreamExpectation_WithPayload_Mismatched(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		tc := tc
 		t.Run(tc.scenario, func(t *testing.T) {
 			t.Parallel()
 
@@ -306,7 +303,6 @@ func TestClientStreamExpectation_WithPayload_CustomMatcher_Matched(t *testing.T)
 	}
 
 	for _, tc := range testCases {
-		tc := tc
 		t.Run(tc.scenario, func(t *testing.T) {
 			t.Parallel()
 
@@ -347,7 +343,6 @@ func TestClientStreamExpectation_WithPayload_CustomMatcher_Mismatched(t *testing
 	}
 
 	for _, tc := range testCases {
-		tc := tc
 		t.Run(tc.scenario, func(t *testing.T) {
 			t.Parallel()
 
@@ -392,7 +387,6 @@ func TestClientStreamExpectation_WithPayload_CustomMatcher_MatchError(t *testing
 	}
 
 	for _, tc := range testCases {
-		tc := tc
 		t.Run(tc.scenario, func(t *testing.T) {
 			t.Parallel()
 
@@ -491,7 +485,6 @@ func TestClientStreamExpectation_ReturnCode(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		tc := tc
 		t.Run(tc.scenario, func(t *testing.T) {
 			t.Parallel()
 
@@ -538,7 +531,6 @@ func TestClientStreamExpectation_ReturnErrorMessage(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		tc := tc
 		t.Run(tc.scenario, func(t *testing.T) {
 			t.Parallel()
 
@@ -597,7 +589,6 @@ func TestClientStreamExpectation_ReturnError(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		tc := tc
 		t.Run(tc.scenario, func(t *testing.T) {
 			t.Parallel()
 
@@ -687,7 +678,6 @@ func TestClientStreamExpectation_Return(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		tc := tc
 		t.Run(tc.scenario, func(t *testing.T) {
 			t.Parallel()
 

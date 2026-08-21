@@ -19,8 +19,8 @@ import (
 func TestClientStreamer_Types(t *testing.T) {
 	t.Parallel()
 
-	inputType := reflect.TypeOf(&grpctest.ListItemsRequest{})
-	outputType := reflect.TypeOf(&grpctest.Item{})
+	inputType := reflect.TypeFor[*grpctest.ListItemsRequest]()
+	outputType := reflect.TypeFor[*grpctest.Item]()
 	s := streamer.NewClientStreamer(nil, inputType, outputType)
 
 	assert.Equal(t, inputType, s.InputType())
@@ -44,7 +44,7 @@ func TestTeeClientStreamer(t *testing.T) {
 			Return(nil)
 	})(t)
 
-	itemType := reflect.TypeOf(&grpctest.Item{})
+	itemType := reflect.TypeFor[*grpctest.Item]()
 	clientStream := streamer.NewClientStreamer(s, itemType, itemType)
 	wrappedClientStream := streamer.TeeClientStreamer(clientStream)
 
@@ -113,11 +113,10 @@ func TestClientStreamerPayload(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		tc := tc
 		t.Run(tc.scenario, func(t *testing.T) {
 			t.Parallel()
 
-			s := streamer.NewClientStreamer(tc.mockStream(t), reflect.TypeOf(&grpctest.Item{}), nil)
+			s := streamer.NewClientStreamer(tc.mockStream(t), reflect.TypeFor[*grpctest.Item](), nil)
 			out, err := streamer.ClientStreamerPayload(s)
 			result, ok := out.([]*grpctest.Item)
 

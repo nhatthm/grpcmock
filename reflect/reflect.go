@@ -64,7 +64,7 @@ func FindServiceMethods(svc any) []ServiceMethod {
 	numMethods := typeOf.NumMethod()
 	result := make([]ServiceMethod, 0, numMethods)
 
-	for i := 0; i < numMethods; i++ {
+	for i := range numMethods {
 		method := typeOf.Method(i)
 
 		if svc := getMethodInfo(method); svc != nil {
@@ -271,7 +271,7 @@ func IsZero(v any) bool {
 func IsValidPtr(v any) bool {
 	typeOf := reflect.TypeOf(v)
 
-	return !IsZero(v) && typeOf.Kind() == reflect.Ptr
+	return !IsZero(v) && typeOf.Kind() == reflect.Pointer
 }
 
 // IsNilPtr checks whether the input is a pointer and nil.
@@ -279,7 +279,7 @@ func IsNilPtr(v any) bool {
 	typeOf := reflect.TypeOf(v)
 	if typeOf == nil {
 		return true
-	} else if typeOf.Kind() != reflect.Ptr {
+	} else if typeOf.Kind() != reflect.Pointer {
 		return false
 	}
 
@@ -303,7 +303,7 @@ func UnwrapType(v any) reflect.Type {
 		t = reflect.TypeOf(v)
 	}
 
-	if t.Kind() == reflect.Ptr {
+	if t.Kind() == reflect.Pointer {
 		return UnwrapType(t.Elem())
 	}
 
@@ -314,7 +314,7 @@ func UnwrapType(v any) reflect.Type {
 func UnwrapPtrSliceType(v any) (reflect.Type, error) {
 	typeOfPtr := reflect.TypeOf(v)
 
-	if typeOfPtr == nil || typeOfPtr.Kind() != reflect.Ptr {
+	if typeOfPtr == nil || typeOfPtr.Kind() != reflect.Pointer {
 		return nil, fmt.Errorf("%w: %T", ErrIsNotPtr, v)
 	}
 
@@ -337,7 +337,7 @@ func UnwrapValue(v any) reflect.Value {
 		val = reflect.ValueOf(v)
 	}
 
-	if val.Kind() == reflect.Ptr {
+	if val.Kind() == reflect.Pointer {
 		return UnwrapValue(val.Elem())
 	}
 
@@ -383,7 +383,7 @@ func SetPtrValue(ptr any, v any) {
 		panic(ErrPtrIsNil)
 	}
 
-	if typeOf.Kind() != reflect.Ptr {
+	if typeOf.Kind() != reflect.Pointer {
 		panic(fmt.Errorf("%w: %T", ErrIsNotPtr, ptr))
 	}
 
@@ -403,7 +403,7 @@ func PtrValue(v any) any {
 		panic(ErrPtrIsNil)
 	}
 
-	if typeOf.Kind() == reflect.Ptr {
+	if typeOf.Kind() == reflect.Pointer {
 		return v
 	}
 

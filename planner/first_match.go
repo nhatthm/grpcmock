@@ -33,7 +33,7 @@ func (m *firstMatch) Plan(ctx context.Context, req service.Method, in any) (Expe
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
-	matched := (Expectation)(nil)
+	matched := Expectation(nil)
 	found := -1
 
 	for i, expect := range m.expectations {

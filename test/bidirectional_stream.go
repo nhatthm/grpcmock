@@ -19,8 +19,8 @@ func MockTransformItemsStreamer(mocks ...func(s *xmock.ServerStream)) func(t *te
 
 		return streamer.NewBidirectionalStreamer(
 			xmock.MockServerStream(mocks...)(t),
-			reflect.TypeOf(&grpctest.Item{}),
-			reflect.TypeOf(&grpctest.Item{}),
+			reflect.TypeFor[*grpctest.Item](),
+			reflect.TypeFor[*grpctest.Item](),
 		)
 	}
 }

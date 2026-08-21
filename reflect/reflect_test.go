@@ -91,7 +91,6 @@ func TestBuildServiceMethods(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		tc := tc
 		t.Run(tc.scenario, func(t *testing.T) {
 			t.Parallel()
 
@@ -117,7 +116,7 @@ func TestIsNil(t *testing.T) {
 		},
 		{
 			scenario: "nil of interface",
-			input:    (error)(nil),
+			input:    error(nil),
 			expected: true,
 		},
 		{
@@ -136,7 +135,6 @@ func TestIsNil(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		tc := tc
 		t.Run(tc.scenario, func(t *testing.T) {
 			t.Parallel()
 
@@ -159,7 +157,7 @@ func TestIsValidPtr(t *testing.T) {
 		},
 		{
 			scenario: "nil of interface",
-			input:    (error)(nil),
+			input:    error(nil),
 		},
 		{
 			scenario: "nil of interface",
@@ -181,7 +179,6 @@ func TestIsValidPtr(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		tc := tc
 		t.Run(tc.scenario, func(t *testing.T) {
 			t.Parallel()
 
@@ -195,7 +192,7 @@ func TestUnwrapType(t *testing.T) {
 	t.Parallel()
 
 	item := grpctest.Item{Id: 42}
-	expected := reflect.TypeOf(grpctest.Item{})
+	expected := reflect.TypeFor[grpctest.Item]()
 
 	testCases := []struct {
 		scenario string
@@ -215,12 +212,11 @@ func TestUnwrapType(t *testing.T) {
 		},
 		{
 			scenario: "input is a type of pointer",
-			input:    reflect.TypeOf(&grpctest.Item{}),
+			input:    reflect.TypeFor[*grpctest.Item](),
 		},
 	}
 
 	for _, tc := range testCases {
-		tc := tc
 		t.Run(tc.scenario, func(t *testing.T) {
 			t.Parallel()
 
@@ -259,7 +255,6 @@ func TestUnwrapValue(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		tc := tc
 		t.Run(tc.scenario, func(t *testing.T) {
 			t.Parallel()
 
@@ -306,11 +301,11 @@ func TestNewSlicePre(t *testing.T) {
 	}{
 		{
 			scenario: "type of value",
-			v:        reflect.TypeOf(grpctest.Item{}),
+			v:        reflect.TypeFor[grpctest.Item](),
 		},
 		{
 			scenario: "type of ptr",
-			v:        reflect.TypeOf(&grpctest.Item{}),
+			v:        reflect.TypeFor[*grpctest.Item](),
 		},
 		{
 			scenario: "value",
@@ -323,7 +318,6 @@ func TestNewSlicePre(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		tc := tc
 		t.Run(tc.scenario, func(t *testing.T) {
 			t.Parallel()
 
@@ -378,7 +372,6 @@ func TestSetPtrValue(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		tc := tc
 		t.Run(tc.scenario, func(t *testing.T) {
 			t.Parallel()
 
@@ -422,7 +415,6 @@ func TestPtrValue(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		tc := tc
 		t.Run(tc.scenario, func(t *testing.T) {
 			t.Parallel()
 
@@ -494,7 +486,6 @@ func TestParseRegisterFunc(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		tc := tc
 		t.Run(tc.scenario, func(t *testing.T) {
 			t.Parallel()
 
@@ -540,12 +531,11 @@ func TestUnwrapPtrSliceType(t *testing.T) {
 		{
 			scenario:       "success",
 			input:          &[]int{42},
-			expectedResult: reflect.TypeOf([]int{}),
+			expectedResult: reflect.TypeFor[[]int](),
 		},
 	}
 
 	for _, tc := range testCases {
-		tc := tc
 		t.Run(tc.scenario, func(t *testing.T) {
 			t.Parallel()
 

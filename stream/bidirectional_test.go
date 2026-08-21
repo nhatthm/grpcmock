@@ -129,7 +129,6 @@ func TestSendAndRecvAll_Success_ClientStream(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		tc := tc
 		t.Run(tc.scenario, func(t *testing.T) {
 			t.Parallel()
 
@@ -194,7 +193,6 @@ func TestSendAndRecvAll_Success_ServerStream(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		tc := tc
 		t.Run(tc.scenario, func(t *testing.T) {
 			t.Parallel()
 

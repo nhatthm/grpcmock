@@ -36,7 +36,7 @@ func (l *listener) Addr() net.Addr {
 
 func newListenerByAddr(addr string) func() (net.Listener, func() error) {
 	return func() (net.Listener, func() error) {
-		l, err := net.Listen("tcp", addr)
+		l, err := net.Listen("tcp", addr) //nolint: noctx
 		must.NotFail(err)
 
 		return l, l.Close

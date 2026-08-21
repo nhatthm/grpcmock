@@ -149,7 +149,7 @@ func TestInvoker_Invoke_ServerStream_Success(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, len(expected), len(result))
 
-	for i := 0; i < len(expected); i++ {
+	for i := range len(expected) {
 		xassert.EqualMessage(t, expected[i], result[i])
 	}
 }
@@ -268,7 +268,7 @@ func TestInvoker_Invoke_BidirectionalStream_Success(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, len(expected), len(result))
 
-	for i := 0; i < len(expected); i++ {
+	for i := range len(expected) {
 		xassert.EqualMessage(t, expected[i], result[i])
 	}
 }
@@ -307,7 +307,6 @@ func TestInvoker_Timeout(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		tc := tc
 		t.Run(tc.scenario, func(t *testing.T) {
 			t.Parallel()
 

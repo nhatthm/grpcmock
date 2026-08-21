@@ -7,14 +7,17 @@ linters:
     - copyloopvar
     - depguard
     - exhaustruct
+    - exhaustruct_v5
     - forbidigo
     - forcetypeassert
     - funcorder
     - gochecknoglobals
+    - gomodguard
     - intrange
     - ireturn
     - lll
     - mnd
+    - noinlineerr
     - nolintlint
     - nonamedreturns
     - paralleltest
@@ -25,6 +28,7 @@ linters:
     - usetesting
     - varnamelen
     - wrapcheck
+    - wsl
   settings:
     dupl:
       threshold: 100
@@ -37,6 +41,10 @@ linters:
       locale: US
     unparam:
       check-exported: true
+    modernize:
+      disable:
+        - slicesbackward
+        - slicessort
   exclusions:
     generated: lax
     rules:
