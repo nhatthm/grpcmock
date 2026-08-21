@@ -49,7 +49,6 @@ func TestToMethodType(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		tc := tc
 		t.Run(string(tc.methodType), func(t *testing.T) {
 			t.Parallel()
 
@@ -85,7 +84,6 @@ func TestFromMethodType(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		tc := tc
 		t.Run(string(tc.methodType), func(t *testing.T) {
 			t.Parallel()
 
@@ -120,7 +118,6 @@ func TestIsMethodUnary(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		tc := tc
 		t.Run(string(tc.methodType), func(t *testing.T) {
 			t.Parallel()
 
@@ -152,7 +149,6 @@ func TestIsMethodClientStream(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		tc := tc
 		t.Run(string(tc.methodType), func(t *testing.T) {
 			t.Parallel()
 
@@ -184,7 +180,6 @@ func TestIsMethodServerStream(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		tc := tc
 		t.Run(string(tc.methodType), func(t *testing.T) {
 			t.Parallel()
 
@@ -216,7 +211,6 @@ func TestMethodTypeBidirectionalStream(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		tc := tc
 		t.Run(string(tc.methodType), func(t *testing.T) {
 			t.Parallel()
 

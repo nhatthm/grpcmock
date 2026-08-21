@@ -12,6 +12,8 @@ import (
 	"go.nhat.io/grpcmock/test/grpctest"
 )
 
+const grpcServiceName = "grpctest.Service"
+
 var _ grpctest.ItemServiceServer = (*Service)(nil)
 
 // Service is an implementation of grpctest.ItemServiceServer.
@@ -131,7 +133,7 @@ func TransformItems(h func(itemsServer grpctest.ItemService_TransformItemsServer
 // GetItemsSvc returns the GetItem service method.
 func GetItemsSvc() service.Method {
 	return service.Method{
-		ServiceName: "grpctest.Service",
+		ServiceName: grpcServiceName,
 		MethodName:  "GetItem",
 		MethodType:  service.TypeUnary,
 		Input:       &grpctest.GetItemRequest{},
@@ -142,7 +144,7 @@ func GetItemsSvc() service.Method {
 // ListItemsSvc returns the ListItems service method.
 func ListItemsSvc() service.Method {
 	return service.Method{
-		ServiceName: "grpctest.Service",
+		ServiceName: grpcServiceName,
 		MethodName:  "ListItems",
 		MethodType:  service.TypeServerStream,
 		Input:       &grpctest.ListItemsRequest{},
@@ -153,7 +155,7 @@ func ListItemsSvc() service.Method {
 // CreateItemsSvc returns the CreateItems service method.
 func CreateItemsSvc() service.Method {
 	return service.Method{
-		ServiceName: "grpctest.Service",
+		ServiceName: grpcServiceName,
 		MethodName:  "CreateItems",
 		MethodType:  service.TypeClientStream,
 		Input:       &grpctest.Item{},
@@ -164,7 +166,7 @@ func CreateItemsSvc() service.Method {
 // TransformItemsSvc returns the TransformItems service method.
 func TransformItemsSvc() service.Method {
 	return service.Method{
-		ServiceName: "grpctest.Service",
+		ServiceName: grpcServiceName,
 		MethodName:  "TransformItems",
 		MethodType:  service.TypeBidirectionalStream,
 		Input:       &grpctest.Item{},

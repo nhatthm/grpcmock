@@ -45,7 +45,6 @@ Error: method Unary "/grpctest.Service/GetItem" expected, ServerStream "/grpctes
 	}
 
 	for _, tc := range testCases {
-		tc := tc
 		t.Run(tc.scenario, func(t *testing.T) {
 			t.Parallel()
 
@@ -135,7 +134,6 @@ Error: header "locale" with value "en-US" expected, "en-CA" received
 	}
 
 	for _, tc := range testCases {
-		tc := tc
 		t.Run(tc.scenario, func(t *testing.T) {
 			t.Parallel()
 
@@ -253,7 +251,6 @@ Error: header "locale" with value "en-US" expected, "en-CA" received
 	}
 
 	for _, tc := range testCases {
-		tc := tc
 		t.Run(tc.scenario, func(t *testing.T) {
 			t.Parallel()
 
@@ -343,7 +340,6 @@ Error: header "locale" with value "en-US" expected, "en-CA" received
 	}
 
 	for _, tc := range testCases {
-		tc := tc
 		t.Run(tc.scenario, func(t *testing.T) {
 			t.Parallel()
 
@@ -427,7 +423,6 @@ Error: header "locale" with value "en-US" expected, "en-CA" received
 	}
 
 	for _, tc := range testCases {
-		tc := tc
 		t.Run(tc.scenario, func(t *testing.T) {
 			t.Parallel()
 
@@ -506,7 +501,6 @@ Error: payload does not match expectation, received: {"id":42}
 	}
 
 	for _, tc := range testCases {
-		tc := tc
 		t.Run(tc.scenario, func(t *testing.T) {
 			t.Parallel()
 
@@ -587,7 +581,6 @@ Error: payload does not match expectation, received: [{"id":41,"locale":"en-US",
 	}
 
 	for _, tc := range testCases {
-		tc := tc
 		t.Run(tc.scenario, func(t *testing.T) {
 			t.Parallel()
 
@@ -663,7 +656,6 @@ Error: payload does not match expectation, received: {}
 	}
 
 	for _, tc := range testCases {
-		tc := tc
 		t.Run(tc.scenario, func(t *testing.T) {
 			t.Parallel()
 

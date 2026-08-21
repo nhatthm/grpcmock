@@ -6,7 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"math/rand"
+	"math/rand/v2"
 	"sync"
 
 	"github.com/stretchr/testify/mock"
@@ -92,7 +92,7 @@ func ExampleServer_firstMatch_planner() {
 	ids := []int32{1, 2, 3}
 	result := make([]*grpctest.Item, len(ids))
 
-	rand.Shuffle(len(ids), func(i, j int) {
+	rand.Shuffle(len(ids), func(i, j int) { //nolint: gosec
 		ids[i], ids[j] = ids[j], ids[i]
 	})
 

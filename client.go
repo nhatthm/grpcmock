@@ -3,6 +3,7 @@ package grpcmock
 import (
 	"context"
 	"fmt"
+	"maps"
 	"net"
 	"regexp"
 	"strings"
@@ -206,9 +207,7 @@ func WithHeader(key, value string) InvokeOption {
 // WithHeaders sets request header.
 func WithHeaders(header map[string]string) InvokeOption {
 	return func(c *invokeConfig) {
-		for k, v := range header {
-			c.header[k] = v
-		}
+		maps.Copy(c.header, header)
 	}
 }
 

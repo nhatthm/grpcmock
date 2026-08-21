@@ -13,8 +13,8 @@ import (
 func TestBidirectionalStreamer_Types(t *testing.T) {
 	t.Parallel()
 
-	inputType := reflect.TypeOf(&grpctest.Item{})
-	outputType := reflect.TypeOf(&grpctest.Item{})
+	inputType := reflect.TypeFor[*grpctest.Item]()
+	outputType := reflect.TypeFor[*grpctest.Item]()
 	s := streamer.NewBidirectionalStreamer(nil, inputType, outputType)
 
 	assert.Equal(t, inputType, s.InputType())

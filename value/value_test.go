@@ -42,7 +42,6 @@ func TestString_Success(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		tc := tc
 		t.Run(tc.scenario, func(t *testing.T) {
 			t.Parallel()
 
@@ -88,7 +87,7 @@ func TestMarshalContext(t *testing.T) {
 
 				s.On("RecvMsg", &grpctest.Item{}).
 					Return(io.EOF)
-			})(t), reflect.TypeOf(&grpctest.Item{}), reflect.TypeOf(&grpctest.CreateItemsResponse{})),
+			})(t), reflect.TypeFor[*grpctest.Item](), reflect.TypeFor[*grpctest.CreateItemsResponse]()),
 			expectedError: `context deadline exceeded`,
 		},
 		{
@@ -183,7 +182,7 @@ func TestMarshal(t *testing.T) {
 			in: streamer.NewClientStreamer(xmock.MockServerStream(func(s *xmock.ServerStream) {
 				s.On("RecvMsg", &grpctest.Item{}).
 					Return(errors.New("recv error"))
-			})(t), reflect.TypeOf(&grpctest.Item{}), reflect.TypeOf(&grpctest.CreateItemsResponse{})),
+			})(t), reflect.TypeFor[*grpctest.Item](), reflect.TypeFor[*grpctest.CreateItemsResponse]()),
 			expectedError: `recv error`,
 		},
 		{
@@ -199,13 +198,12 @@ func TestMarshal(t *testing.T) {
 
 				s.On("RecvMsg", &grpctest.Item{}).
 					Return(io.EOF)
-			})(t), reflect.TypeOf(&grpctest.Item{}), reflect.TypeOf(&grpctest.CreateItemsResponse{})),
+			})(t), reflect.TypeFor[*grpctest.Item](), reflect.TypeFor[*grpctest.CreateItemsResponse]()),
 			expectedResult: payload,
 		},
 	}
 
 	for _, tc := range testCases {
-		tc := tc
 		t.Run(tc.scenario, func(t *testing.T) {
 			t.Parallel()
 

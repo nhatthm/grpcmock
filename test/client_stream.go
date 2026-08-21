@@ -23,8 +23,8 @@ func MockCreateItemsStreamer(mocks ...func(s *xmock.ServerStream)) func(t *testi
 
 		return streamer.NewClientStreamer(
 			xmock.MockServerStream(mocks...)(t),
-			reflect.TypeOf(&grpctest.Item{}),
-			reflect.TypeOf(&grpctest.CreateItemsResponse{}),
+			reflect.TypeFor[*grpctest.Item](),
+			reflect.TypeFor[*grpctest.CreateItemsResponse](),
 		)
 	}
 }

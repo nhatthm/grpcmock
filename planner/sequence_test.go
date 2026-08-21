@@ -83,7 +83,6 @@ Error: expected request payload: {"id": 42}, received: null
 	}
 
 	for _, tc := range testCases {
-		tc := tc
 		t.Run(tc.scenario, func(t *testing.T) {
 			t.Parallel()
 

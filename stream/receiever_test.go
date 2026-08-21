@@ -21,8 +21,6 @@ func TestRecvAll(t *testing.T) {
 
 	sendItems := func(s *mockgrpc.ClientStream) {
 		for _, i := range test.DefaultItems() {
-			i := i
-
 			s.On("RecvMsg", &grpctest.Item{}).Once().
 				Run(func(args mock.Arguments) {
 					out := args.Get(0).(*grpctest.Item) //nolint: errcheck
@@ -109,7 +107,6 @@ func TestRecvAll(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		tc := tc
 		t.Run(tc.scenario, func(t *testing.T) {
 			t.Parallel()
 

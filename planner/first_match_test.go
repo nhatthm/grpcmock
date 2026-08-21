@@ -43,7 +43,6 @@ func TestFirstMatch_Plan_Unary_Error(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		tc := tc
 		t.Run(tc.scenario, func(t *testing.T) {
 			t.Parallel()
 
@@ -155,7 +154,6 @@ func TestFirstMatch_Plan_ClientStream_Error(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		tc := tc
 		t.Run(tc.scenario, func(t *testing.T) {
 			t.Parallel()
 
@@ -277,7 +275,6 @@ func TestFirstMatch_Plan_ServerStream_Error(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		tc := tc
 		t.Run(tc.scenario, func(t *testing.T) {
 			t.Parallel()
 
@@ -384,7 +381,6 @@ func TestFirstMatch_Plan_BidirectionalStream_Error(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		tc := tc
 		t.Run(tc.scenario, func(t *testing.T) {
 			t.Parallel()
 

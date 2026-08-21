@@ -29,7 +29,7 @@ Test gRPC service and client like a pro.
 
 ## Prerequisites
 
-- `Go >= 1.23`
+- `Go >= 1.25`
 
 [<sub><sup>[table of contents]</sup></sub>](#table-of-contents)
 
@@ -199,7 +199,7 @@ func TestListItems(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Len(t, actual, len(expected))
 
-	for i := 0; i < len(expected); i++ {
+	for i := range len(expected) {
 		xassert.EqualMessage(t, expected[i], actual[i])
 	}
 }
@@ -283,7 +283,7 @@ func TestTransformItems(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Len(t, actual, len(expected))
 
-	for i := 0; i < len(expected); i++ {
+	for i := range len(expected) {
 		xassert.EqualMessage(t, expected[i], actual[i])
 	}
 }

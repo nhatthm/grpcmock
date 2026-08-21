@@ -19,7 +19,7 @@ func MockListItemsStreamer(mocks ...func(s *xmock.ServerStream)) func(t *testing
 
 		return streamer.NewServerStreamer(
 			xmock.MockServerStream(mocks...)(t),
-			reflect.TypeOf(&grpctest.Item{}),
+			reflect.TypeFor[*grpctest.Item](),
 		)
 	}
 }
