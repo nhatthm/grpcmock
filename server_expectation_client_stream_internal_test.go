@@ -881,15 +881,13 @@ func TestClientStreamExpectation_WaitUntil(t *testing.T) {
 	t.Parallel()
 
 	duration := 50 * time.Millisecond
-	r := newCreateItemsRequest()
-
-	startTime := time.Now()
 	ch := time.After(duration)
 
+	r := newCreateItemsRequest()
 	r.WaitUntil(ch).ReturnError(codes.Internal, "time out")
 
+	startTime := time.Now()
 	err := r.Handle(context.Background(), nil, nil)
-
 	endTime := time.Now()
 
 	assert.GreaterOrEqual(t, endTime.Sub(startTime), duration)
@@ -901,16 +899,16 @@ func TestClientStreamExpectation_WaitUntil_ContextTimeout(t *testing.T) {
 
 	expectedDuration := 20 * time.Millisecond
 
-	ctx, cancel := context.WithTimeout(context.Background(), expectedDuration)
-	defer cancel()
-
 	duration := 50 * time.Millisecond
-	r := newCreateItemsRequest()
-
-	startTime := time.Now()
 	ch := time.After(duration)
 
+	r := newCreateItemsRequest()
 	r.WaitUntil(ch).ReturnError(codes.Internal, "time out")
+
+	startTime := time.Now()
+
+	ctx, cancel := context.WithTimeout(context.Background(), expectedDuration)
+	defer cancel()
 
 	err := r.Handle(ctx, nil, nil)
 	endTime := time.Now()
@@ -924,6 +922,7 @@ func TestClientStreamExpectation_WaitTime(t *testing.T) {
 	t.Parallel()
 
 	duration := 50 * time.Millisecond
+
 	r := newCreateItemsRequest()
 	r.After(duration).ReturnError(codes.Internal, "time out")
 
@@ -939,15 +938,16 @@ func TestClientStreamExpectation_WaitTime_ContextTimeout(t *testing.T) {
 	t.Parallel()
 
 	expectedDuration := 20 * time.Millisecond
-
-	ctx, cancel := context.WithTimeout(context.Background(), expectedDuration)
-	defer cancel()
-
 	duration := 50 * time.Millisecond
+
 	r := newCreateItemsRequest()
 	r.After(duration).ReturnError(codes.Internal, "time out")
 
 	startTime := time.Now()
+
+	ctx, cancel := context.WithTimeout(context.Background(), expectedDuration)
+	defer cancel()
+
 	err := r.Handle(ctx, nil, nil)
 	endTime := time.Now()
 

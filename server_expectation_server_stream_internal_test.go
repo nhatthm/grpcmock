@@ -770,12 +770,12 @@ func TestServerStreamExpectation_WaitUntil(t *testing.T) {
 	t.Parallel()
 
 	duration := 50 * time.Millisecond
-	r := newListItemsRequest()
-
-	startTime := time.Now()
 	ch := time.After(duration)
 
+	r := newListItemsRequest()
 	r.WaitUntil(ch).ReturnError(codes.Internal, "time out")
+
+	startTime := time.Now()
 
 	err := r.Handle(context.Background(), nil, nil)
 	endTime := time.Now()
@@ -788,17 +788,16 @@ func TestServerStreamExpectation_WaitUntil_ContextTimeout(t *testing.T) {
 	t.Parallel()
 
 	expectedDuration := 20 * time.Millisecond
+	duration := 50 * time.Millisecond
+	ch := time.After(duration)
+
+	r := newListItemsRequest()
+	r.WaitUntil(ch).ReturnError(codes.Internal, "time out")
+
+	startTime := time.Now()
 
 	ctx, cancel := context.WithTimeout(context.Background(), expectedDuration)
 	defer cancel()
-
-	duration := 50 * time.Millisecond
-	r := newListItemsRequest()
-
-	startTime := time.Now()
-	ch := time.After(duration)
-
-	r.WaitUntil(ch).ReturnError(codes.Internal, "time out")
 
 	err := r.Handle(ctx, nil, nil)
 	endTime := time.Now()
@@ -812,6 +811,7 @@ func TestServerStreamExpectation_WaitTime(t *testing.T) {
 	t.Parallel()
 
 	duration := 50 * time.Millisecond
+
 	r := newListItemsRequest()
 	r.After(duration).ReturnError(codes.Internal, "time out")
 
@@ -827,19 +827,20 @@ func TestServerStreamExpectation_WaitTime_ContextTimeout(t *testing.T) {
 	t.Parallel()
 
 	expectedDuration := 20 * time.Millisecond
-
-	ctx, cancel := context.WithTimeout(context.Background(), expectedDuration)
-	defer cancel()
-
 	duration := 50 * time.Millisecond
+
 	r := newListItemsRequest()
 	r.After(duration).ReturnError(codes.Internal, "time out")
 
 	startTime := time.Now()
+
+	ctx, cancel := context.WithTimeout(context.Background(), expectedDuration)
+	defer cancel()
+
 	err := r.Handle(ctx, nil, nil)
 	endTime := time.Now()
 
-	assert.InDelta(t, expectedDuration.Milliseconds(), endTime.Sub(startTime).Milliseconds(), float64(time.Millisecond))
+	assert.GreaterOrEqual(t, endTime.Sub(startTime), expectedDuration)
 	assert.Error(t, err)
 	assert.EqualError(t, err, `rpc error: code = Internal desc = context deadline exceeded`)
 }
