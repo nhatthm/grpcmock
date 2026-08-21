@@ -3,12 +3,16 @@ package assert
 import (
 	"encoding/json"
 	"strings"
+	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/swaggest/assertjson"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
 )
+
+const timeoutDelta = 1.5 * float64(time.Millisecond)
 
 // EqualMessage asserts that two proto messages are equal.
 func EqualMessage(t assert.TestingT, expected, actual proto.Message, msgAndArgs ...any) bool {
@@ -54,6 +58,17 @@ func JSONEq(t assert.TestingT, expected, actual any, msgAndArgs ...any) bool {
 	}
 
 	return assertjson.Equal(t, expectedBytes, actualBytes, msgAndArgs...)
+}
+
+// RunWithinDuration runs the given function and asserts that it completes within the expected duration.
+func RunWithinDuration(t *testing.T, expected time.Duration, f func() error) (bool, error) { //nolint: unparam
+	t.Helper()
+
+	startTime := time.Now()
+	err := f()
+	endTime := time.Now()
+
+	return assert.InDelta(t, endTime.Sub(startTime), expected, timeoutDelta), err
 }
 
 func sanitizeErrorMessage(msg string) string {

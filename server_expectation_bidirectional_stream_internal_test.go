@@ -15,6 +15,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
+	xassert "go.nhat.io/grpcmock/assert"
 	xmatcher "go.nhat.io/grpcmock/matcher"
 	"go.nhat.io/grpcmock/planner"
 	"go.nhat.io/grpcmock/streamer"
@@ -352,17 +353,15 @@ func TestBidirectionalStreamExpectation_Times(t *testing.T) {
 func TestBidirectionalStreamExpectation_WaitUntil(t *testing.T) {
 	t.Parallel()
 
-	duration := 50 * time.Millisecond
-	ch := time.After(duration)
+	expectedDuration := 50 * time.Millisecond
+	ch := time.After(expectedDuration)
 
 	r := newTransformItemsRequest()
 	r.WaitUntil(ch).ReturnError(codes.Internal, "time out")
 
-	startTime := time.Now()
-	err := r.Handle(context.Background(), nil, nil)
-	endTime := time.Now()
-
-	assert.GreaterOrEqual(t, endTime.Sub(startTime), duration)
+	_, err := xassert.RunWithinDuration(t, expectedDuration, func() error {
+		return r.Handle(context.Background(), nil, nil)
+	})
 	assert.Error(t, err)
 }
 
@@ -370,22 +369,18 @@ func TestBidirectionalStreamExpectation_WaitUntil_ContextTimeout(t *testing.T) {
 	t.Parallel()
 
 	expectedDuration := 20 * time.Millisecond
-
 	duration := 50 * time.Millisecond
 	ch := time.After(duration)
 
 	r := newTransformItemsRequest()
 	r.WaitUntil(ch).ReturnError(codes.Internal, "time out")
 
-	startTime := time.Now()
+	_, err := xassert.RunWithinDuration(t, expectedDuration, func() error {
+		ctx, cancel := context.WithTimeout(context.Background(), expectedDuration)
+		defer cancel()
 
-	ctx, cancel := context.WithTimeout(context.Background(), expectedDuration)
-	defer cancel()
-
-	err := r.Handle(ctx, nil, nil)
-	endTime := time.Now()
-
-	assert.GreaterOrEqual(t, endTime.Sub(startTime), expectedDuration)
+		return r.Handle(ctx, nil, nil)
+	})
 	assert.Error(t, err)
 	assert.EqualError(t, err, `rpc error: code = Internal desc = context deadline exceeded`)
 }
@@ -393,16 +388,14 @@ func TestBidirectionalStreamExpectation_WaitUntil_ContextTimeout(t *testing.T) {
 func TestBidirectionalStreamExpectation_WaitTime(t *testing.T) {
 	t.Parallel()
 
-	duration := 50 * time.Millisecond
+	expectedDuration := 50 * time.Millisecond
 
 	r := newTransformItemsRequest()
-	r.After(duration).ReturnError(codes.Internal, "time out")
+	r.After(expectedDuration).ReturnError(codes.Internal, "time out")
 
-	startTime := time.Now()
-	err := r.Handle(context.Background(), nil, nil)
-	endTime := time.Now()
-
-	assert.GreaterOrEqual(t, endTime.Sub(startTime), duration)
+	_, err := xassert.RunWithinDuration(t, expectedDuration, func() error {
+		return r.Handle(context.Background(), nil, nil)
+	})
 	assert.Error(t, err)
 }
 
@@ -415,15 +408,12 @@ func TestBidirectionalStreamExpectation_WaitTime_ContextTimeout(t *testing.T) {
 	r := newTransformItemsRequest()
 	r.After(duration).ReturnError(codes.Internal, "time out")
 
-	startTime := time.Now()
+	_, err := xassert.RunWithinDuration(t, expectedDuration, func() error {
+		ctx, cancel := context.WithTimeout(context.Background(), expectedDuration)
+		defer cancel()
 
-	ctx, cancel := context.WithTimeout(context.Background(), expectedDuration)
-	defer cancel()
-
-	err := r.Handle(ctx, nil, nil)
-	endTime := time.Now()
-
-	assert.GreaterOrEqual(t, endTime.Sub(startTime), expectedDuration)
+		return r.Handle(ctx, nil, nil)
+	})
 	assert.Error(t, err)
 	assert.EqualError(t, err, `rpc error: code = Internal desc = context deadline exceeded`)
 }
