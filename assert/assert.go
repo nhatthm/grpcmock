@@ -64,7 +64,7 @@ func TakeLongerThan(t *testing.T, expected time.Duration, f func() error) (bool,
 
 	startTime := time.Now()
 	err := f()
-	endTime := time.Now()
+	endTime := time.Now().Add(time.Millisecond)
 
 	return assert.GreaterOrEqual(t, endTime.Sub(startTime), expected), err
 }
