@@ -62,9 +62,16 @@ func JSONEq(t assert.TestingT, expected, actual any, msgAndArgs ...any) bool {
 func TakeLongerThan(t *testing.T, expected time.Duration, f func() error) (bool, error) { //nolint: unparam
 	t.Helper()
 
+	return TakeLongerThanWithDelta(t, expected, time.Millisecond, f)
+}
+
+// TakeLongerThanWithDelta runs the given function and asserts that it takes longer than the expected duration to complete, with a delta for timing inaccuracies.
+func TakeLongerThanWithDelta(t *testing.T, expected time.Duration, delta time.Duration, f func() error) (bool, error) { //nolint: unparam
+	t.Helper()
+
 	startTime := time.Now()
 	err := f()
-	endTime := time.Now().Add(time.Millisecond)
+	endTime := time.Now().Add(delta)
 
 	return assert.GreaterOrEqual(t, endTime.Sub(startTime), expected), err
 }
