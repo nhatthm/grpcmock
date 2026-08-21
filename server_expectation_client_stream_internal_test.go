@@ -880,19 +880,15 @@ func TestClientStreamExpectation_Times(t *testing.T) {
 func TestClientStreamExpectation_WaitUntil(t *testing.T) {
 	t.Parallel()
 
-	duration := 50 * time.Millisecond
+	expectedDuration := 50 * time.Millisecond
+	ch := time.After(expectedDuration)
+
 	r := newCreateItemsRequest()
-
-	startTime := time.Now()
-	ch := time.After(duration)
-
 	r.WaitUntil(ch).ReturnError(codes.Internal, "time out")
 
-	err := r.Handle(context.Background(), nil, nil)
-
-	endTime := time.Now()
-
-	assert.GreaterOrEqual(t, endTime.Sub(startTime), duration)
+	_, err := xassert.TakeLongerThan(t, expectedDuration, func() error {
+		return r.Handle(context.Background(), nil, nil)
+	})
 	assert.Error(t, err)
 }
 
@@ -901,21 +897,18 @@ func TestClientStreamExpectation_WaitUntil_ContextTimeout(t *testing.T) {
 
 	expectedDuration := 20 * time.Millisecond
 
-	ctx, cancel := context.WithTimeout(context.Background(), expectedDuration)
-	defer cancel()
-
 	duration := 50 * time.Millisecond
-	r := newCreateItemsRequest()
-
-	startTime := time.Now()
 	ch := time.After(duration)
 
+	r := newCreateItemsRequest()
 	r.WaitUntil(ch).ReturnError(codes.Internal, "time out")
 
-	err := r.Handle(ctx, nil, nil)
-	endTime := time.Now()
+	_, err := xassert.TakeLongerThan(t, expectedDuration, func() error {
+		ctx, cancel := context.WithTimeout(context.Background(), expectedDuration)
+		defer cancel()
 
-	assert.GreaterOrEqual(t, endTime.Sub(startTime), expectedDuration)
+		return r.Handle(ctx, nil, nil)
+	})
 	assert.Error(t, err)
 	assert.EqualError(t, err, `rpc error: code = Internal desc = context deadline exceeded`)
 }
@@ -923,15 +916,14 @@ func TestClientStreamExpectation_WaitUntil_ContextTimeout(t *testing.T) {
 func TestClientStreamExpectation_WaitTime(t *testing.T) {
 	t.Parallel()
 
-	duration := 50 * time.Millisecond
+	expectedDuration := 50 * time.Millisecond
+
 	r := newCreateItemsRequest()
-	r.After(duration).ReturnError(codes.Internal, "time out")
+	r.After(expectedDuration).ReturnError(codes.Internal, "time out")
 
-	startTime := time.Now()
-	err := r.Handle(context.Background(), nil, nil)
-	endTime := time.Now()
-
-	assert.GreaterOrEqual(t, endTime.Sub(startTime), duration)
+	_, err := xassert.TakeLongerThan(t, expectedDuration, func() error {
+		return r.Handle(context.Background(), nil, nil)
+	})
 	assert.Error(t, err)
 }
 
@@ -939,19 +931,17 @@ func TestClientStreamExpectation_WaitTime_ContextTimeout(t *testing.T) {
 	t.Parallel()
 
 	expectedDuration := 20 * time.Millisecond
-
-	ctx, cancel := context.WithTimeout(context.Background(), expectedDuration)
-	defer cancel()
-
 	duration := 50 * time.Millisecond
+
 	r := newCreateItemsRequest()
 	r.After(duration).ReturnError(codes.Internal, "time out")
 
-	startTime := time.Now()
-	err := r.Handle(ctx, nil, nil)
-	endTime := time.Now()
+	_, err := xassert.TakeLongerThan(t, expectedDuration, func() error {
+		ctx, cancel := context.WithTimeout(context.Background(), expectedDuration)
+		defer cancel()
 
-	assert.GreaterOrEqual(t, endTime.Sub(startTime), expectedDuration)
+		return r.Handle(ctx, nil, nil)
+	})
 	assert.Error(t, err)
 	assert.EqualError(t, err, `rpc error: code = Internal desc = context deadline exceeded`)
 }
