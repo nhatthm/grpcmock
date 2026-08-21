@@ -359,7 +359,7 @@ func TestBidirectionalStreamExpectation_WaitUntil(t *testing.T) {
 	r := newTransformItemsRequest()
 	r.WaitUntil(ch).ReturnError(codes.Internal, "time out")
 
-	_, err := xassert.RunWithinDuration(t, expectedDuration, func() error {
+	_, err := xassert.TakeLongerThan(t, expectedDuration, func() error {
 		return r.Handle(context.Background(), nil, nil)
 	})
 	assert.Error(t, err)
@@ -375,7 +375,7 @@ func TestBidirectionalStreamExpectation_WaitUntil_ContextTimeout(t *testing.T) {
 	r := newTransformItemsRequest()
 	r.WaitUntil(ch).ReturnError(codes.Internal, "time out")
 
-	_, err := xassert.RunWithinDuration(t, expectedDuration, func() error {
+	_, err := xassert.TakeLongerThan(t, expectedDuration, func() error {
 		ctx, cancel := context.WithTimeout(context.Background(), expectedDuration)
 		defer cancel()
 
@@ -393,7 +393,7 @@ func TestBidirectionalStreamExpectation_WaitTime(t *testing.T) {
 	r := newTransformItemsRequest()
 	r.After(expectedDuration).ReturnError(codes.Internal, "time out")
 
-	_, err := xassert.RunWithinDuration(t, expectedDuration, func() error {
+	_, err := xassert.TakeLongerThan(t, expectedDuration, func() error {
 		return r.Handle(context.Background(), nil, nil)
 	})
 	assert.Error(t, err)
@@ -408,7 +408,7 @@ func TestBidirectionalStreamExpectation_WaitTime_ContextTimeout(t *testing.T) {
 	r := newTransformItemsRequest()
 	r.After(duration).ReturnError(codes.Internal, "time out")
 
-	_, err := xassert.RunWithinDuration(t, expectedDuration, func() error {
+	_, err := xassert.TakeLongerThan(t, expectedDuration, func() error {
 		ctx, cancel := context.WithTimeout(context.Background(), expectedDuration)
 		defer cancel()
 

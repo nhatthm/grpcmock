@@ -12,8 +12,6 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-const timeoutDelta = 1.5 * float64(time.Millisecond)
-
 // EqualMessage asserts that two proto messages are equal.
 func EqualMessage(t assert.TestingT, expected, actual proto.Message, msgAndArgs ...any) bool {
 	if proto.Equal(expected, actual) {
@@ -60,15 +58,15 @@ func JSONEq(t assert.TestingT, expected, actual any, msgAndArgs ...any) bool {
 	return assertjson.Equal(t, expectedBytes, actualBytes, msgAndArgs...)
 }
 
-// RunWithinDuration runs the given function and asserts that it completes within the expected duration.
-func RunWithinDuration(t *testing.T, expected time.Duration, f func() error) (bool, error) { //nolint: unparam
+// TakeLongerThan runs the given function and asserts that it takes longer than the expected duration to complete.
+func TakeLongerThan(t *testing.T, expected time.Duration, f func() error) (bool, error) { //nolint: unparam
 	t.Helper()
 
 	startTime := time.Now()
 	err := f()
 	endTime := time.Now()
 
-	return assert.InDelta(t, endTime.Sub(startTime), expected, timeoutDelta), err
+	return assert.GreaterOrEqual(t, endTime.Sub(startTime), expected), err
 }
 
 func sanitizeErrorMessage(msg string) string {

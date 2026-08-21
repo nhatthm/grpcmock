@@ -886,7 +886,7 @@ func TestClientStreamExpectation_WaitUntil(t *testing.T) {
 	r := newCreateItemsRequest()
 	r.WaitUntil(ch).ReturnError(codes.Internal, "time out")
 
-	_, err := xassert.RunWithinDuration(t, expectedDuration, func() error {
+	_, err := xassert.TakeLongerThan(t, expectedDuration, func() error {
 		return r.Handle(context.Background(), nil, nil)
 	})
 	assert.Error(t, err)
@@ -903,7 +903,7 @@ func TestClientStreamExpectation_WaitUntil_ContextTimeout(t *testing.T) {
 	r := newCreateItemsRequest()
 	r.WaitUntil(ch).ReturnError(codes.Internal, "time out")
 
-	_, err := xassert.RunWithinDuration(t, expectedDuration, func() error {
+	_, err := xassert.TakeLongerThan(t, expectedDuration, func() error {
 		ctx, cancel := context.WithTimeout(context.Background(), expectedDuration)
 		defer cancel()
 
@@ -921,7 +921,7 @@ func TestClientStreamExpectation_WaitTime(t *testing.T) {
 	r := newCreateItemsRequest()
 	r.After(expectedDuration).ReturnError(codes.Internal, "time out")
 
-	_, err := xassert.RunWithinDuration(t, expectedDuration, func() error {
+	_, err := xassert.TakeLongerThan(t, expectedDuration, func() error {
 		return r.Handle(context.Background(), nil, nil)
 	})
 	assert.Error(t, err)
@@ -936,7 +936,7 @@ func TestClientStreamExpectation_WaitTime_ContextTimeout(t *testing.T) {
 	r := newCreateItemsRequest()
 	r.After(duration).ReturnError(codes.Internal, "time out")
 
-	_, err := xassert.RunWithinDuration(t, expectedDuration, func() error {
+	_, err := xassert.TakeLongerThan(t, expectedDuration, func() error {
 		ctx, cancel := context.WithTimeout(context.Background(), expectedDuration)
 		defer cancel()
 

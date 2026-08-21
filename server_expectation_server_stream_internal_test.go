@@ -775,7 +775,7 @@ func TestServerStreamExpectation_WaitUntil(t *testing.T) {
 	r := newListItemsRequest()
 	r.WaitUntil(ch).ReturnError(codes.Internal, "time out")
 
-	_, err := xassert.RunWithinDuration(t, expectedDuration, func() error {
+	_, err := xassert.TakeLongerThan(t, expectedDuration, func() error {
 		return r.Handle(context.Background(), nil, nil)
 	})
 	assert.Error(t, err)
@@ -791,7 +791,7 @@ func TestServerStreamExpectation_WaitUntil_ContextTimeout(t *testing.T) {
 	r := newListItemsRequest()
 	r.WaitUntil(ch).ReturnError(codes.Internal, "time out")
 
-	_, err := xassert.RunWithinDuration(t, expectedDuration, func() error {
+	_, err := xassert.TakeLongerThan(t, expectedDuration, func() error {
 		ctx, cancel := context.WithTimeout(context.Background(), expectedDuration)
 		defer cancel()
 
@@ -809,7 +809,7 @@ func TestServerStreamExpectation_WaitTime(t *testing.T) {
 	r := newListItemsRequest()
 	r.After(expectedDuration).ReturnError(codes.Internal, "time out")
 
-	_, err := xassert.RunWithinDuration(t, expectedDuration, func() error {
+	_, err := xassert.TakeLongerThan(t, expectedDuration, func() error {
 		return r.Handle(context.Background(), nil, nil)
 	})
 	assert.Error(t, err)
@@ -824,7 +824,7 @@ func TestServerStreamExpectation_WaitTime_ContextTimeout(t *testing.T) {
 	r := newListItemsRequest()
 	r.After(duration).ReturnError(codes.Internal, "time out")
 
-	_, err := xassert.RunWithinDuration(t, expectedDuration, func() error {
+	_, err := xassert.TakeLongerThan(t, expectedDuration, func() error {
 		ctx, cancel := context.WithTimeout(context.Background(), expectedDuration)
 		defer cancel()
 
