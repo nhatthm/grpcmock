@@ -40,7 +40,7 @@ tidy:
 .PHONY: lint
 lint: $(GOLANGCI_LINT)
 	@printf -- "$(OK_COLOR)==> lint$(NO_COLOR)\n"
-	$(Q)$(GOLANGCI_LINT) run -c .golangci.yaml --allow-parallel-runners
+	$(Q)$(GOLANGCI_LINT) run -c .golangci.yaml
 
 .PHONY: test
 test: test-unit
