@@ -40,7 +40,7 @@ tidy:
 .PHONY: lint
 lint: $(GOLANGCI_LINT)
 	@printf -- "$(OK_COLOR)==> lint$(NO_COLOR)\n"
-	$(Q)$(GOLANGCI_LINT) run -c .golangci.yaml --allow-parallel-runners
+	$(Q)$(GOLANGCI_LINT) run -c .golangci.yaml
 
 .PHONY: test
 test: test-unit
@@ -77,10 +77,19 @@ $(GITHUB_OUTPUT):
 
 $(GOLANGCI_LINT):
 	@printf -- "$(OK_COLOR)==> Installing golangci-lint $(GOLANGCI_LINT_VERSION)$(NO_COLOR)\n"
-	$(Q)curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b ./bin "$(GOLANGCI_LINT_VERSION)"
-	$(Q)mv ./bin/golangci-lint $(GOLANGCI_LINT)
+	$(Q)curl -sSfL https://golangci-lint.run/install.sh | sh -s -- -b /tmp "$(GOLANGCI_LINT_VERSION)"
+	$(Q)$(call install-dep,/tmp/golangci-lint,$(GOLANGCI_LINT))
 
 $(MOCKERY):
 	@printf -- "$(OK_COLOR)==> Installing mockery $(MOCKERY_VERSION)$(NO_COLOR)\n"
-	$(Q)GOBIN=/tmp $(GO) install github.com/vektra/mockery/$(shell echo "$(MOCKERY_VERSION)" | cut -d '.' -f 1)$(Q)$(MOCKERY_VERSION)
-	$(Q)mv /tmp/mockery $(MOCKERY)
+	$(Q)GOBIN=/tmp $(GO) install github.com/vektra/mockery/$(shell echo "$(MOCKERY_VERSION)" | cut -d '.' -f 1)@$(MOCKERY_VERSION)
+	$(Q)$(call install-dep,/tmp/mockery,$(MOCKERY))
+
+define install-dep
+	if [ "$(1)" != "$(2)" ]; then \
+		mkdir -p $$(dirname $(2)) || true; \
+		mv $(1) $(2); \
+	fi
+
+	chmod +x "$(2)"
+endef
