@@ -1,13 +1,14 @@
 MODULE_NAME = grpcmock
 
-VENDOR_DIR = vendor
-
 GOLANGCI_LINT_VERSION ?= v2.13.0
 MOCKERY_VERSION ?= v2.53.3
 
 GO ?= go
 GOLANGCI_LINT ?= $(shell go env GOPATH)/bin/golangci-lint-$(GOLANGCI_LINT_VERSION)
 MOCKERY ?= $(shell $(GO) env GOPATH)/bin/mockery-$(MOCKERY_VERSION)
+
+VENDOR_DIR = vendor
+GOROOT_DIR = $(shell $(GO) env GOROOT)
 
 GITHUB_OUTPUT ?= /dev/null
 
@@ -40,7 +41,7 @@ tidy:
 .PHONY: lint
 lint: $(GOLANGCI_LINT)
 	@printf -- "$(OK_COLOR)==> lint$(NO_COLOR)\n"
-	$(Q)$(GOLANGCI_LINT) run -c .golangci.yaml
+	$(Q)GOROOT=$(GOROOT_DIR) PATH="$(GOROOT_DIR)/bin:$$PATH" $(GOLANGCI_LINT) run -c .golangci.yaml --color always $(GOLANGCI_LINT_FLAGS)
 
 .PHONY: test
 test: test-unit
