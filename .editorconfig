@@ -18,5 +18,8 @@ indent_style = space
 [.golangci.yaml]
 indent_size = 2
 
+[.mockery.yaml]
+indent_size = 2
+
 [{.github/**/*.yaml,.github/**/*.yml}]
 indent_size = 2

@@ -1,18 +1,18 @@
-dry-run: false
-with-expecter: false
-mockname: "{{.InterfaceName}}"
+dir: '{{.InterfaceDir}}/mock'
+structname: '{{.InterfaceName}}'
 filename: "{{ .InterfaceName | snakecase }}.go"
-dir: "{{.InterfaceDir}}/mock"
-outpkg: mock
+pkgname: mock
+template: testify
+template-data:
+  unroll-variadic: true
 packages:
-  google.golang.org/grpc:
-    config:
-      dir: "mock/grpc"
-      include-regex: "^(ClientStream|ServerStream)$"
-      outpkg: grpc
-
   go.nhat.io/grpcmock/planner:
     config:
-      dir: "mock/planner"
-      include-regex: "^(Expectation|Planner)$"
-      outpkg: planner
+      dir: mock/planner
+      include-interface-regex: ^(Expectation|Planner)$
+      pkgname: planner
+  google.golang.org/grpc:
+    config:
+      dir: mock/grpc
+      include-interface-regex: ^(ClientStream|ServerStream)$
+      pkgname: grpc

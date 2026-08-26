@@ -1,7 +1,7 @@
 MODULE_NAME = grpcmock
 
 GOLANGCI_LINT_VERSION ?= v2.13.0
-MOCKERY_VERSION ?= v2.53.3
+MOCKERY_VERSION ?= v3.7.4
 
 GO ?= go
 GOLANGCI_LINT ?= $(shell go env GOPATH)/bin/golangci-lint-$(GOLANGCI_LINT_VERSION)
@@ -69,7 +69,7 @@ gen: gen-proto-fixtures gen-mocks
 .PHONY: gen-mocks
 gen-mocks: $(MOCKERY)
 	@printf -- "$(OK_COLOR)==> generate mocks$(NO_COLOR)\n"
-	$(Q)$(MOCKERY) --config .mockery.yaml
+	$(Q)GOROOT=$(GOROOT_DIR) PATH="$(GOROOT_DIR)/bin:$$PATH" $(MOCKERY) --config .mockery.yaml
 
 .PHONY: gen-proto-fixtures
 gen-proto-fixtures:
