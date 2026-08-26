@@ -1,4 +1,4 @@
-> gRPC Test Utilities for Golang
+# gRPC Test Utilities for Golang
 
 [![GitHub Releases](https://img.shields.io/github/v/release/nhatthm/grpcmock)](https://github.com/nhatthm/grpcmock/releases/latest)
 [![Build Status](https://github.com/nhatthm/grpcmock/actions/workflows/test.yaml/badge.svg)](https://github.com/nhatthm/grpcmock/actions/workflows/test.yaml)
