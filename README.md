@@ -512,9 +512,9 @@ func transformItems(l *bufconn.Listener, in []*Item) ([]*Item, error) {
 
 ## Donation
 
-If this project help you reduce time to develop, you can give me a cup of coffee :)
+If this project saved you some development time, buy me a cup of coffee :)
 
-[![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](http://donate.nhat.me)
+[![donate](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](http://donate.nhat.me)
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;or scan this
 
