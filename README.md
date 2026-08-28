@@ -4,7 +4,7 @@
 [![Build Status](https://github.com/nhatthm/grpcmock/actions/workflows/test.yaml/badge.svg)](https://github.com/nhatthm/grpcmock/actions/workflows/test.yaml)
 [![codecov](https://codecov.io/gh/nhatthm/grpcmock/branch/master/graph/badge.svg?token=eTdAgDE2vR)](https://codecov.io/gh/nhatthm/grpcmock)
 [![GoDevDoc](https://img.shields.io/badge/dev-doc-00ADD8?logo=go)](https://pkg.go.dev/go.nhat.io/grpcmock)
-[![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](http://donate.nhat.me)
+[![Donate](https://img.shields.io/badge/%20-Donate-%20?style=flat&logo=githubsponsors&color=E5E4E2)](http://donate.nhat.me)
 
 Test gRPC service and client like a pro.
 
@@ -514,14 +514,10 @@ func transformItems(l *bufconn.Listener, in []*Item) ([]*Item, error) {
 
 If this project help you reduce time to develop, you can give me a cup of coffee :)
 
-[<sub><sup>[table of contents]</sup></sub>](#table-of-contents)
-
-### Paypal donation
-
 [![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](http://donate.nhat.me)
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;or scan this
 
-<img src="https://user-images.githubusercontent.com/1154587/113494222-ad8cb200-94e6-11eb-9ef3-eb883ada222a.png" width="147px" />
+<img src="https://github.com/nhatthm/donate.nhat.me/blob/master/images/qr_sponsor.png" width="147px" />
 
 [<sub><sup>[table of contents]</sup></sub>](#table-of-contents)
