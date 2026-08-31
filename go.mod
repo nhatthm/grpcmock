@@ -9,7 +9,7 @@ require (
 	github.com/swaggest/assertjson v1.10.0
 	go.nhat.io/aferomock v0.9.0
 	go.nhat.io/matcher/v2 v2.0.0
-	go.nhat.io/wait v0.1.0
+	go.nhat.io/wait v0.2.0
 	google.golang.org/grpc v1.83.2
 	google.golang.org/protobuf v1.36.12
 )
