@@ -192,7 +192,7 @@ func TestNewStreamHandler_ServerStream(t *testing.T) {
 		{
 			scenario: "could not receive message",
 			mockStream: xmock.MockServerStream(func(s *xmock.ServerStream) {
-				s.On("RecvMsg", &grpctest.ListItemsRequest{}).
+				s.EXPECT().RecvMsg(&grpctest.ListItemsRequest{}).
 					Return(errors.New("recv error"))
 			}),
 			handle: func(context.Context, service.Method, any, any) error {
@@ -205,7 +205,7 @@ func TestNewStreamHandler_ServerStream(t *testing.T) {
 		{
 			scenario: "handle error",
 			mockStream: xmock.MockServerStream(func(s *xmock.ServerStream) {
-				s.On("RecvMsg", &grpctest.ListItemsRequest{}).
+				s.EXPECT().RecvMsg(&grpctest.ListItemsRequest{}).
 					Return(nil)
 
 				s.On("Context").
@@ -219,7 +219,7 @@ func TestNewStreamHandler_ServerStream(t *testing.T) {
 		{
 			scenario: "success",
 			mockStream: xmock.MockServerStream(func(s *xmock.ServerStream) {
-				s.On("RecvMsg", &grpctest.ListItemsRequest{}).
+				s.EXPECT().RecvMsg(&grpctest.ListItemsRequest{}).
 					Return(nil)
 
 				s.On("Context").

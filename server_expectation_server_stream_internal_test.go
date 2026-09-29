@@ -692,10 +692,10 @@ func TestServerStreamExpectation_ReturnFile_ReadError(t *testing.T) {
 	r := newListItemsRequest()
 
 	r.withFs(aferomock.MockFs(func(fs *aferomock.Fs) {
-		fs.On("Stat", mock.Anything).
+		fs.EXPECT().Stat(mock.Anything).
 			Return(aferomock.NopFileInfo(t), nil)
 
-		fs.On("Open", mock.Anything).
+		fs.EXPECT().Open(mock.Anything).
 			Return(nil, errors.New("read error"))
 	})(t))
 
@@ -924,7 +924,7 @@ func TestServerStreamHandler_AddHeader_SendHeader(t *testing.T) {
 		{
 			scenario: "error",
 			mockStreamer: test.MockListItemsStreamer(func(s *mockgrpc.ServerStream) {
-				s.On("SendHeader", mock.Anything).
+				s.EXPECT().SendHeader(mock.Anything).
 					Return(status.Error(codes.Internal, "send error"))
 			}),
 			expectedError: status.Error(codes.Internal, "send error"),
@@ -932,7 +932,7 @@ func TestServerStreamHandler_AddHeader_SendHeader(t *testing.T) {
 		{
 			scenario: "success",
 			mockStreamer: test.MockListItemsStreamer(func(s *mockgrpc.ServerStream) {
-				s.On("SendHeader", metadata.New(map[string]string{
+				s.EXPECT().SendHeader(metadata.New(map[string]string{
 					"user":  "foobar",
 					"email": "test@example.com",
 				})).
@@ -969,7 +969,7 @@ func TestServerStreamHandler_SetHeader_SendHeader(t *testing.T) {
 		{
 			scenario: "error",
 			mockStreamer: test.MockListItemsStreamer(func(s *mockgrpc.ServerStream) {
-				s.On("SendHeader", mock.Anything).
+				s.EXPECT().SendHeader(mock.Anything).
 					Return(status.Error(codes.Internal, "send error"))
 			}),
 			expectedError: status.Error(codes.Internal, "send error"),
@@ -977,7 +977,7 @@ func TestServerStreamHandler_SetHeader_SendHeader(t *testing.T) {
 		{
 			scenario: "success",
 			mockStreamer: test.MockListItemsStreamer(func(s *mockgrpc.ServerStream) {
-				s.On("SendHeader", metadata.New(map[string]string{
+				s.EXPECT().SendHeader(metadata.New(map[string]string{
 					"user":  "foobar",
 					"email": "test@example.com",
 				})).
@@ -1016,7 +1016,7 @@ func TestServerStreamHandler_Send(t *testing.T) {
 		{
 			scenario: "error",
 			mockStreamer: test.MockListItemsStreamer(func(s *mockgrpc.ServerStream) {
-				s.On("SendMsg", mock.Anything).
+				s.EXPECT().SendMsg(mock.Anything).
 					Return(status.Error(codes.Internal, "send error"))
 			}),
 			expectedError: status.Error(codes.Internal, "send error"),
@@ -1024,7 +1024,7 @@ func TestServerStreamHandler_Send(t *testing.T) {
 		{
 			scenario: "success",
 			mockStreamer: test.MockListItemsStreamer(func(s *mockgrpc.ServerStream) {
-				s.On("SendMsg", &grpctest.Item{Id: 42}).
+				s.EXPECT().SendMsg(&grpctest.Item{Id: 42}).
 					Return(nil)
 			}),
 		},
@@ -1056,7 +1056,7 @@ func TestServerStreamHandler_SendMany(t *testing.T) {
 		{
 			scenario: "error",
 			mockStreamer: test.MockListItemsStreamer(func(s *mockgrpc.ServerStream) {
-				s.On("SendMsg", mock.Anything).
+				s.EXPECT().SendMsg(mock.Anything).
 					Return(status.Error(codes.Internal, "send error"))
 			}),
 			expectedError: status.Error(codes.Internal, "send error"),
@@ -1064,10 +1064,10 @@ func TestServerStreamHandler_SendMany(t *testing.T) {
 		{
 			scenario: "success",
 			mockStreamer: test.MockListItemsStreamer(func(s *mockgrpc.ServerStream) {
-				s.On("SendMsg", &grpctest.Item{Id: 41}).
+				s.EXPECT().SendMsg(&grpctest.Item{Id: 41}).
 					Return(nil)
 
-				s.On("SendMsg", &grpctest.Item{Id: 42}).
+				s.EXPECT().SendMsg(&grpctest.Item{Id: 42}).
 					Return(nil)
 			}),
 		},
@@ -1094,7 +1094,7 @@ func TestServerStreamHandler_WaitFor(t *testing.T) {
 	duration := 50 * time.Millisecond
 
 	s := test.MockListItemsStreamer(func(s *mockgrpc.ServerStream) {
-		s.On("SendMsg", &grpctest.Item{Id: 42}).
+		s.EXPECT().SendMsg(&grpctest.Item{Id: 42}).
 			Return(nil)
 	})(t)
 
@@ -1143,7 +1143,7 @@ func TestStepSendHeader(t *testing.T) {
 		{
 			scenario: "error",
 			mockStream: mockgrpc.MockServerStream(func(s *mockgrpc.ServerStream) {
-				s.On("SendHeader", mock.Anything).
+				s.EXPECT().SendHeader(mock.Anything).
 					Return(status.Error(codes.Internal, "send error"))
 			}),
 			error: status.Error(codes.Internal, "send error"),
@@ -1151,7 +1151,7 @@ func TestStepSendHeader(t *testing.T) {
 		{
 			scenario: "no error",
 			mockStream: mockgrpc.MockServerStream(func(s *mockgrpc.ServerStream) {
-				s.On("SendHeader", metadata.New(map[string]string{"locale": "en-us"})).
+				s.EXPECT().SendHeader(metadata.New(map[string]string{"locale": "en-us"})).
 					Return(nil)
 			}),
 		},
@@ -1191,7 +1191,7 @@ func TestStepSend(t *testing.T) {
 		{
 			scenario: "exact type error",
 			mockServerStream: mockgrpc.MockServerStream(func(s *mockgrpc.ServerStream) {
-				s.On("SendMsg", mock.Anything).
+				s.EXPECT().SendMsg(mock.Anything).
 					Return(status.Error(codes.Internal, "send error"))
 			}),
 			msg:           &grpctest.Item{Id: 42},
@@ -1200,7 +1200,7 @@ func TestStepSend(t *testing.T) {
 		{
 			scenario: "exact type success",
 			mockServerStream: mockgrpc.MockServerStream(func(s *mockgrpc.ServerStream) {
-				s.On("SendMsg", &grpctest.Item{Id: 42}).
+				s.EXPECT().SendMsg(&grpctest.Item{Id: 42}).
 					Return(nil)
 			}),
 			msg: &grpctest.Item{Id: 42},
@@ -1214,7 +1214,7 @@ func TestStepSend(t *testing.T) {
 		{
 			scenario: "byte",
 			mockServerStream: mockgrpc.MockServerStream(func(s *mockgrpc.ServerStream) {
-				s.On("SendMsg", &grpctest.Item{Id: 42}).
+				s.EXPECT().SendMsg(&grpctest.Item{Id: 42}).
 					Return(nil)
 			}),
 			msg: []byte(validPayload),
@@ -1222,7 +1222,7 @@ func TestStepSend(t *testing.T) {
 		{
 			scenario: "string",
 			mockServerStream: mockgrpc.MockServerStream(func(s *mockgrpc.ServerStream) {
-				s.On("SendMsg", &grpctest.Item{Id: 42}).
+				s.EXPECT().SendMsg(&grpctest.Item{Id: 42}).
 					Return(nil)
 			}),
 			msg: validPayload,
@@ -1273,7 +1273,7 @@ func TestStepSendMany(t *testing.T) {
 		{
 			scenario: "exact type error",
 			mockServerStream: mockgrpc.MockServerStream(func(s *mockgrpc.ServerStream) {
-				s.On("SendMsg", mock.Anything).
+				s.EXPECT().SendMsg(mock.Anything).
 					Return(status.Error(codes.Internal, "send error"))
 			}),
 			msg:           []grpctest.Item{{Id: 42}},
@@ -1282,7 +1282,7 @@ func TestStepSendMany(t *testing.T) {
 		{
 			scenario: "exact type success",
 			mockServerStream: mockgrpc.MockServerStream(func(s *mockgrpc.ServerStream) {
-				s.On("SendMsg", &grpctest.Item{Id: 42}).
+				s.EXPECT().SendMsg(&grpctest.Item{Id: 42}).
 					Return(nil)
 			}),
 			msg: []grpctest.Item{{Id: 42}},
@@ -1290,7 +1290,7 @@ func TestStepSendMany(t *testing.T) {
 		{
 			scenario: "exact type ptr success",
 			mockServerStream: mockgrpc.MockServerStream(func(s *mockgrpc.ServerStream) {
-				s.On("SendMsg", &grpctest.Item{Id: 42}).
+				s.EXPECT().SendMsg(&grpctest.Item{Id: 42}).
 					Return(nil)
 			}),
 			msg: []*grpctest.Item{{Id: 42}},
@@ -1298,13 +1298,13 @@ func TestStepSendMany(t *testing.T) {
 		{
 			scenario: "exact type many success",
 			mockServerStream: mockgrpc.MockServerStream(func(s *mockgrpc.ServerStream) {
-				s.On("SendMsg", &grpctest.Item{Id: 42}).
+				s.EXPECT().SendMsg(&grpctest.Item{Id: 42}).
 					Return(nil)
 
-				s.On("SendMsg", &grpctest.Item{Id: 43}).
+				s.EXPECT().SendMsg(&grpctest.Item{Id: 43}).
 					Return(nil)
 
-				s.On("SendMsg", &grpctest.Item{Id: 44}).
+				s.EXPECT().SendMsg(&grpctest.Item{Id: 44}).
 					Return(nil)
 			}),
 			msg: []grpctest.Item{{Id: 42}, {Id: 43}, {Id: 44}},
@@ -1318,7 +1318,7 @@ func TestStepSendMany(t *testing.T) {
 		{
 			scenario: "byte",
 			mockServerStream: mockgrpc.MockServerStream(func(s *mockgrpc.ServerStream) {
-				s.On("SendMsg", &grpctest.Item{Id: 42}).
+				s.EXPECT().SendMsg(&grpctest.Item{Id: 42}).
 					Return(nil)
 			}),
 			msg: []byte(validPayload),
@@ -1326,7 +1326,7 @@ func TestStepSendMany(t *testing.T) {
 		{
 			scenario: "string",
 			mockServerStream: mockgrpc.MockServerStream(func(s *mockgrpc.ServerStream) {
-				s.On("SendMsg", &grpctest.Item{Id: 42}).
+				s.EXPECT().SendMsg(&grpctest.Item{Id: 42}).
 					Return(nil)
 			}),
 			msg: validPayload,

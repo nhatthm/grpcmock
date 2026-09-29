@@ -27,7 +27,7 @@ func MockListItemsStreamer(mocks ...func(s *xmock.ServerStream)) func(t *testing
 // MockStreamSendItemSuccess mocks the stream to send the given item.
 func MockStreamSendItemSuccess(i *grpctest.Item) func(s *xmock.ServerStream) {
 	return func(s *xmock.ServerStream) {
-		s.On("SendMsg", i).Once().
+		s.EXPECT().SendMsg(i).Once().
 			Return(nil)
 	}
 }

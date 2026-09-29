@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
 
 	mockgrpc "go.nhat.io/grpcmock/mock/grpc"
 	"go.nhat.io/grpcmock/stream"
@@ -24,7 +23,7 @@ func TestTeeReceiver_RecvMsg(t *testing.T) {
 		{
 			scenario: "recv error",
 			mockReceiver: mockgrpc.MockServerStream(func(s *mockgrpc.ServerStream) {
-				s.On("RecvMsg", &grpctest.Item{}).
+				s.EXPECT().RecvMsg(&grpctest.Item{}).
 					Return(errors.New("recv error"))
 			}),
 			mockSender:    mockgrpc.NopServerStream,
@@ -33,11 +32,11 @@ func TestTeeReceiver_RecvMsg(t *testing.T) {
 		{
 			scenario: "send error",
 			mockReceiver: mockgrpc.MockServerStream(func(s *mockgrpc.ServerStream) {
-				s.On("RecvMsg", &grpctest.Item{}).
+				s.EXPECT().RecvMsg(&grpctest.Item{}).
 					Return(nil)
 			}),
 			mockSender: mockgrpc.MockServerStream(func(s *mockgrpc.ServerStream) {
-				s.On("SendMsg", &grpctest.Item{}).
+				s.EXPECT().SendMsg(&grpctest.Item{}).
 					Return(errors.New("send error"))
 			}),
 			expectedError: errors.New("send error"),
@@ -45,15 +44,15 @@ func TestTeeReceiver_RecvMsg(t *testing.T) {
 		{
 			scenario: "no error",
 			mockReceiver: mockgrpc.MockServerStream(func(s *mockgrpc.ServerStream) {
-				s.On("RecvMsg", &grpctest.Item{}).
-					Run(func(args mock.Arguments) {
-						out := args.Get(0).(*grpctest.Item) //nolint: errcheck
+				s.EXPECT().RecvMsg(&grpctest.Item{}).
+					Run(func(m any) {
+						out := m.(*grpctest.Item) //nolint: errcheck
 						out.Id = 42
 					}).
 					Return(nil)
 			}),
 			mockSender: mockgrpc.MockServerStream(func(s *mockgrpc.ServerStream) {
-				s.On("SendMsg", &grpctest.Item{Id: 42}).
+				s.EXPECT().SendMsg(&grpctest.Item{Id: 42}).
 					Return(nil)
 			}),
 		},

@@ -28,11 +28,11 @@ func TestServer_WithPlanner(t *testing.T) {
 
 	_, d := mockItemServiceServer(grpcmock.NoOpT(), func(s *grpcmock.Server) {
 		p := planner.Mock(func(p *planner.Planner) {
-			p.On("Expect", mock.Anything)
+			p.EXPECT().Expect(mock.Anything)
 
 			p.On("IsEmpty").Once().Return(false)
 
-			p.On("Plan", mock.Anything, mock.Anything, mock.Anything).
+			p.EXPECT().Plan(mock.Anything, mock.Anything, mock.Anything).
 				Return(nil, errors.New("always fail"))
 		})(t)
 

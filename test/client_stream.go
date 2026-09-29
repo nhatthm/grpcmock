@@ -32,7 +32,7 @@ func MockCreateItemsStreamer(mocks ...func(s *xmock.ServerStream)) func(t *testi
 // MockStreamRecvItemSuccess mocks the stream to receive the given item.
 func MockStreamRecvItemSuccess(i *grpctest.Item) func(s *xmock.ServerStream) {
 	return func(s *xmock.ServerStream) {
-		s.On("RecvMsg", &grpctest.Item{}).Once().
+		s.EXPECT().RecvMsg(&grpctest.Item{}).Once().
 			Run(func(args mock.Arguments) {
 				item := args.Get(0).(*grpctest.Item) //nolint: errcheck
 
@@ -56,7 +56,7 @@ func MockStreamRecvItemsSuccess(items ...*grpctest.Item) func(s *xmock.ServerStr
 // MockStreamSendCreateItemsResponseSuccess mocks the stream to send grpctest.CreateItemsResponse.
 func MockStreamSendCreateItemsResponseSuccess(numItems int64) func(s *xmock.ServerStream) {
 	return func(s *xmock.ServerStream) {
-		s.On("SendMsg", &grpctest.CreateItemsResponse{NumItems: numItems}).Once().
+		s.EXPECT().SendMsg(&grpctest.CreateItemsResponse{NumItems: numItems}).Once().
 			Return(nil)
 	}
 }
@@ -64,7 +64,7 @@ func MockStreamSendCreateItemsResponseSuccess(numItems int64) func(s *xmock.Serv
 // MockStreamRecvItemEOF mocks the stream to return io.EOF.
 func MockStreamRecvItemEOF() func(s *xmock.ServerStream) {
 	return func(s *xmock.ServerStream) {
-		s.On("RecvMsg", &grpctest.Item{}).Once().
+		s.EXPECT().RecvMsg(&grpctest.Item{}).Once().
 			Return(io.EOF)
 	}
 }

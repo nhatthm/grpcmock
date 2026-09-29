@@ -25,7 +25,7 @@ func TestWrappedStream_SendMsg_Upstream(t *testing.T) {
 		{
 			scenario: "upstream error",
 			mockUpstream: mockgrpc.MockServerStream(func(s *mockgrpc.ServerStream) {
-				s.On("SendMsg", msg).
+				s.EXPECT().SendMsg(msg).
 					Return(errors.New("upstream error"))
 			}),
 			expectedError: errors.New("upstream error"),
@@ -33,7 +33,7 @@ func TestWrappedStream_SendMsg_Upstream(t *testing.T) {
 		{
 			scenario: "upstream no error",
 			mockUpstream: mockgrpc.MockServerStream(func(s *mockgrpc.ServerStream) {
-				s.On("SendMsg", msg).
+				s.EXPECT().SendMsg(msg).
 					Return(nil)
 			}),
 		},
@@ -41,7 +41,7 @@ func TestWrappedStream_SendMsg_Upstream(t *testing.T) {
 			scenario:     "sender error",
 			mockUpstream: mockgrpc.NopServerStream,
 			mockSender: mockgrpc.MockServerStream(func(s *mockgrpc.ServerStream) {
-				s.On("SendMsg", msg).
+				s.EXPECT().SendMsg(msg).
 					Return(errors.New("sender error"))
 			}),
 			expectedError: errors.New("sender error"),
@@ -50,7 +50,7 @@ func TestWrappedStream_SendMsg_Upstream(t *testing.T) {
 			scenario:     "sender no error",
 			mockUpstream: mockgrpc.NopServerStream,
 			mockSender: mockgrpc.MockServerStream(func(s *mockgrpc.ServerStream) {
-				s.On("SendMsg", msg).
+				s.EXPECT().SendMsg(msg).
 					Return(nil)
 			}),
 		},
@@ -87,7 +87,7 @@ func TestWrappedStream_RecvMsg_Upstream(t *testing.T) {
 		{
 			scenario: "upstream error",
 			mockUpstream: mockgrpc.MockServerStream(func(s *mockgrpc.ServerStream) {
-				s.On("RecvMsg", msg).
+				s.EXPECT().RecvMsg(msg).
 					Return(errors.New("upstream error"))
 			}),
 			expectedError: errors.New("upstream error"),
@@ -95,7 +95,7 @@ func TestWrappedStream_RecvMsg_Upstream(t *testing.T) {
 		{
 			scenario: "upstream no error",
 			mockUpstream: mockgrpc.MockServerStream(func(s *mockgrpc.ServerStream) {
-				s.On("RecvMsg", msg).
+				s.EXPECT().RecvMsg(msg).
 					Return(nil)
 			}),
 		},
@@ -103,7 +103,7 @@ func TestWrappedStream_RecvMsg_Upstream(t *testing.T) {
 			scenario:     "receiver error",
 			mockUpstream: mockgrpc.NopServerStream,
 			mockReceiver: mockgrpc.MockServerStream(func(s *mockgrpc.ServerStream) {
-				s.On("RecvMsg", msg).
+				s.EXPECT().RecvMsg(msg).
 					Return(errors.New("receiver error"))
 			}),
 			expectedError: errors.New("receiver error"),
@@ -112,7 +112,7 @@ func TestWrappedStream_RecvMsg_Upstream(t *testing.T) {
 			scenario:     "receiver no error",
 			mockUpstream: mockgrpc.NopServerStream,
 			mockReceiver: mockgrpc.MockServerStream(func(s *mockgrpc.ServerStream) {
-				s.On("RecvMsg", msg).
+				s.EXPECT().RecvMsg(msg).
 					Return(nil)
 			}),
 		},

@@ -2,7 +2,7 @@ dir: '{{.InterfaceDir}}/mock'
 structname: '{{.InterfaceName}}'
 filename: "{{ .InterfaceName | snakecase }}.go"
 pkgname: mock
-template: testify
+template: "https://raw.githubusercontent.com/nhatthm/mockery-template/0.3.0/templates/testify-mocker.templ"
 template-data:
   unroll-variadic: true
 packages:
