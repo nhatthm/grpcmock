@@ -1,0 +1,64 @@
+stream/sender_test.go
+  h_e1d63cd78c37d8 39,49
+value/value_test.go
+  h_e1d63cd78c37d8 79,88,183,191,199
+test/client_stream.go
+  h_e1d63cd78c37d8 35,59,67
+mock/grpc/server_stream.go
+  h_e1d63cd78c37d8 3,9,12-13,16-36
+Makefile
+  h_e1d63cd78c37d8 3-4
+stream/stream_test.go
+  h_e1d63cd78c37d8 28,36,44,53,90,98,106,115
+client_test.go
+  h_e1d63cd78c37d8 499,509,537,546,579,644,647,663,682,709,720,723,735,743
+server_expectation_client_stream_internal_test.go
+  h_e1d63cd78c37d8 414,434,657,665,673,724
+server_test.go
+  h_e1d63cd78c37d8 31,35
+stream/tee_test.go
+  h_e1d63cd78c37d8 26,35,39,47-49,55
+stream/receiever_test.go
+  h_e1d63cd78c37d8 24,33,66
+mock/grpc/client_stream.go
+  h_e1d63cd78c37d8 3,9,12-13,16-36
+server_example_test.go
+  h_e1d63cd78c37d8 38-39
+.mockery.yaml
+  s_4883be594948a6::t_a5a8830f6abd79 5
+planner/matcher_test.go
+  h_e1d63cd78c37d8 228,536,677,702,710
+test/server_stream.go
+  h_e1d63cd78c37d8 30
+server_internal_test.go
+  h_e1d63cd78c37d8 195,208,222
+go.mod
+  h_e1d63cd78c37d8 18
+streamer/client_test.go
+  h_e1d63cd78c37d8 34,42,93,101,108
+stream/bidirectional_test.go
+  h_e1d63cd78c37d8 22,25,41,60,87,98,101,113,121,160,168,171,180,188
+server_expectation_server_stream_internal_test.go
+  h_e1d63cd78c37d8 695,698,927,935,972,980,1019,1027,1059,1067,1070,1097,1146,1154,1194,1203,1217,1225,1276,1285,1293,1301,1304,1307,1321,1329
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "e101f8e5e588fc141df4afa577849b370537318a",
+  "prompts": {},
+  "humans": {
+    "h_e1d63cd78c37d8": {
+      "author": "nhatthm <contact@nhat.me>"
+    }
+  },
+  "sessions": {
+    "s_4883be594948a6": {
+      "agent_id": {
+        "tool": "github-copilot-jetbrains",
+        "id": "1790692241928",
+        "model": "unknown"
+      },
+      "human_author": "nhatthm <contact@nhat.me>"
+    }
+  }
+}
