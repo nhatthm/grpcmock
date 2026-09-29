@@ -15,7 +15,7 @@ require (
 )
 
 require (
-	github.com/bool64/shared v0.1.6 // indirect
+	github.com/bool64/shared v0.1.7 // indirect
 	github.com/iancoleman/orderedmap v0.3.0 // indirect
 	github.com/sergi/go-diff v1.4.0 // indirect
 	github.com/stretchr/objx v0.5.3 // indirect

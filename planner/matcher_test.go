@@ -225,7 +225,7 @@ Error: header "locale" with value "en-US" expected, "en-CA" received
 			expectation: expectCreateItems().
 				WithHeader("locale", "en-US"),
 			mockStreamer: test.MockCreateItemsStreamer(func(s *xmock.ServerStream) {
-				s.On("RecvMsg", mock.Anything).
+				s.EXPECT().RecvMsg(mock.Anything).
 					Return(errors.New("read error"))
 			}),
 			expectedError: `Expected: ClientStream /grpctest.Service/CreateItems
@@ -533,7 +533,7 @@ func TestMatchPayload_ClientStream(t *testing.T) {
 			scenario:    "match error",
 			expectation: expectCreateItems().WithPayload(`[{"id":42}]`),
 			mockStreamer: test.MockCreateItemsStreamer(func(s *xmock.ServerStream) {
-				s.On("RecvMsg", mock.Anything).
+				s.EXPECT().RecvMsg(mock.Anything).
 					Return(errors.New("recv error"))
 			}),
 			expectedError: `Expected: ClientStream /grpctest.Service/CreateItems
@@ -674,7 +674,7 @@ func TestMatchPayload_Panic(t *testing.T) {
 	t.Parallel()
 
 	s := test.MockCreateItemsStreamer(func(s *xmock.ServerStream) {
-		s.On("RecvMsg", mock.Anything).
+		s.EXPECT().RecvMsg(mock.Anything).
 			Panic("recv panic")
 	})(t)
 
@@ -699,7 +699,7 @@ var noMockCreateItemsStream = test.MockCreateItemsStreamer()
 
 func mockCreateItemsStreamer() func(t *testing.T) *streamer.ClientStreamer {
 	return test.MockCreateItemsStreamer(func(s *xmock.ServerStream) {
-		s.On("RecvMsg", &grpctest.Item{}).Once().
+		s.EXPECT().RecvMsg(&grpctest.Item{}).Once().
 			Run(func(args mock.Arguments) {
 				item := args.Get(0).(*grpctest.Item) //nolint: errcheck
 
@@ -707,7 +707,7 @@ func mockCreateItemsStreamer() func(t *testing.T) *streamer.ClientStreamer {
 			}).
 			Return(nil)
 
-		s.On("RecvMsg", mock.Anything).
+		s.EXPECT().RecvMsg(mock.Anything).
 			Return(io.EOF)
 	})
 }

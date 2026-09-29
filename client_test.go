@@ -496,7 +496,7 @@ func TestSendAll(t *testing.T) {
 		{
 			scenario: "send error",
 			mockStream: mockgrpc.MockClientStream(func(s *mockgrpc.ClientStream) {
-				s.On("SendMsg", mock.Anything).
+				s.EXPECT().SendMsg(mock.Anything).
 					Return(errors.New("send error"))
 			}),
 			input:         test.DefaultItems(),
@@ -506,7 +506,7 @@ func TestSendAll(t *testing.T) {
 			scenario: "success with a slice of struct",
 			mockStream: mockgrpc.MockClientStream(func(s *mockgrpc.ClientStream) {
 				for _, i := range test.DefaultItems() {
-					s.On("SendMsg", i).Once().
+					s.EXPECT().SendMsg(i).Once().
 						Return(nil)
 				}
 			}),
@@ -534,7 +534,7 @@ func TestRecvAll(t *testing.T) {
 
 	sendItems := func(s *mockgrpc.ClientStream) {
 		for _, i := range test.DefaultItems() {
-			s.On("RecvMsg", &grpctest.Item{}).Once().
+			s.EXPECT().RecvMsg(&grpctest.Item{}).Once().
 				Run(func(args mock.Arguments) {
 					out := args.Get(0).(*grpctest.Item) //nolint: errcheck
 
@@ -543,7 +543,7 @@ func TestRecvAll(t *testing.T) {
 				Return(nil)
 		}
 
-		s.On("RecvMsg", &grpctest.Item{}).
+		s.EXPECT().RecvMsg(&grpctest.Item{}).
 			Return(io.EOF)
 	}
 
@@ -576,7 +576,7 @@ func TestRecvAll(t *testing.T) {
 		{
 			scenario: "recv error",
 			mockStream: mockgrpc.MockClientStream(func(s *mockgrpc.ClientStream) {
-				s.On("RecvMsg", mock.Anything).
+				s.EXPECT().RecvMsg(mock.Anything).
 					Return(errors.New("recv error"))
 			}),
 			output:         &[]grpctest.Item{},
@@ -641,10 +641,10 @@ func TestSendAndRecvAll_SendError(t *testing.T) {
 	t.Parallel()
 
 	stream := mockgrpc.MockClientStream(func(s *mockgrpc.ClientStream) {
-		s.On("RecvMsg", mock.Anything).Maybe().
+		s.EXPECT().RecvMsg(mock.Anything).Maybe().
 			Return(io.EOF)
 
-		s.On("SendMsg", mock.Anything).
+		s.EXPECT().SendMsg(mock.Anything).
 			Return(errors.New("send error"))
 	})(t)
 
@@ -660,7 +660,7 @@ func TestSendAndRecvAll_RecvError(t *testing.T) {
 	t.Parallel()
 
 	stream := mockgrpc.MockClientStream(func(s *mockgrpc.ClientStream) {
-		s.On("RecvMsg", mock.Anything).
+		s.EXPECT().RecvMsg(mock.Anything).
 			Return(errors.New("recv error"))
 
 		s.On("CloseSend").
@@ -679,7 +679,7 @@ func TestSendAndRecvAll_CloseSendError(t *testing.T) {
 	t.Parallel()
 
 	stream := mockgrpc.MockClientStream(func(s *mockgrpc.ClientStream) {
-		s.On("RecvMsg", mock.Anything).Maybe().
+		s.EXPECT().RecvMsg(mock.Anything).Maybe().
 			Return(io.EOF)
 
 		s.On("CloseSend").
@@ -706,7 +706,7 @@ func TestSendAndRecvAll_Success(t *testing.T) {
 		{
 			scenario: "send zero and receive zero",
 			mockStream: mockgrpc.MockClientStream(func(s *mockgrpc.ClientStream) {
-				s.On("RecvMsg", mock.Anything).
+				s.EXPECT().RecvMsg(mock.Anything).
 					Return(io.EOF)
 
 				s.On("CloseSend").
@@ -717,10 +717,10 @@ func TestSendAndRecvAll_Success(t *testing.T) {
 		{
 			scenario: "send one and receive zero",
 			mockStream: mockgrpc.MockClientStream(func(s *mockgrpc.ClientStream) {
-				s.On("RecvMsg", mock.Anything).
+				s.EXPECT().RecvMsg(mock.Anything).
 					Return(io.EOF)
 
-				s.On("SendMsg", test.DefaultItem()).
+				s.EXPECT().SendMsg(test.DefaultItem()).
 					Return(nil)
 
 				s.On("CloseSend").
@@ -732,7 +732,7 @@ func TestSendAndRecvAll_Success(t *testing.T) {
 		{
 			scenario: "send zero and receive one",
 			mockStream: mockgrpc.MockClientStream(func(s *mockgrpc.ClientStream) {
-				s.On("RecvMsg", mock.Anything).Once().
+				s.EXPECT().RecvMsg(mock.Anything).Once().
 					Run(func(args mock.Arguments) {
 						out := args.Get(0).(*grpctest.Item) //nolint: errcheck
 
@@ -740,7 +740,7 @@ func TestSendAndRecvAll_Success(t *testing.T) {
 					}).
 					Return(nil)
 
-				s.On("RecvMsg", mock.Anything).
+				s.EXPECT().RecvMsg(mock.Anything).
 					Return(io.EOF)
 
 				s.On("CloseSend").

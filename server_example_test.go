@@ -35,8 +35,8 @@ func ExampleServer_WithPlanner() {
 			p := &plannermock.Planner{}
 
 			p.On("IsEmpty").Return(false)
-			p.On("Expect", mock.Anything)
-			p.On("Plan", mock.Anything, mock.Anything, mock.Anything).
+			p.EXPECT().Expect(mock.Anything)
+			p.EXPECT().Plan(mock.Anything, mock.Anything, mock.Anything).
 				Return(nil, errors.New("always fail"))
 
 			s.WithPlanner(p)

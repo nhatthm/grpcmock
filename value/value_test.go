@@ -76,7 +76,7 @@ func TestMarshalContext(t *testing.T) {
 			scenario: "timeout while getting value",
 			timeout:  10 * time.Millisecond,
 			in: streamer.NewClientStreamer(xmock.MockServerStream(func(s *xmock.ServerStream) {
-				s.On("RecvMsg", &grpctest.Item{}).
+				s.EXPECT().RecvMsg(&grpctest.Item{}).
 					Once().
 					After(50 * time.Millisecond).
 					Run(func(args mock.Arguments) {
@@ -85,7 +85,7 @@ func TestMarshalContext(t *testing.T) {
 					}).
 					Return(nil)
 
-				s.On("RecvMsg", &grpctest.Item{}).
+				s.EXPECT().RecvMsg(&grpctest.Item{}).
 					Return(io.EOF)
 			})(t), reflect.TypeFor[*grpctest.Item](), reflect.TypeFor[*grpctest.CreateItemsResponse]()),
 			expectedError: `context deadline exceeded`,
@@ -180,7 +180,7 @@ func TestMarshal(t *testing.T) {
 		{
 			scenario: "client stream error",
 			in: streamer.NewClientStreamer(xmock.MockServerStream(func(s *xmock.ServerStream) {
-				s.On("RecvMsg", &grpctest.Item{}).
+				s.EXPECT().RecvMsg(&grpctest.Item{}).
 					Return(errors.New("recv error"))
 			})(t), reflect.TypeFor[*grpctest.Item](), reflect.TypeFor[*grpctest.CreateItemsResponse]()),
 			expectedError: `recv error`,
@@ -188,7 +188,7 @@ func TestMarshal(t *testing.T) {
 		{
 			scenario: "client stream success",
 			in: streamer.NewClientStreamer(xmock.MockServerStream(func(s *xmock.ServerStream) {
-				s.On("RecvMsg", &grpctest.Item{}).
+				s.EXPECT().RecvMsg(&grpctest.Item{}).
 					Once().
 					Run(func(args mock.Arguments) {
 						msg := args.Get(0).(*grpctest.Item) //nolint: errcheck
@@ -196,7 +196,7 @@ func TestMarshal(t *testing.T) {
 					}).
 					Return(nil)
 
-				s.On("RecvMsg", &grpctest.Item{}).
+				s.EXPECT().RecvMsg(&grpctest.Item{}).
 					Return(io.EOF)
 			})(t), reflect.TypeFor[*grpctest.Item](), reflect.TypeFor[*grpctest.CreateItemsResponse]()),
 			expectedResult: payload,

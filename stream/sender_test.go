@@ -36,7 +36,7 @@ func TestSendAll(t *testing.T) {
 		{
 			scenario: "send error",
 			mockStream: mockgrpc.MockClientStream(func(s *mockgrpc.ClientStream) {
-				s.On("SendMsg", mock.Anything).
+				s.EXPECT().SendMsg(mock.Anything).
 					Return(errors.New("send error"))
 			}),
 			input:         test.DefaultItems(),
@@ -46,7 +46,7 @@ func TestSendAll(t *testing.T) {
 			scenario: "success with a slice of struct",
 			mockStream: mockgrpc.MockClientStream(func(s *mockgrpc.ClientStream) {
 				for _, i := range test.DefaultItems() {
-					s.On("SendMsg", i).Once().
+					s.EXPECT().SendMsg(i).Once().
 						Return(nil)
 				}
 			}),

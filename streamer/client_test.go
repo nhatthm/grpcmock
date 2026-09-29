@@ -31,7 +31,7 @@ func TestTeeClientStreamer(t *testing.T) {
 	t.Parallel()
 
 	s := xmock.MockServerStream(func(s *xmock.ServerStream) {
-		s.On("RecvMsg", &grpctest.Item{}).
+		s.EXPECT().RecvMsg(&grpctest.Item{}).
 			Once().
 			Run(func(args mock.Arguments) {
 				msg := args.Get(0).(*grpctest.Item) //nolint: errcheck
@@ -39,7 +39,7 @@ func TestTeeClientStreamer(t *testing.T) {
 			}).
 			Return(nil)
 
-		s.On("SendMsg", &grpctest.Item{Id: 42}).
+		s.EXPECT().SendMsg(&grpctest.Item{Id: 42}).
 			Twice().
 			Return(nil)
 	})(t)
@@ -90,7 +90,7 @@ func TestClientStreamerPayload(t *testing.T) {
 		{
 			scenario: "read error",
 			mockStream: xmock.MockServerStream(func(s *xmock.ServerStream) {
-				s.On("RecvMsg", &grpctest.Item{}).
+				s.EXPECT().RecvMsg(&grpctest.Item{}).
 					Return(errors.New("recv error"))
 			}),
 			expectedError: errors.New("recv error"),
@@ -98,14 +98,14 @@ func TestClientStreamerPayload(t *testing.T) {
 		{
 			scenario: "success",
 			mockStream: xmock.MockServerStream(func(s *xmock.ServerStream) {
-				s.On("RecvMsg", &grpctest.Item{}).Once().
+				s.EXPECT().RecvMsg(&grpctest.Item{}).Once().
 					Run(func(args mock.Arguments) {
 						msg := args.Get(0).(*grpctest.Item) //nolint: errcheck
 						msg.Id = 42
 					}).
 					Return(nil)
 
-				s.On("RecvMsg", &grpctest.Item{}).Once().
+				s.EXPECT().RecvMsg(&grpctest.Item{}).Once().
 					Return(io.EOF)
 			}),
 			expectedResult: []*grpctest.Item{{Id: 42}},

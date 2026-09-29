@@ -19,10 +19,10 @@ func TestSendAndRecvAll_SendError(t *testing.T) {
 	t.Parallel()
 
 	s := xmock.MockClientStream(func(s *xmock.ClientStream) {
-		s.On("RecvMsg", mock.Anything).Maybe().
+		s.EXPECT().RecvMsg(mock.Anything).Maybe().
 			Return(io.EOF)
 
-		s.On("SendMsg", mock.Anything).
+		s.EXPECT().SendMsg(mock.Anything).
 			Return(errors.New("send error"))
 	})(t)
 
@@ -38,7 +38,7 @@ func TestSendAndRecvAll_RecvError(t *testing.T) {
 	t.Parallel()
 
 	s := xmock.MockClientStream(func(s *xmock.ClientStream) {
-		s.On("RecvMsg", mock.Anything).
+		s.EXPECT().RecvMsg(mock.Anything).
 			Return(errors.New("recv error"))
 
 		s.On("CloseSend").
@@ -57,7 +57,7 @@ func TestSendAndRecvAll_CloseSendError(t *testing.T) {
 	t.Parallel()
 
 	s := xmock.MockClientStream(func(s *xmock.ClientStream) {
-		s.On("RecvMsg", mock.Anything).Maybe().
+		s.EXPECT().RecvMsg(mock.Anything).Maybe().
 			Return(io.EOF)
 
 		s.On("CloseSend").
@@ -84,7 +84,7 @@ func TestSendAndRecvAll_Success_ClientStream(t *testing.T) {
 		{
 			scenario: "send zero and receive zero",
 			mockStream: xmock.MockClientStream(func(s *xmock.ClientStream) {
-				s.On("RecvMsg", mock.Anything).
+				s.EXPECT().RecvMsg(mock.Anything).
 					Return(io.EOF)
 
 				s.On("CloseSend").
@@ -95,10 +95,10 @@ func TestSendAndRecvAll_Success_ClientStream(t *testing.T) {
 		{
 			scenario: "send one and receive zero",
 			mockStream: xmock.MockClientStream(func(s *xmock.ClientStream) {
-				s.On("RecvMsg", mock.Anything).
+				s.EXPECT().RecvMsg(mock.Anything).
 					Return(io.EOF)
 
-				s.On("SendMsg", test.DefaultItem()).
+				s.EXPECT().SendMsg(test.DefaultItem()).
 					Return(nil)
 
 				s.On("CloseSend").
@@ -110,7 +110,7 @@ func TestSendAndRecvAll_Success_ClientStream(t *testing.T) {
 		{
 			scenario: "send zero and receive one",
 			mockStream: xmock.MockClientStream(func(s *xmock.ClientStream) {
-				s.On("RecvMsg", mock.Anything).Once().
+				s.EXPECT().RecvMsg(mock.Anything).Once().
 					Run(func(args mock.Arguments) {
 						out := args.Get(0).(*grpctest.Item) //nolint: errcheck
 
@@ -118,7 +118,7 @@ func TestSendAndRecvAll_Success_ClientStream(t *testing.T) {
 					}).
 					Return(nil)
 
-				s.On("RecvMsg", mock.Anything).
+				s.EXPECT().RecvMsg(mock.Anything).
 					Return(io.EOF)
 
 				s.On("CloseSend").
@@ -157,7 +157,7 @@ func TestSendAndRecvAll_Success_ServerStream(t *testing.T) {
 		{
 			scenario: "send zero and receive zero",
 			mockStream: xmock.MockServerStream(func(s *xmock.ServerStream) {
-				s.On("RecvMsg", mock.Anything).
+				s.EXPECT().RecvMsg(mock.Anything).
 					Return(io.EOF)
 			}),
 			expectedResult: []*grpctest.Item{},
@@ -165,10 +165,10 @@ func TestSendAndRecvAll_Success_ServerStream(t *testing.T) {
 		{
 			scenario: "send one and receive zero",
 			mockStream: xmock.MockServerStream(func(s *xmock.ServerStream) {
-				s.On("RecvMsg", mock.Anything).
+				s.EXPECT().RecvMsg(mock.Anything).
 					Return(io.EOF)
 
-				s.On("SendMsg", test.DefaultItem()).
+				s.EXPECT().SendMsg(test.DefaultItem()).
 					Return(nil)
 			}),
 			input:          []*grpctest.Item{test.DefaultItem()},
@@ -177,7 +177,7 @@ func TestSendAndRecvAll_Success_ServerStream(t *testing.T) {
 		{
 			scenario: "send zero and receive one",
 			mockStream: xmock.MockServerStream(func(s *xmock.ServerStream) {
-				s.On("RecvMsg", mock.Anything).Once().
+				s.EXPECT().RecvMsg(mock.Anything).Once().
 					Run(func(args mock.Arguments) {
 						out := args.Get(0).(*grpctest.Item) //nolint: errcheck
 
@@ -185,7 +185,7 @@ func TestSendAndRecvAll_Success_ServerStream(t *testing.T) {
 					}).
 					Return(nil)
 
-				s.On("RecvMsg", mock.Anything).
+				s.EXPECT().RecvMsg(mock.Anything).
 					Return(io.EOF)
 			}),
 			expectedResult: []*grpctest.Item{{Id: 42, Name: "Modified"}},

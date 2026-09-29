@@ -411,7 +411,7 @@ func TestClientStreamExpectation_WithPayload_CustomMatcher_RecvError(t *testing.
 	t.Parallel()
 
 	in := test.MockCreateItemsStreamer(func(s *xmock.ServerStream) {
-		s.On("RecvMsg", &grpctest.Item{}).
+		s.EXPECT().RecvMsg(&grpctest.Item{}).
 			Return(errors.New("recv error"))
 	})(t)
 
@@ -431,7 +431,7 @@ func TestClientStreamExpectation_WithPayload_Match_CouldNotRecvMsg(t *testing.T)
 	t.Parallel()
 
 	in := test.MockCreateItemsStreamer(func(s *xmock.ServerStream) {
-		s.On("RecvMsg", &grpctest.Item{}).
+		s.EXPECT().RecvMsg(&grpctest.Item{}).
 			Return(errors.New("recv error"))
 	})(t)
 
@@ -654,7 +654,7 @@ func TestClientStreamExpectation_Return(t *testing.T) {
 		{
 			scenario: "json string",
 			mockStreamer: test.MockCreateItemsStreamer(func(s *xmock.ServerStream) {
-				s.On("SendMsg", expected).Return(nil)
+				s.EXPECT().SendMsg(expected).Return(nil)
 			}),
 			output:         payload,
 			expectedResult: expected,
@@ -662,7 +662,7 @@ func TestClientStreamExpectation_Return(t *testing.T) {
 		{
 			scenario: "json []byte",
 			mockStreamer: test.MockCreateItemsStreamer(func(s *xmock.ServerStream) {
-				s.On("SendMsg", expected).Return(nil)
+				s.EXPECT().SendMsg(expected).Return(nil)
 			}),
 			output:         []byte(payload),
 			expectedResult: expected,
@@ -670,7 +670,7 @@ func TestClientStreamExpectation_Return(t *testing.T) {
 		{
 			scenario: "same type and a pointer",
 			mockStreamer: test.MockCreateItemsStreamer(func(s *xmock.ServerStream) {
-				s.On("SendMsg", expected).Return(nil)
+				s.EXPECT().SendMsg(expected).Return(nil)
 			}),
 			output:         &grpctest.CreateItemsResponse{NumItems: 1},
 			expectedResult: expected,
@@ -721,7 +721,7 @@ func TestClientStreamExpectation_Returnf(t *testing.T) {
 	t.Parallel()
 
 	in := test.MockCreateItemsStreamer(func(s *xmock.ServerStream) {
-		s.On("SendMsg", &grpctest.CreateItemsResponse{NumItems: 1}).
+		s.EXPECT().SendMsg(&grpctest.CreateItemsResponse{NumItems: 1}).
 			Return(nil)
 	})(t)
 

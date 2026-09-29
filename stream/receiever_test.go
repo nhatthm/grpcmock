@@ -21,7 +21,7 @@ func TestRecvAll(t *testing.T) {
 
 	sendItems := func(s *mockgrpc.ClientStream) {
 		for _, i := range test.DefaultItems() {
-			s.On("RecvMsg", &grpctest.Item{}).Once().
+			s.EXPECT().RecvMsg(&grpctest.Item{}).Once().
 				Run(func(args mock.Arguments) {
 					out := args.Get(0).(*grpctest.Item) //nolint: errcheck
 
@@ -30,7 +30,7 @@ func TestRecvAll(t *testing.T) {
 				Return(nil)
 		}
 
-		s.On("RecvMsg", &grpctest.Item{}).
+		s.EXPECT().RecvMsg(&grpctest.Item{}).
 			Return(io.EOF)
 	}
 
@@ -63,7 +63,7 @@ func TestRecvAll(t *testing.T) {
 		{
 			scenario: "recv error",
 			mockStream: mockgrpc.MockClientStream(func(s *mockgrpc.ClientStream) {
-				s.On("RecvMsg", mock.Anything).
+				s.EXPECT().RecvMsg(mock.Anything).
 					Return(errors.New("recv error"))
 			}),
 			output:         &[]grpctest.Item{},
