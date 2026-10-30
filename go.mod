@@ -1,6 +1,6 @@
 module go.nhat.io/grpcmock
 
-go 1.25.0
+go 1.26.0
 
 require (
 	github.com/grpc-ecosystem/go-grpc-middleware/v2 v2.3.4
@@ -10,7 +10,7 @@ require (
 	go.nhat.io/aferomock v0.9.1
 	go.nhat.io/matcher/v2 v2.0.0
 	go.nhat.io/wait v0.2.1
-	google.golang.org/grpc v1.84.0
+	google.golang.org/grpc v1.85.0
 	google.golang.org/protobuf v1.36.12
 )
 
@@ -21,8 +21,8 @@ require (
 	github.com/stretchr/objx v0.5.3 // indirect
 	github.com/yudai/golcs v0.0.0-20170316035057-ecda9a501e82 // indirect
 	go.yaml.in/yaml/v3 v3.0.5 // indirect
-	golang.org/x/net v0.58.0 // indirect
-	golang.org/x/sys v0.47.0 // indirect
-	golang.org/x/text v0.41.0 // indirect
+	golang.org/x/net v0.60.0 // indirect
+	golang.org/x/sys v0.48.0 // indirect
+	golang.org/x/text v0.42.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20260819154853-08b0e4226688 // indirect
 )
